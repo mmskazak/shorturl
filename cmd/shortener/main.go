@@ -5,9 +5,8 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 var urlMap map[string]string
@@ -15,14 +14,30 @@ var urlMap map[string]string
 func main() {
 	urlMap = make(map[string]string)
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", handleHortenURL)
-	router.HandleFunc("/{shortUrl}", handleRedirect)
+	router := http.NewServeMux()
+	router.HandleFunc("/", handleRequests)
 
 	fmt.Println("Server is running on http://localhost:8080")
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		return
+	}
+}
+
+func handleRequests(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	// Разделите путь на компоненты
+	parts := strings.Split(path, "/")
+	// Проверяем, есть ли после базового '/' еще один компонент пути
+	if len(parts) >= 2 && parts[1] != "" {
+		handleRedirect(w, r)
+	} else {
+		if r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("Сервис сокращения URL"))
+			return
+		}
+		handleHortenURL(w, r)
 	}
 }
 
@@ -46,7 +61,7 @@ func handleHortenURL(w http.ResponseWriter, r *http.Request) {
 	urlMap[shortURL] = originalURL
 
 	w.WriteHeader(http.StatusCreated)
-	_, err = fmt.Fprint(w, shortedURL)
+	_, err = w.Write([]byte(shortedURL))
 	if err != nil {
 		return
 	}
@@ -59,6 +74,11 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortURL := r.URL.Path[1:]
+	if len(shortURL) != 8 {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
 	originalURL, ok := urlMap[shortURL]
 	if !ok {
 		http.Error(w, "Not found", http.StatusNotFound)
