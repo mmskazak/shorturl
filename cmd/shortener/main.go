@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 var urlMap map[string]string
@@ -13,12 +15,12 @@ var urlMap map[string]string
 func main() {
 	urlMap = make(map[string]string)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handleHortenUrl)
-	mux.HandleFunc("/short/", handleRedirect)
+	router := mux.NewRouter()
+	router.HandleFunc("/", handleHortenUrl)
+	router.HandleFunc("/{shortUrl}", handleRedirect)
 
 	fmt.Println("Server is running on http://localhost:8080")
-	err := http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		return
 	}
@@ -56,7 +58,7 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortUrl := r.URL.Path[7:]
+	shortUrl := r.URL.Path[1:]
 	originalUrl, ok := urlMap[shortUrl]
 	if !ok {
 		http.Error(w, "Not found", http.StatusNotFound)
