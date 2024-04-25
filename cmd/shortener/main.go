@@ -42,7 +42,7 @@ func handleHortenUrl(w http.ResponseWriter, r *http.Request) {
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	shortUrl := generateShortURL(8)
-	shortedUrl := "http://localhost:8080/short/" + shortUrl
+	shortedUrl := "http://localhost:8080/" + shortUrl
 	urlMap[shortUrl] = originalUrl
 
 	w.WriteHeader(http.StatusCreated)
