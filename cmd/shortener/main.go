@@ -13,11 +13,12 @@ var urlMap map[string]string
 func main() {
 	urlMap = make(map[string]string)
 
-	http.HandleFunc("/", handleHortenUrl)
-	http.HandleFunc("/{id}", handleRedirect)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleHortenUrl)
+	mux.HandleFunc("/short/", handleRedirect)
 
 	fmt.Println("Server is running on http://localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		return
 	}
@@ -39,7 +40,7 @@ func handleHortenUrl(w http.ResponseWriter, r *http.Request) {
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	shortUrl := generateShortURL(8)
-	shortedUrl := "http://localhost:8080/" + shortUrl
+	shortedUrl := "http://localhost:8080/short/" + shortUrl
 	urlMap[shortUrl] = originalUrl
 
 	w.WriteHeader(http.StatusCreated)
@@ -55,7 +56,7 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortUrl := r.URL.Path[1:]
+	shortUrl := r.URL.Path[7:]
 	originalUrl, ok := urlMap[shortUrl]
 	if !ok {
 		http.Error(w, "Not found", http.StatusNotFound)
