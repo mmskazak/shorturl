@@ -16,7 +16,7 @@ func main() {
 	urlMap = make(map[string]string)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", handleHortenUrl)
+	router.HandleFunc("/", handleHortenURL)
 	router.HandleFunc("/{shortUrl}", handleRedirect)
 
 	fmt.Println("Server is running on http://localhost:8080")
@@ -26,7 +26,7 @@ func main() {
 	}
 }
 
-func handleHortenUrl(w http.ResponseWriter, r *http.Request) {
+func handleHortenURL(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -38,15 +38,15 @@ func handleHortenUrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not read the body", http.StatusBadRequest)
 		return
 	}
-	originalUrl := string(body)
+	originalURL := string(body)
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
-	shortUrl := generateShortURL(8)
-	shortedUrl := "http://localhost:8080/" + shortUrl
-	urlMap[shortUrl] = originalUrl
+	shortURL := generateShortURL(8)
+	shortedURL := "http://localhost:8080/" + shortURL
+	urlMap[shortURL] = originalURL
 
 	w.WriteHeader(http.StatusCreated)
-	_, err = fmt.Fprint(w, shortedUrl)
+	_, err = fmt.Fprint(w, shortedURL)
 	if err != nil {
 		return
 	}
@@ -58,14 +58,14 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortUrl := r.URL.Path[1:]
-	originalUrl, ok := urlMap[shortUrl]
+	shortURL := r.URL.Path[1:]
+	originalURL, ok := urlMap[shortURL]
 	if !ok {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	http.Redirect(w, r, originalUrl, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
 }
 
 // generateShortURL генерирует случайный строковый идентификатор заданной длины
