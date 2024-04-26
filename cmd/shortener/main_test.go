@@ -90,6 +90,7 @@ func TestHandleRequests_GetUrl_Found(t *testing.T) {
 	handleRequests(w, req)
 
 	res := w.Result()
+	defer res.Body.Close()
 
-	assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode, "Ожидаетсся статус код %d, получен %d", http.StatusNotFound, res.StatusCode)
+	assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode, "Ожидаетсся статус код %d, получен %d", http.StatusTemporaryRedirect, res.StatusCode)
 }
