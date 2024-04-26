@@ -12,7 +12,7 @@ import (
 )
 
 func TestHandleRequests_GetUrl_BadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/wErTdsB", nil)
+	req := httptest.NewRequest(http.MethodGet, "/wEr", nil)
 	w := httptest.NewRecorder()
 
 	handleRequests(w, req)
@@ -78,4 +78,18 @@ func TestHandleRequests_PostMainPage(t *testing.T) {
 	assert.NotEmpty(t, shortenedURL, "Ожидается сокращенный URL")
 
 	// Additional checks if needed, e.g., checking if shortened URL is valid
+}
+
+func TestHandleRequests_GetUrl_Found(t *testing.T) {
+	urlMap = make(map[string]string)
+	urlMap["wErTdsBk"] = "https://ya.ru"
+
+	req := httptest.NewRequest(http.MethodGet, "/wErTdsBk", nil)
+	w := httptest.NewRecorder()
+
+	handleRequests(w, req)
+
+	res := w.Result()
+
+	assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode, "Ожидаетсся статус код %d, получен %d", http.StatusNotFound, res.StatusCode)
 }
