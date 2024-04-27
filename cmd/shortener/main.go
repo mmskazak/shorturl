@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"math/rand"
@@ -10,9 +11,30 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Добавьте возможность конфигурировать сервис с помощью аргументов командной строки.
+// Создайте конфигурацию или переменные для запуска со следующими флагами:
+// Флаг -a отвечает за адрес запуска HTTP-сервера (значение может быть таким: localhost:8888).
+// Флаг -b отвечает за базовый адрес результирующего сокращённого URL (значение: адрес сервера перед коротким URL, например http://localhost:8000/qsd54gFg).
+// Совет: создайте отдельный пакет config, где будет храниться структура с вашей конфигурацией и функция, которая будет
+// инициализировать поля этой структуры. По мере усложнения конфигурации вы сможете добавлять необходимые поля в вашу
+// структуру и инициализировать их.
+
 var urlMap map[string]string
 
+var adr string
+var base string
+
+func init() {
+	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
+	flag.StringVar(&adr, "a", "localhost:8080", "Устанавливаем ip адрес нашего сервера")
+	flag.StringVar(&base, "b", "http://localhost:8080", "Устанавливаем ip адрес нашего сервера")
+}
+
 func main() {
+
+	// делаем разбор командной строки
+	flag.Parse()
+
 	urlMap = make(map[string]string)
 
 	router := chi.NewRouter()
@@ -20,8 +42,8 @@ func main() {
 	router.Get("/{id}", handleRedirect)
 	router.Post("/", createShortURL)
 
-	fmt.Println("Server is running on http://localhost:8080")
-	err := http.ListenAndServe(":8080", router)
+	fmt.Println("Server is running on " + adr)
+	err := http.ListenAndServe(adr, router)
 	if err != nil {
 		return
 	}
@@ -64,7 +86,7 @@ func createShortURL(w http.ResponseWriter, r *http.Request) {
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	id := generateShortURL(8)
-	shortedURL := "http://localhost:8080/" + id
+	shortedURL := base + "/" + id
 	urlMap[id] = originalURL
 
 	w.WriteHeader(http.StatusCreated)
