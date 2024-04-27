@@ -21,10 +21,9 @@ import (
 // структуру и инициализировать их.
 
 var urlMap map[string]string
-
 var cfg config.Config
 
-func init() {
+func main() {
 
 	// Создание нового экземпляра конфигурации
 	cfg := config.CreateConfig()
@@ -32,9 +31,6 @@ func init() {
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
 	flag.StringVar(&cfg.Address, "a", cfg.Address, "Устанавливаем ip адрес нашего сервера")
 	flag.StringVar(&cfg.BaseHost, "b", cfg.BaseHost, "Устанавливаем ip адрес нашего сервера")
-}
-
-func main() {
 
 	// делаем разбор командной строки
 	flag.Parse()
