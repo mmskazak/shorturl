@@ -6,7 +6,7 @@ type Config struct {
 	BaseHost string
 }
 
-// NewConfig инициализирует и возвращает новый экземпляр Config с заданными значениями
+// CreateConfig NewConfig инициализирует и возвращает новый экземпляр Config с заданными значениями
 func CreateConfig() Config {
 	return Config{
 		Address:  "localhost:8080",
