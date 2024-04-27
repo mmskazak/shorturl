@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"mmskazak/shorturl/config"
 	"net/http"
 	"time"
 
@@ -21,13 +22,16 @@ import (
 
 var urlMap map[string]string
 
-var adr string
-var base string
+var cfg config.Config
 
 func init() {
+
+	// Создание нового экземпляра конфигурации
+	cfg := config.CreateConfig()
+
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
-	flag.StringVar(&adr, "a", "localhost:8080", "Устанавливаем ip адрес нашего сервера")
-	flag.StringVar(&base, "b", "http://localhost:8080", "Устанавливаем ip адрес нашего сервера")
+	flag.StringVar(&cfg.Address, "a", cfg.Address, "Устанавливаем ip адрес нашего сервера")
+	flag.StringVar(&cfg.BaseHost, "b", cfg.BaseHost, "Устанавливаем ip адрес нашего сервера")
 }
 
 func main() {
@@ -42,8 +46,8 @@ func main() {
 	router.Get("/{id}", handleRedirect)
 	router.Post("/", createShortURL)
 
-	fmt.Println("Server is running on " + adr)
-	err := http.ListenAndServe(adr, router)
+	fmt.Println("Server is running on " + cfg.Address)
+	err := http.ListenAndServe(cfg.Address, router)
 	if err != nil {
 		return
 	}
@@ -86,7 +90,7 @@ func createShortURL(w http.ResponseWriter, r *http.Request) {
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	id := generateShortURL(8)
-	shortedURL := base + "/" + id
+	shortedURL := cfg.BaseHost + "/" + id
 	urlMap[id] = originalURL
 
 	w.WriteHeader(http.StatusCreated)
