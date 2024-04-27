@@ -55,27 +55,36 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 	assert.NotEmpty(t, shortenedURL, "Ожидается сокращенный URL")
 }
 
-//func TestHandleRedirect_Get_Found(t *testing.T) {
-//	urlMap := make(map[string]string)
-//	urlMap["validID8"] = "https://ya.ru"
-//
-//	// Создаем тестовый запрос с URL-параметром "id"
-//	req := httptest.NewRequest(http.MethodGet, "/validID8", nil)
-//
-//	// Создаем тестовый ответ (используется только для записи результата)
-//	w := httptest.NewRecorder()
-//
-//	// Обрабатываем тестовый запрос с помощью тестового маршрутизатора
-//	handleRedirect(w, req)
-//
-//	// Проверьте статус код ответа
-//	res := w.Result()
-//	defer res.Body.Close()
-//	assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode, "Ожидается статус код 307")
-//}
+func TestHandleRedirect_Get_Found(t *testing.T) {
+	urlMap = make(map[string]string)
+	urlMap["validID8"] = "https://ya.ru"
+
+	// Создайте тестовый маршрутизатор Chi
+	r := chi.NewRouter()
+
+	// Определите маршрут для обработки функции handleRedirect
+	r.Get("/{id}", handleRedirect)
+
+	// Создаем тестовый запрос с URL-параметром "id"
+	req := httptest.NewRequest(http.MethodGet, "/validID8", nil)
+
+	// Создаем тестовый ответ (используется только для записи результата)
+	w := httptest.NewRecorder()
+
+	// Обработайте тестовый запрос с помощью тестового маршрутизатора
+	r.ServeHTTP(w, req)
+
+	// Проверьте статус код ответа
+	res := w.Result()
+	defer res.Body.Close()
+	assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode, "Ожидается статус код 307")
+
+	// Проверяем фактический URL перенаправления
+	assert.Equal(t, "https://ya.ru", res.Header.Get("Location"), "Ожидается перенаправление на https://ya.ru")
+}
 
 func TestHandleRedirect_Get_NotFound(t *testing.T) {
-	urlMap := make(map[string]string)
+	urlMap = make(map[string]string)
 	urlMap["validIDx"] = "https://ya.ru"
 
 	// Создайте тестовый маршрутизатор Chi
@@ -85,7 +94,7 @@ func TestHandleRedirect_Get_NotFound(t *testing.T) {
 	r.Get("/{id}", handleRedirect)
 
 	// Создайте тестовый запрос с несуществующим ID
-	req := httptest.NewRequest(http.MethodGet, "/invalid1", nil)
+	req := httptest.NewRequest(http.MethodGet, "/validID8", nil)
 
 	// Создайте тестовый ответ (используется только для записи результата)
 	w := httptest.NewRecorder()
