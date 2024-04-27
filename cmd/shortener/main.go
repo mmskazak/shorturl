@@ -5,8 +5,9 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 var urlMap map[string]string
@@ -14,8 +15,10 @@ var urlMap map[string]string
 func main() {
 	urlMap = make(map[string]string)
 
-	router := http.NewServeMux()
-	router.HandleFunc("/", handleRequests)
+	router := chi.NewRouter()
+	router.Get("/", mainPage)
+	router.Get("/{id}", handleRedirect)
+	router.Post("/", createShortURL)
 
 	fmt.Println("Server is running on http://localhost:8080")
 	err := http.ListenAndServe(":8080", router)
@@ -24,29 +27,33 @@ func main() {
 	}
 }
 
-func handleRequests(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	// Разделите путь на компоненты
-	parts := strings.Split(path, "/")
-	// Проверяем, есть ли после базового '/' еще один компонент пути
-	if len(parts) >= 2 && parts[1] != "" {
-		handleRedirect(w, r)
-	} else {
-		if r.Method == http.MethodGet {
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("Сервис сокращения URL"))
-			return
-		}
-		handleHortenURL(w, r)
+func mainPage(w http.ResponseWriter, r *http.Request) {
+	_, err := w.Write([]byte("Сервис сокращения URL"))
+	if err != nil {
+		return
 	}
+	return
 }
 
-func handleHortenURL(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+func handleRedirect(w http.ResponseWriter, r *http.Request) {
+	// Получение значения id из URL-адреса
+	id := chi.URLParam(r, "id")
+
+	if len(id) != 8 {
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
+	originalURL, ok := urlMap[id]
+	if !ok {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
+}
+
+func createShortURL(w http.ResponseWriter, r *http.Request) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -56,36 +63,15 @@ func handleHortenURL(w http.ResponseWriter, r *http.Request) {
 	originalURL := string(body)
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
-	shortURL := generateShortURL(8)
-	shortedURL := "http://localhost:8080/" + shortURL
-	urlMap[shortURL] = originalURL
+	id := generateShortURL(8)
+	shortedURL := "http://localhost:8080/" + id
+	urlMap[id] = originalURL
 
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(shortedURL))
 	if err != nil {
 		return
 	}
-}
-
-func handleRedirect(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	shortURL := r.URL.Path[1:]
-	if len(shortURL) != 8 {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	originalURL, ok := urlMap[shortURL]
-	if !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-
-	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
 }
 
 // generateShortURL генерирует случайный строковый идентификатор заданной длины
