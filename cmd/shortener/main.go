@@ -58,7 +58,6 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	return
 }
 
 func handleRedirect(w http.ResponseWriter, r *http.Request) {

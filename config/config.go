@@ -9,7 +9,7 @@ type Config struct {
 // CreateConfig NewConfig инициализирует и возвращает новый экземпляр Config с заданными значениями
 func CreateConfig() Config {
 	return Config{
-		Address:  "localhost:8080",
-		BaseHost: "localhost:8080",
+		Address:  ":8080",
+		BaseHost: "http://localhost:8080",
 	}
 }
