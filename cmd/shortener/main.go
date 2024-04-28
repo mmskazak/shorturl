@@ -15,10 +15,12 @@ import (
 var urlMap map[string]string
 var cfg config.Config
 
-func main() {
-
+func init() {
 	// Создание нового экземпляра конфигурации
-	cfg := config.CreateConfig()
+	cfg = config.CreateConfig()
+}
+
+func main() {
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
 	flag.StringVar(&cfg.Address, "a", cfg.Address, "Устанавливаем ip адрес нашего сервера")
