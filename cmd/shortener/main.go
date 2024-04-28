@@ -23,8 +23,8 @@ func init() {
 
 func main() {
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
-	flag.StringVar(&cfg.Address, "a", cfg.Address, "Устанавливаем ip адрес нашего сервера")
-	flag.StringVar(&cfg.BaseHost, "b", cfg.BaseHost, "Устанавливаем ip адрес нашего сервера")
+	flag.StringVar(&cfg.Address, "a", cfg.Address, "Устанавливаем ip адрес нашего сервера.")
+	flag.StringVar(&cfg.BaseHost, "b", cfg.BaseHost, "Устанавливаем базовый URL для для сокращенного URL.")
 
 	//конфигурационные параметры в приоритете из переменных среды
 	if envServAddr := os.Getenv("SERVER_ADDRESS"); envServAddr != "" {
