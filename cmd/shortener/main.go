@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"mmskazak/shorturl/config"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -21,10 +22,17 @@ func init() {
 }
 
 func main() {
-
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
 	flag.StringVar(&cfg.Address, "a", cfg.Address, "Устанавливаем ip адрес нашего сервера")
 	flag.StringVar(&cfg.BaseHost, "b", cfg.BaseHost, "Устанавливаем ip адрес нашего сервера")
+
+	//конфигурационные параметры в приоритете из переменных среды
+	if envServAddr := os.Getenv("SERVER_ADDRESS"); envServAddr != "" {
+		cfg.Address = envServAddr
+	}
+	if envBaseUrl := os.Getenv("BASE_URL"); envBaseUrl != "" {
+		cfg.BaseHost = envBaseUrl
+	}
 
 	// делаем разбор командной строки
 	flag.Parse()
