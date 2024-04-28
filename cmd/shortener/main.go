@@ -51,7 +51,7 @@ func main() {
 	}
 }
 
-func mainPage(w http.ResponseWriter, r *http.Request) {
+func mainPage(w http.ResponseWriter, _ *http.Request) {
 	_, err := w.Write([]byte("Сервис сокращения URL"))
 	if err != nil {
 		return
