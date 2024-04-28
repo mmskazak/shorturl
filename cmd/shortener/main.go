@@ -30,8 +30,8 @@ func main() {
 	if envServAddr := os.Getenv("SERVER_ADDRESS"); envServAddr != "" {
 		cfg.Address = envServAddr
 	}
-	if envBaseUrl := os.Getenv("BASE_URL"); envBaseUrl != "" {
-		cfg.BaseHost = envBaseUrl
+	if envBaseURL := os.Getenv("BASE_URL"); envBaseURL != "" {
+		cfg.BaseHost = envBaseURL
 	}
 
 	// делаем разбор командной строки
