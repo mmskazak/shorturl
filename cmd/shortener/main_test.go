@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"github.com/go-chi/chi/v5"
 	"io"
+	"mmskazak/shorturl/internal/handlers"
+	"mmskazak/shorturl/internal/repository"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -40,7 +42,7 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", requestBody)
 	w := httptest.NewRecorder()
 
-	createShortURL(w, req)
+	handlers.CreateShortURL(w, req)
 
 	res := w.Result()
 
@@ -56,14 +58,15 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 }
 
 func TestHandleRedirect_Get_Found(t *testing.T) {
-	urlMap = make(map[string]string)
+	repository.InitUrlMap()
+	urlMap := repository.GetUrlMap()
 	urlMap["validID8"] = "https://ya.ru"
 
 	// Создайте тестовый маршрутизатор Chi
 	r := chi.NewRouter()
 
 	// Определите маршрут для обработки функции handleRedirect
-	r.Get("/{id}", handleRedirect)
+	r.Get("/{id}", handlers.HandleRedirect)
 
 	// Создаем тестовый запрос с URL-параметром "id"
 	req := httptest.NewRequest(http.MethodGet, "/validID8", nil)
@@ -84,14 +87,15 @@ func TestHandleRedirect_Get_Found(t *testing.T) {
 }
 
 func TestHandleRedirect_Get_NotFound(t *testing.T) {
-	urlMap = make(map[string]string)
+	repository.InitUrlMap()
+	urlMap := repository.GetUrlMap()
 	urlMap["validIDx"] = "https://ya.ru"
 
 	// Создайте тестовый маршрутизатор Chi
 	r := chi.NewRouter()
 
 	// Определите маршрут для обработки функции handleRedirect
-	r.Get("/{id}", handleRedirect)
+	r.Get("/{id}", handlers.HandleRedirect)
 
 	// Создайте тестовый запрос с несуществующим ID
 	req := httptest.NewRequest(http.MethodGet, "/validID8", nil)
@@ -116,7 +120,7 @@ func TestHandleRedirect_Get_BadRequest(t *testing.T) {
 	r := chi.NewRouter()
 
 	// Определите маршрут для обработки функции handleRedirect
-	r.Get("/{id}", handleRedirect)
+	r.Get("/{id}", handlers.HandleRedirect)
 
 	// Создайте тестовый запрос с неправильным форматом ID (слишком короткий)
 	req := httptest.NewRequest(http.MethodGet, "/short", nil)
