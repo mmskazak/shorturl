@@ -6,18 +6,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"mmskazak/shorturl/config"
 	"mmskazak/shorturl/internal/handlers"
-	"mmskazak/shorturl/internal/repository"
+	"mmskazak/shorturl/internal/middleware"
+	mapstorage "mmskazak/shorturl/internal/storage/map-storage"
 	"net/http"
 	"os"
 )
 
-var urlMap map[string]string
 var cfg *config.Config
 
 func init() {
 	// Создание нового экземпляра конфигурации
 	cfg = config.InitConfig()
-	repository.InitUrlMap()
+	_ = mapstorage.GetMapStorageInstance()
 }
 
 func main() {
@@ -33,22 +33,17 @@ func main() {
 		cfg.BaseHost = envBaseURL
 	}
 
-	urlMap = make(map[string]string)
-
 	router := chi.NewRouter()
-	router.Get("/", mainPage)
+
+	// Добавление middleware
+	router.Use(middleware.LoggingMiddleware)
+
+	router.Get("/", handlers.MainPage)
 	router.Get("/{id}", handlers.HandleRedirect)
 	router.Post("/", handlers.CreateShortURL)
 
 	fmt.Println("Server is running on " + cfg.Address)
 	err := http.ListenAndServe(cfg.Address, router)
-	if err != nil {
-		return
-	}
-}
-
-func mainPage(w http.ResponseWriter, _ *http.Request) {
-	_, err := w.Write([]byte("Сервис сокращения URL"))
 	if err != nil {
 		return
 	}

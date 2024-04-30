@@ -5,7 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"io"
 	"mmskazak/shorturl/internal/handlers"
-	"mmskazak/shorturl/internal/repository"
+	mapstorage "mmskazak/shorturl/internal/storage/map-storage"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +19,7 @@ func TestMainPage_Get_Greeting(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder() //*ResponseRecorder
 
-	mainPage(w, req)
+	handlers.MainPage(w, req)
 
 	//получаем результат *ResponseRecorder
 	res := w.Result()
@@ -35,8 +35,6 @@ func TestMainPage_Get_Greeting(t *testing.T) {
 }
 
 func TestCreateShortURL_Post_Create(t *testing.T) {
-	urlMap = make(map[string]string)
-
 	originalURL := "https://ya.ru"
 	requestBody := bytes.NewBuffer([]byte(originalURL))
 	req := httptest.NewRequest(http.MethodPost, "/", requestBody)
@@ -58,14 +56,18 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 }
 
 func TestHandleRedirect_Get_Found(t *testing.T) {
-	repository.InitUrlMap()
-	urlMap := repository.GetUrlMap()
-	urlMap["validID8"] = "https://ya.ru"
+	ms := mapstorage.NewMapStorage()
+	mapstorage.SetMapStorageInstance(ms)
 
-	// Создайте тестовый маршрутизатор Chi
+	err := ms.SetShortURL("validID8", "https://ya.ru")
+	if err != nil {
+		return
+	}
+
+	// Создаем тестовый маршрутизатор Chi
 	r := chi.NewRouter()
 
-	// Определите маршрут для обработки функции handleRedirect
+	// Определяем маршрут для обработки функции handleRedirect
 	r.Get("/{id}", handlers.HandleRedirect)
 
 	// Создаем тестовый запрос с URL-параметром "id"
@@ -74,10 +76,10 @@ func TestHandleRedirect_Get_Found(t *testing.T) {
 	// Создаем тестовый ответ (используется только для записи результата)
 	w := httptest.NewRecorder()
 
-	// Обработайте тестовый запрос с помощью тестового маршрутизатора
+	// Обработаем тестовый запрос с помощью тестового маршрутизатора
 	r.ServeHTTP(w, req)
 
-	// Проверьте статус код ответа
+	// Проверим статус код ответа
 	res := w.Result()
 	defer res.Body.Close()
 	assert.Equal(t, http.StatusTemporaryRedirect, res.StatusCode, "Ожидается статус код 307")
@@ -87,51 +89,59 @@ func TestHandleRedirect_Get_Found(t *testing.T) {
 }
 
 func TestHandleRedirect_Get_NotFound(t *testing.T) {
-	repository.InitUrlMap()
-	urlMap := repository.GetUrlMap()
-	urlMap["validIDx"] = "https://ya.ru"
+	ms := mapstorage.NewMapStorage()
+	mapstorage.SetMapStorageInstance(ms)
 
-	// Создайте тестовый маршрутизатор Chi
+	err := ms.SetShortURL("validIDx", "https://ya.ru")
+	if err != nil {
+		return
+	}
+
+	// Создаем тестовый маршрутизатор Chi
 	r := chi.NewRouter()
 
-	// Определите маршрут для обработки функции handleRedirect
+	// Определяем маршрут для обработки функции handleRedirect
 	r.Get("/{id}", handlers.HandleRedirect)
 
-	// Создайте тестовый запрос с несуществующим ID
+	// Создаем тестовый запрос с несуществующим ID
 	req := httptest.NewRequest(http.MethodGet, "/validID8", nil)
 
-	// Создайте тестовый ответ (используется только для записи результата)
+	// Создаем тестовый ответ (используется только для записи результата)
 	w := httptest.NewRecorder()
 
-	// Обработайте тестовый запрос с помощью тестового маршрутизатора
+	// Обработаем тестовый запрос с помощью тестового маршрутизатора
 	r.ServeHTTP(w, req)
 
-	// Проверьте статус код ответа - Not Found (404)
+	// Проверим статус код ответа - Not Found (404)
 	res := w.Result()
 	defer res.Body.Close()
 	assert.Equal(t, http.StatusNotFound, res.StatusCode, "Ожидается статус код 404")
 }
 
 func TestHandleRedirect_Get_BadRequest(t *testing.T) {
-	urlMap := make(map[string]string)
-	urlMap["validID"] = "https://ya.ru"
 
-	// Создайте тестовый маршрутизатор Chi
+	ms := mapstorage.GetMapStorageInstance()
+	err := ms.SetShortURL("validID", "https://ya.ru")
+	if err != nil {
+		return
+	}
+
+	// Создаем тестовый маршрутизатор Chi
 	r := chi.NewRouter()
 
-	// Определите маршрут для обработки функции handleRedirect
+	// Определяем маршрут для обработки функции handleRedirect
 	r.Get("/{id}", handlers.HandleRedirect)
 
-	// Создайте тестовый запрос с неправильным форматом ID (слишком короткий)
-	req := httptest.NewRequest(http.MethodGet, "/short", nil)
+	// Создаем тестовый запрос с неправильным форматом ID (слишком короткий)
+	req := httptest.NewRequest(http.MethodGet, "/NotValidID", nil)
 
-	// Создайте тестовый ответ (используется только для записи результата)
+	// Создаем тестовый ответ (используется только для записи результата)
 	w := httptest.NewRecorder()
 
 	// Обработайте тестовый запрос с помощью тестового маршрутизатора
 	r.ServeHTTP(w, req)
 
-	// Проверьте статус код ответа - Bad Request (400)
+	// Проверим статус код ответа - Bad Request (400)
 	res := w.Result()
 	defer res.Body.Close()
 	assert.Equal(t, http.StatusBadRequest, res.StatusCode, "Ожидается статус код 400")

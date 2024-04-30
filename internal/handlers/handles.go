@@ -5,14 +5,13 @@ import (
 	"io"
 	"mmskazak/shorturl/config"
 	"mmskazak/shorturl/internal/helpers"
-	"mmskazak/shorturl/internal/repository"
+	mapstorage "mmskazak/shorturl/internal/storage/map-storage"
 	"net/http"
 )
 
 func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 
 	cfg := config.GetAppConfig()
-	urlMap := repository.GetUrlMap()
 
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
@@ -25,7 +24,12 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	id := helpers.GenerateShortURL(8)
 	shortedURL := cfg.BaseHost + "/" + id
-	urlMap[id] = originalURL
+	data := mapstorage.GetMapStorageInstance()
+
+	err = data.SetShortURL(id, originalURL)
+	if err != nil {
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(shortedURL))
@@ -35,7 +39,7 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleRedirect(w http.ResponseWriter, r *http.Request) {
-	urlMap := repository.GetUrlMap()
+	data := mapstorage.GetMapStorageInstance()
 
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
@@ -45,11 +49,18 @@ func HandleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURL, ok := urlMap[id]
-	if !ok {
+	originalURL, err := data.GetShortURL(id)
+	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
+}
+
+func MainPage(w http.ResponseWriter, _ *http.Request) {
+	_, err := w.Write([]byte("Сервис сокращения URL"))
+	if err != nil {
+		return
+	}
 }
