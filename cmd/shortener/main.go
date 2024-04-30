@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"github.com/go-chi/chi/v5"
 	"log"
 	"mmskazak/shorturl/config"
 	"mmskazak/shorturl/internal/handlers"
@@ -11,23 +9,21 @@ import (
 	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi/v5"
 )
 
-var cfg *config.Config
-
-func init() {
-	// Создание нового экземпляра конфигурации
-	cfg = config.InitConfig()
-}
+var cfg *config.Config //nolint:gochecknoglobals
 
 func main() {
 	app := helpers.GetAppNameAndVersion()
 	log.Println(app)
 
+	cfg = config.InitConfig()
 	// делаем разбор командной строки
 	flag.Parse()
 
-	//конфигурационные параметры в приоритете из переменных среды
+	// конфигурационные параметры в приоритете из переменных среды
 	if envServAddr := os.Getenv("SERVER_ADDRESS"); envServAddr != "" {
 		cfg.Address = envServAddr
 	}
@@ -44,8 +40,8 @@ func main() {
 	router.Get("/{id}", handlers.HandleRedirect)
 	router.Post("/", handlers.CreateShortURL)
 
-	fmt.Println("Server is running on " + cfg.Address)
-	err := http.ListenAndServe(cfg.Address, router)
+	log.Println("Server is running on " + cfg.Address)
+	var err = http.ListenAndServe(cfg.Address, router)
 	if err != nil {
 		return
 	}
