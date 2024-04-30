@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"github.com/go-chi/chi/v5"
+
 	"io"
 	"mmskazak/shorturl/internal/handlers"
 	"mmskazak/shorturl/internal/storage/mapstorage"
@@ -10,22 +10,23 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMainPage_Get_Greeting(t *testing.T) {
-	//тестовый реквест
+	// тестовый реквест
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	w := httptest.NewRecorder() //*ResponseRecorder
+	w := httptest.NewRecorder() // *ResponseRecorder
 
 	handlers.MainPage(w, req)
 
-	//получаем результат *ResponseRecorder
+	// получаем результат *ResponseRecorder
 	res := w.Result()
 	assert.Equal(t, http.StatusOK, res.StatusCode, "Ожидаетсся статус код %d, получен %d", http.StatusOK, res.StatusCode)
 
-	//сразу закрываем чтение
+	// сразу закрываем чтение
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 
@@ -36,7 +37,7 @@ func TestMainPage_Get_Greeting(t *testing.T) {
 
 func TestCreateShortURL_Post_Create(t *testing.T) {
 	originalURL := "https://ya.ru"
-	requestBody := bytes.NewBuffer([]byte(originalURL))
+	requestBody := bytes.NewBufferString(originalURL)
 	req := httptest.NewRequest(http.MethodPost, "/", requestBody)
 	w := httptest.NewRecorder()
 
@@ -44,7 +45,14 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 
 	res := w.Result()
 
-	assert.Equal(t, http.StatusCreated, res.StatusCode, "Ожидаетсся статус код %d, получен %d", http.StatusCreated, res.StatusCode)
+	assert.Equal(
+		t,
+		http.StatusCreated,
+		res.StatusCode,
+		"Ожидается статус код %d, получен %d",
+		http.StatusCreated,
+		res.StatusCode,
+	)
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
@@ -119,7 +127,6 @@ func TestHandleRedirect_Get_NotFound(t *testing.T) {
 }
 
 func TestHandleRedirect_Get_BadRequest(t *testing.T) {
-
 	ms := mapstorage.GetMapStorageInstance()
 	err := ms.SetShortURL("validID", "https://ya.ru")
 	if err != nil {

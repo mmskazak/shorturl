@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"log"
 	"mmskazak/shorturl/config"
@@ -9,11 +10,12 @@ import (
 	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
-var cfg *config.Config
+var cfg *config.Config //nolint:gochecknoglobals
 
 func main() {
 	app := helpers.GetAppNameAndVersion()
@@ -41,8 +43,18 @@ func main() {
 	router.Post("/", handlers.CreateShortURL)
 
 	log.Println("Server is running on " + cfg.Address)
-	var err = http.ListenAndServe(cfg.Address, router)
-	if err != nil {
-		return
+
+	// Создаем сервер
+	srv := &http.Server{
+		Addr:         cfg.Address,      // cfg.Address - адрес сервера из вашей конфигурации
+		Handler:      router,           // router - ваш HTTP маршрутизатор
+		ReadTimeout:  10 * time.Second, // Время ожидания на чтение запроса
+		WriteTimeout: 10 * time.Second, // Время ожидания на запись ответа
 	}
+
+	// Запускаем сервер с явным указанием параметров таймаута
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("server error: %v", err)
+	}
+
 }
