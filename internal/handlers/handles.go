@@ -5,7 +5,7 @@ import (
 	"io"
 	"mmskazak/shorturl/config"
 	"mmskazak/shorturl/internal/helpers"
-	mapstorage "mmskazak/shorturl/internal/storage/map-storage"
+	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
 )
 

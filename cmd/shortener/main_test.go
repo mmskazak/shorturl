@@ -5,7 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"io"
 	"mmskazak/shorturl/internal/handlers"
-	mapstorage "mmskazak/shorturl/internal/storage/map-storage"
+	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
 	"net/http/httptest"
 	"testing"
