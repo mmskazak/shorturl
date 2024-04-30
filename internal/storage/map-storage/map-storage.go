@@ -1,4 +1,4 @@
-package map_storage
+package mapstorage
 
 import (
 	"errors"
@@ -37,14 +37,14 @@ func NewMapStorage() *MapStorage {
 
 func (m *MapStorage) GetShortURL(id string) (string, error) {
 	targetURL, ok := m.data[id]
-	if ok != true {
+	if !ok {
 		return "", storage.ErrNotFound
 	}
 	return targetURL, nil
 }
 
 func (m *MapStorage) SetShortURL(id string, targetURL string) error {
-	if _, ok := m.data[id]; ok == true {
+	if _, ok := m.data[id]; ok {
 		return errors.New("key already exists")
 	}
 	m.data[id] = targetURL

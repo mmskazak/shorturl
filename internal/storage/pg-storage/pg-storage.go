@@ -1,1 +1,1 @@
-package pg_storage
+package pgstorage
