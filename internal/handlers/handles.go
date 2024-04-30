@@ -1,16 +1,18 @@
 package handlers
 
 import (
-	"github.com/go-chi/chi/v5"
 	"io"
 	"mmskazak/shorturl/config"
 	"mmskazak/shorturl/internal/helpers"
 	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
-func CreateShortURL(w http.ResponseWriter, r *http.Request) {
+const defaultShortURLLength = 8
 
+func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 	cfg := config.GetAppConfig()
 
 	// Чтение оригинального URL из тела запроса.
@@ -22,7 +24,7 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 	originalURL := string(body)
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
-	id := helpers.GenerateShortURL(8)
+	id := helpers.GenerateShortURL(defaultShortURLLength)
 	shortedURL := cfg.BaseHost + "/" + id
 	data := mapstorage.GetMapStorageInstance()
 
@@ -44,7 +46,7 @@ func HandleRedirect(w http.ResponseWriter, r *http.Request) {
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
 
-	if len(id) != 8 {
+	if len(id) != defaultShortURLLength {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
