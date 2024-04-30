@@ -2,7 +2,7 @@ package config
 
 import "flag"
 
-// Config содержит поля вашей конфигурации
+// Config содержит поля вашей конфигурации.
 type Config struct {
 	Address  string
 	BaseHost string
@@ -23,7 +23,7 @@ func InitConfig() *Config {
 	return config
 }
 
-// GetAppConfig CreateConfig NewConfig инициализирует и возвращает новый экземпляр Config с заданными значениями
+// GetAppConfig CreateConfig NewConfig инициализирует и возвращает новый экземпляр Config с заданными значениями.
 func GetAppConfig() *Config {
 	return config
 }

@@ -20,7 +20,7 @@ func Conveyor(h http.Handler, middlewares ...Middleware) http.Handler {
 	return h
 }
 
-// LoggingMiddleware Middleware для логирования запросов
+// LoggingMiddleware Middleware для логирования запросов.
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Логирование запроса

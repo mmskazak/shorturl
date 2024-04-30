@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// GenerateShortURL generateShortURL генерирует случайный строковый идентификатор заданной длины
+// GenerateShortURL генерирует случайный строковый идентификатор заданной длины.
 func GenerateShortURL(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, length)

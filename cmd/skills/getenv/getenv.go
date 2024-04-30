@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/caarlos0/env/v6"
 	"log"
 	"os"
 	"time"
+
+	"github.com/caarlos0/env/v6"
 )
 
 type Config struct {
