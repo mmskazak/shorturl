@@ -4,10 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"log"
 	"mmskazak/shorturl/config"
 	"mmskazak/shorturl/internal/handlers"
+	"mmskazak/shorturl/internal/helpers"
 	"mmskazak/shorturl/internal/middleware"
-	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
 	"os"
 )
@@ -17,10 +18,11 @@ var cfg *config.Config
 func init() {
 	// Создание нового экземпляра конфигурации
 	cfg = config.InitConfig()
-	_ = mapstorage.GetMapStorageInstance()
 }
 
 func main() {
+	app := helpers.GetAppNameAndVersion()
+	log.Println(app)
 
 	// делаем разбор командной строки
 	flag.Parse()

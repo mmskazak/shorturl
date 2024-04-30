@@ -27,13 +27,19 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 		login := r.FormValue("login")
 		password := r.FormValue("password")
 		if Auth(login, password) {
-			io.WriteString(w, "Добро пожаловать!")
+			_, err := io.WriteString(w, "Добро пожаловать!")
+			if err != nil {
+				return
+			}
 		} else {
 			http.Error(w, "Неверный логин или пароль", http.StatusUnauthorized)
 		}
 		return
 	} else {
-		w.Write([]byte(form))
+		_, err := w.Write([]byte(form))
+		if err != nil {
+			return
+		}
 	}
 }
 
