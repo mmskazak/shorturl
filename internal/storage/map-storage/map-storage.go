@@ -11,11 +11,6 @@ var (
 	once     sync.Once
 )
 
-type Storage interface {
-	GetShortURL(id string) string            //получение короткого URL
-	SetShortURL(id string, targetURL string) //установить короткий URL
-}
-
 type MapStorage struct {
 	data map[string]string
 }
