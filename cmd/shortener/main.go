@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-var cfg *config.Config //nolint:gochecknoglobals
+var cfg *config.Config
 
 func main() {
 	app := helpers.GetAppNameAndVersion()
