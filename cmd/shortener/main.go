@@ -15,13 +15,11 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-var cfg *config.Config //nolint:gochecknoglobals
-
 func main() {
 	app := helpers.GetAppNameAndVersion()
 	log.Println(app)
 
-	cfg = config.InitConfig()
+	cfg := config.InitConfig()
 	// делаем разбор командной строки
 	flag.Parse()
 
@@ -46,8 +44,8 @@ func main() {
 
 	// Создаем сервер
 	srv := &http.Server{
-		Addr:         cfg.Address,      // cfg.Address - адрес сервера из вашей конфигурации
-		Handler:      router,           // router - ваш HTTP маршрутизатор
+		Addr:         cfg.Address,      // cfg.Address - адрес сервера из конфигурации
+		Handler:      router,           // router - HTTP маршрутизатор
 		ReadTimeout:  10 * time.Second, // Время ожидания на чтение запроса
 		WriteTimeout: 10 * time.Second, // Время ожидания на запись ответа
 	}

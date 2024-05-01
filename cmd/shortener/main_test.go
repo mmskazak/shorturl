@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"mmskazak/shorturl/config"
 
 	"io"
 	"mmskazak/shorturl/internal/handlers"
@@ -36,6 +37,7 @@ func TestMainPage_Get_Greeting(t *testing.T) {
 }
 
 func TestCreateShortURL_Post_Create(t *testing.T) {
+	_ = config.InitConfig()
 	originalURL := "https://ya.ru"
 	requestBody := bytes.NewBufferString(originalURL)
 	req := httptest.NewRequest(http.MethodPost, "/", requestBody)
