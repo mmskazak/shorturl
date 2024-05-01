@@ -1,13 +1,14 @@
 package shorturl
 
 import (
-	"github.com/go-chi/chi/v5"
 	"log"
 	"mmskazak/shorturl/internal/app/config"
 	"mmskazak/shorturl/internal/app/handlers"
 	"mmskazak/shorturl/internal/app/middleware"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // почему линтен это не отлеживает?
@@ -19,7 +20,7 @@ type App struct {
 	Server *http.Server
 }
 
-// NewApp создает новый экземпляр приложения
+// NewApp создает новый экземпляр приложения.
 func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Duration) *App {
 	r := chi.NewRouter()
 
@@ -42,7 +43,7 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 	}
 }
 
-// Start запускает сервер приложения
+// Start запускает сервер приложения.
 func (a *App) Start() error {
 	log.Println("Server is running on " + a.Config.Address)
 	return a.Server.ListenAndServe()
