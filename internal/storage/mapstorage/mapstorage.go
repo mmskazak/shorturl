@@ -12,6 +12,7 @@ var (
 )
 
 type MapStorage struct {
+	mu   sync.Mutex
 	data map[string]string
 }
 
@@ -36,6 +37,8 @@ func NewMapStorage() *MapStorage {
 }
 
 func (m *MapStorage) GetShortURL(id string) (string, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	targetURL, ok := m.data[id]
 	if !ok {
 		return "", storage.ErrNotFound
@@ -44,6 +47,8 @@ func (m *MapStorage) GetShortURL(id string) (string, error) {
 }
 
 func (m *MapStorage) SetShortURL(id string, targetURL string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if _, ok := m.data[id]; ok {
 		return errors.New("key already exists")
 	}
