@@ -11,9 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// почему линтен это не отлеживает?
-const timeoutDuration = 10 * time.Second
-
 type App struct {
 	Config *config.Config
 	Router *chi.Mux
