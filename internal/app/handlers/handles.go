@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"io"
-	"mmskazak/shorturl/internal/app/config"
 	"mmskazak/shorturl/internal/app/helpers"
 	"mmskazak/shorturl/internal/app/storage/mapstorage"
 	"net/http"
@@ -12,8 +11,7 @@ import (
 
 const defaultShortURLLength = 8
 
-func CreateShortURL(w http.ResponseWriter, r *http.Request) {
-	cfg := config.GetAppConfig()
+func CreateShortURL(w http.ResponseWriter, r *http.Request, baseHost string) {
 
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
@@ -25,7 +23,7 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request) {
 
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	id := helpers.GenerateShortURL(defaultShortURLLength)
-	shortedURL := cfg.BaseHost + "/" + id
+	shortedURL := baseHost + "/" + id
 	data := mapstorage.GetMapStorageInstance()
 
 	err = data.SetShortURL(id, originalURL)

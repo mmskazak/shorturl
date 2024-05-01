@@ -16,10 +16,8 @@ type Config struct {
 	BaseHost string
 }
 
-var config *Config
-
 func InitConfig() *Config {
-	config = &Config{
+	config := &Config{
 		Address:  ":8080",
 		BaseHost: "http://localhost:8080",
 	}
@@ -39,10 +37,5 @@ func InitConfig() *Config {
 		config.BaseHost = envBaseURL
 	}
 
-	return config
-}
-
-// GetAppConfig CreateConfig NewConfig инициализирует и возвращает новый экземпляр Config с заданными значениями.
-func GetAppConfig() *Config {
 	return config
 }
