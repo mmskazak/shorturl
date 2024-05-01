@@ -3,4 +3,5 @@ repos:
     rev: v1.57.2 # Укажите нужную версию golangci-lint
     hooks:
       - id: golangci-lint
-        args: ["run", "--fix"]
+        args: [ "run", "--fix" ]
+        files: ^.*\.go$
