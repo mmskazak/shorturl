@@ -2,15 +2,14 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"log"
-	"mmskazak/shorturl/config"
-	"mmskazak/shorturl/internal/handlers"
-	"mmskazak/shorturl/internal/helpers"
-	"mmskazak/shorturl/internal/middleware"
 	"net/http"
-	"os"
 	"time"
+
+	"mmskazak/shorturl/internal/app/config"
+	"mmskazak/shorturl/internal/app/handlers"
+	"mmskazak/shorturl/internal/app/helpers"
+	"mmskazak/shorturl/internal/app/middleware"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -22,16 +21,6 @@ func main() {
 	log.Println(app)
 
 	cfg := config.InitConfig()
-	// делаем разбор командной строки
-	flag.Parse()
-
-	// конфигурационные параметры в приоритете из переменных среды
-	if envServAddr := os.Getenv("SERVER_ADDRESS"); envServAddr != "" {
-		cfg.Address = envServAddr
-	}
-	if envBaseURL := os.Getenv("BASE_URL"); envBaseURL != "" {
-		cfg.BaseHost = envBaseURL
-	}
 
 	router := chi.NewRouter()
 

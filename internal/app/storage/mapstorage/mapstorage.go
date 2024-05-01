@@ -2,7 +2,7 @@ package mapstorage
 
 import (
 	"errors"
-	"mmskazak/shorturl/internal/storage/storage"
+	"mmskazak/shorturl/internal/app/storage/storage"
 	"sync"
 )
 

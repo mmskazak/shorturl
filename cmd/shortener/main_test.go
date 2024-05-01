@@ -2,11 +2,11 @@ package main
 
 import (
 	"bytes"
-	"mmskazak/shorturl/config"
+	"mmskazak/shorturl/internal/app/config"
+	"mmskazak/shorturl/internal/app/handlers"
+	"mmskazak/shorturl/internal/app/storage/mapstorage"
 
 	"io"
-	"mmskazak/shorturl/internal/handlers"
-	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
 	"net/http/httptest"
 	"testing"

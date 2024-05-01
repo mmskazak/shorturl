@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"io"
-	"mmskazak/shorturl/config"
-	"mmskazak/shorturl/internal/helpers"
-	"mmskazak/shorturl/internal/storage/mapstorage"
+	"mmskazak/shorturl/internal/app/config"
+	"mmskazak/shorturl/internal/app/helpers"
+	"mmskazak/shorturl/internal/app/storage/mapstorage"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

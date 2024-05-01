@@ -13,6 +13,8 @@ type Middleware func(http.Handler) http.Handler
 //		http.Handle("/", Conveyor(http.HandlerFunc(rootHandle), middleware1, middleware2, middleware3))
 //		// ...
 //	}
+//
+// почему линтер не увидел не используемую структуру?
 func Conveyor(h http.Handler, middlewares ...Middleware) http.Handler {
 	for _, middleware := range middlewares {
 		h = middleware(h)
