@@ -11,7 +11,7 @@ import (
 
 const defaultShortURLLength = 8
 
-func CreateShortURL(w http.ResponseWriter, r *http.Request, baseHost string) {
+func CreateShortURL(w http.ResponseWriter, r *http.Request, data *mapstorage.MapStorage, baseHost string) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -23,7 +23,6 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request, baseHost string) {
 	// Генерируем уникальный идентификатор для сокращенной ссылки
 	id := helpers.GenerateShortURL(defaultShortURLLength)
 	shortedURL := baseHost + "/" + id
-	data := mapstorage.GetMapStorageInstance()
 
 	err = data.SetShortURL(id, originalURL)
 	if err != nil {
@@ -37,9 +36,7 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request, baseHost string) {
 	}
 }
 
-func HandleRedirect(w http.ResponseWriter, r *http.Request) {
-	data := mapstorage.GetMapStorageInstance()
-
+func HandleRedirect(w http.ResponseWriter, r *http.Request, data *mapstorage.MapStorage) {
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
 

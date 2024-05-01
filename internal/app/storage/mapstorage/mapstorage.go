@@ -6,28 +6,9 @@ import (
 	"sync"
 )
 
-var (
-	instance *MapStorage
-	once     sync.Once
-)
-
 type MapStorage struct {
 	mu   sync.Mutex
 	data map[string]string
-}
-
-func GetMapStorageInstance() *MapStorage {
-	once.Do(func() {
-		instance = &MapStorage{
-			data: make(map[string]string),
-		}
-	})
-	return instance
-}
-
-// SetMapStorageInstance устанавливает указанный экземпляр MapStorage.
-func SetMapStorageInstance(ms *MapStorage) {
-	instance = ms
 }
 
 func NewMapStorage() *MapStorage {

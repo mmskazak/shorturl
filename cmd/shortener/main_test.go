@@ -35,7 +35,7 @@ package main
 //	assert.Equal(t, "Сервис сокращения URL", string(body))
 //}
 //
-//func TestCreateShortURL_Post_Create(t *testing.T) {
+// func TestCreateShortURL_Post_Create(t *testing.T) {
 //	originalURL := "https://ya.ru"
 //	requestBody := bytes.NewBufferString(originalURL)
 //	req := httptest.NewRequest(http.MethodPost, "/", requestBody)
@@ -74,7 +74,7 @@ package main
 //	assert.NotEmpty(t, shortenedURL, "Ожидается сокращенный URL")
 //}
 //
-//func TestHandleRedirect_Get_Found(t *testing.T) {
+// func TestHandleRedirect_Get_Found(t *testing.T) {
 //	ms := mapstorage.NewMapStorage()
 //	mapstorage.SetMapStorageInstance(ms)
 //
@@ -107,7 +107,7 @@ package main
 //	assert.Equal(t, "https://ya.ru", res.Header.Get("Location"), "Ожидается перенаправление на https://ya.ru")
 //}
 //
-//func TestHandleRedirect_Get_NotFound(t *testing.T) {
+// func TestHandleRedirect_Get_NotFound(t *testing.T) {
 //	ms := mapstorage.NewMapStorage()
 //	mapstorage.SetMapStorageInstance(ms)
 //
@@ -137,7 +137,7 @@ package main
 //	assert.Equal(t, http.StatusNotFound, res.StatusCode, "Ожидается статус код 404")
 //}
 //
-//func TestHandleRedirect_Get_BadRequest(t *testing.T) {
+// func TestHandleRedirect_Get_BadRequest(t *testing.T) {
 //	ms := mapstorage.GetMapStorageInstance()
 //	err := ms.SetShortURL("validID", "https://ya.ru")
 //	if err != nil {
