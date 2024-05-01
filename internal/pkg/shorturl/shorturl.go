@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// почему линтен это не отлеживает это
+// почему линтен это не отлеживает?
 const timeoutDuration = 10 * time.Second
 
 type App struct {
