@@ -12,7 +12,6 @@ import (
 const defaultShortURLLength = 8
 
 func CreateShortURL(w http.ResponseWriter, r *http.Request, baseHost string) {
-
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

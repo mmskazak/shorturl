@@ -15,7 +15,7 @@ package main
 //	"github.com/stretchr/testify/require"
 //)
 //
-//func TestMainPage_Get_Greeting(t *testing.T) {
+// func TestMainPage_Get_Greeting(t *testing.T) {
 //	// тестовый реквест
 //	req := httptest.NewRequest(http.MethodGet, "/", nil)
 //	w := httptest.NewRecorder() // *ResponseRecorder
