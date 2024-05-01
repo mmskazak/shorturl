@@ -16,6 +16,8 @@ import (
 )
 
 func main() {
+	const timeoutDuration = 10 * time.Second
+
 	app := helpers.GetAppNameAndVersion()
 	log.Println(app)
 
@@ -44,15 +46,14 @@ func main() {
 
 	// Создаем сервер
 	srv := &http.Server{
-		Addr:         cfg.Address,      // cfg.Address - адрес сервера из конфигурации
-		Handler:      router,           // router - HTTP маршрутизатор
-		ReadTimeout:  10 * time.Second, // Время ожидания на чтение запроса
-		WriteTimeout: 10 * time.Second, // Время ожидания на запись ответа
+		Addr:         cfg.Address,     // cfg.Address - адрес сервера из конфигурации
+		Handler:      router,          // router - HTTP маршрутизатор
+		ReadTimeout:  timeoutDuration, // Время ожидания на чтение запроса
+		WriteTimeout: timeoutDuration, // Время ожидания на запись ответа
 	}
 
 	// Запускаем сервер с явным указанием параметров таймаута
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("server error: %v", err)
 	}
-
 }
