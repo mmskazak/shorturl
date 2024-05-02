@@ -28,6 +28,12 @@ func (m *MapStorage) GetShortURL(id string) (string, error) {
 }
 
 func (m *MapStorage) SetShortURL(id string, targetURL string) error {
+	if id == "" {
+		return errors.New("id is empty")
+	}
+	if targetURL == "" {
+		return errors.New("URL is empty")
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.data[id]; ok {

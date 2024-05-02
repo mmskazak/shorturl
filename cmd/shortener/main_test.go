@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 	"mmskazak/shorturl/internal/app/config"
 	"mmskazak/shorturl/internal/app/handlers"
 	"mmskazak/shorturl/internal/app/storage/mapstorage"
@@ -10,6 +8,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMainPage_Get_Greeting(t *testing.T) {
@@ -62,7 +63,7 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 
 	r.ServeHTTP(rr, req)
 
-	assert.Equal(t, rr.Code, http.StatusCreated)
+	assert.Equal(t, http.StatusCreated, rr.Code)
 	assert.NotEmpty(t, rr.Body.String())
 }
 
@@ -82,7 +83,7 @@ func TestHandleRedirect_Get_Found(t *testing.T) {
 	}
 	r.Get("/{id}", handleRedirectHandler)
 
-	req, err := http.NewRequest("GET", "/vAlIdIds", strings.NewReader("https://ya.ru"))
+	req, err := http.NewRequest("GET", "/vAlIdIds", strings.NewReader("https://ya.ru")) //nolint:usestdlibvars
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +92,7 @@ func TestHandleRedirect_Get_Found(t *testing.T) {
 
 	r.ServeHTTP(rr, req)
 
-	assert.Equal(t, rr.Code, http.StatusTemporaryRedirect)
+	assert.Equal(t, http.StatusTemporaryRedirect, rr.Code)
 }
 
 func TestHandleRedirect_Get_NotFound(t *testing.T) {
@@ -104,7 +105,7 @@ func TestHandleRedirect_Get_NotFound(t *testing.T) {
 	}
 	r.Get("/{id}", handleRedirectHandler)
 
-	req, err := http.NewRequest("GET", "/x0x0x0x0", strings.NewReader("https://ya.ru"))
+	req, err := http.NewRequest("GET", "/x0x0x0x0", strings.NewReader("https://ya.ru")) //nolint:usestdlibvars
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +127,7 @@ func TestHandleRedirect_Get_BadRequest(t *testing.T) {
 	}
 	r.Get("/{id}", handleRedirectHandler)
 
-	req, err := http.NewRequest("GET", "/x0x0", strings.NewReader("https://ya.ru"))
+	req, err := http.NewRequest("GET", "/x0x0", strings.NewReader("https://ya.ru")) //nolint:usestdlibvars
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,5 +136,5 @@ func TestHandleRedirect_Get_BadRequest(t *testing.T) {
 
 	r.ServeHTTP(rr, req)
 
-	assert.Equal(t, rr.Code, http.StatusBadRequest)
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
