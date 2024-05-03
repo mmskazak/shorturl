@@ -13,6 +13,7 @@ type MapStorage struct {
 
 func NewMapStorage() *MapStorage {
 	return &MapStorage{
+		mu:   &sync.Mutex{},
 		data: make(map[string]string),
 	}
 }

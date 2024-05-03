@@ -7,7 +7,6 @@ import (
 )
 
 func TestMapStorage_GetShortURL(t *testing.T) {
-	t.Skip()
 	type fields struct {
 		mu   *sync.Mutex
 		data map[string]string
@@ -25,6 +24,7 @@ func TestMapStorage_GetShortURL(t *testing.T) {
 		{
 			name: "Existing URL",
 			fields: fields{
+				mu: &sync.Mutex{},
 				data: map[string]string{
 					"existingID": "https://example.com",
 				},
@@ -38,6 +38,7 @@ func TestMapStorage_GetShortURL(t *testing.T) {
 		{
 			name: "Non-existing URL",
 			fields: fields{
+				mu: &sync.Mutex{},
 				data: map[string]string{
 					"existingID": "https://example.com",
 				},
@@ -152,6 +153,7 @@ func TestNewMapStorage(t *testing.T) {
 		{
 			name: "New instance",
 			want: &MapStorage{
+				mu:   &sync.Mutex{},
 				data: make(map[string]string),
 			},
 		},
