@@ -13,8 +13,6 @@ import (
 )
 
 type App struct {
-	config *config.Config
-	router *chi.Mux
 	server *http.Server
 }
 
@@ -43,8 +41,6 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 	router.Post("/", createShortURLHandler)
 
 	return &App{
-		config: cfg,
-		router: router,
 		server: &http.Server{
 			Addr:         cfg.Address,
 			Handler:      router,
@@ -56,6 +52,6 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 
 // Start запускает сервер приложения.
 func (a *App) Start() error {
-	log.Println("Server is running on " + a.config.Address)
+	log.Println("Server is running on " + a.server.Addr)
 	return a.server.ListenAndServe()
 }
