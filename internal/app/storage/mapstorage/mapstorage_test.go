@@ -1,4 +1,4 @@
-package mapstorage //nolint: golint
+package mapstorage
 
 import (
 	"reflect"

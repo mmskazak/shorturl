@@ -24,7 +24,7 @@ func InitConfig() *Config {
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
 	flag.StringVar(&config.Address, "a", config.Address, "Устанавливаем ip адрес нашего сервера.")
-	flag.StringVar(&config.BaseHost, "b", config.BaseHost, "Устанавливаем базовый URL для для сокращенного URL.")
+	flag.StringVar(&config.BaseHost, "b", config.BaseHost, "Устанавливаем базовый URL для сокращенного URL.")
 
 	// делаем разбор командной строки
 	flag.Parse()

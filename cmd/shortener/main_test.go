@@ -20,7 +20,7 @@ func TestMainPage_Get_Greeting(t *testing.T) {
 	r.Get("/", handlers.MainPage)
 
 	// Создаем фейковый HTTP запрос
-	req, err := http.NewRequest("GET", "/", nil)
+	req, err := http.NewRequest(http.MethodGet, "/", http.NoBody)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 	}
 	r.Post("/", createShortURLHandler)
 
-	req, err := http.NewRequest("POST", "/", strings.NewReader("https://ya.ru"))
+	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader("https://ya.ru"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,74 +67,52 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 	assert.NotEmpty(t, rr.Body.String())
 }
 
-func TestHandleRedirect_Get_Found(t *testing.T) {
-	r := chi.NewRouter()
-
-	ms := mapstorage.NewMapStorage()
-	err := ms.SetShortURL("vAlIdIds", "https://ya.ru")
-	if err != nil {
-		t.Fatal(err)
+func TestHandleRedirect_Get(t *testing.T) {
+	testCases := []struct {
+		name         string
+		path         string
+		expectedCode int
+	}{
+		{
+			name:         "NotFound",
+			path:         "/x0x0x0x0",
+			expectedCode: http.StatusNotFound,
+		},
+		{
+			name:         "BadRequest",
+			path:         "/x0x0",
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name:         "Redirect",
+			path:         "/vAlIdIds",
+			expectedCode: http.StatusTemporaryRedirect,
+		},
 	}
 
-	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleRedirect(w, r, ms)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := chi.NewRouter()
+			ms := mapstorage.NewMapStorage()
+			err := ms.SetShortURL("vAlIdIds", "https://ya.ru")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
+				handlers.HandleRedirect(w, r, ms)
+			}
+			r.Get("/{id}", handleRedirectHandler)
+
+			req, err := http.NewRequest(http.MethodGet, tc.path, http.NoBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			assert.Equal(t, tc.expectedCode, rr.Code)
+		})
 	}
-	r.Get("/{id}", handleRedirectHandler)
-
-	req, err := http.NewRequest("GET", "/vAlIdIds", strings.NewReader("https://ya.ru")) //nolint:usestdlibvars
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	r.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusTemporaryRedirect, rr.Code)
-}
-
-func TestHandleRedirect_Get_NotFound(t *testing.T) {
-	r := chi.NewRouter()
-	ms := mapstorage.NewMapStorage()
-
-	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleRedirect(w, r, ms)
-	}
-	r.Get("/{id}", handleRedirectHandler)
-
-	req, err := http.NewRequest("GET", "/x0x0x0x0", strings.NewReader("https://ya.ru")) //nolint:usestdlibvars
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	r.ServeHTTP(rr, req)
-
-	assert.Equal(t, rr.Code, http.StatusNotFound)
-}
-
-func TestHandleRedirect_Get_BadRequest(t *testing.T) {
-	r := chi.NewRouter()
-	ms := mapstorage.NewMapStorage()
-
-	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleRedirect(w, r, ms)
-	}
-	r.Get("/{id}", handleRedirectHandler)
-
-	req, err := http.NewRequest("GET", "/x0x0", strings.NewReader("https://ya.ru")) //nolint:usestdlibvars
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	r.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }

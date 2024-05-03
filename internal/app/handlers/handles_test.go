@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"bytes"
-	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"mmskazak/shorturl/internal/app/storage/mapstorage"
 )
@@ -51,7 +52,7 @@ func TestHandleRedirect(t *testing.T) {
 	})
 
 	// Создаем фейковый HTTP запрос
-	req, err := http.NewRequest(http.MethodGet, "/x5x5x5x5", nil)
+	req, err := http.NewRequest(http.MethodGet, "/x5x5x5x5", http.NoBody)
 	require.NoError(t, err)
 	// Create a new response recorder to capture the response from the handler
 	w := httptest.NewRecorder()
@@ -74,7 +75,7 @@ func TestMainPage(t *testing.T) {
 	})
 
 	// Создаем фейковый HTTP запрос
-	req, err := http.NewRequest(http.MethodGet, "/", nil)
+	req, err := http.NewRequest(http.MethodGet, "/", http.NoBody)
 	require.NoError(t, err)
 
 	// Create a new response recorder to capture the response from the handler
@@ -87,5 +88,4 @@ func TestMainPage(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 
 	assert.Equal(t, w.Body.String(), "Сервис сокращения URL")
-
 }

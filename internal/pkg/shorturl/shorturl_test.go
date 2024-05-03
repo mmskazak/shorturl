@@ -2,13 +2,14 @@ package shorturl
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/require"
 	"mmskazak/shorturl/internal/app/config"
 	"net/http"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/require"
 )
 
 func TestApp_Start(t *testing.T) {

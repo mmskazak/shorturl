@@ -35,7 +35,7 @@ func TestGenerateShortURL(t *testing.T) {
 			// Проверяем, что got является строкой
 			assert.IsType(t, "", got, "GenerateShortURL() should return a string")
 			// Проверяем длину полученной строки
-			assert.Equal(t, tt.length, len(got), "Generated short URL length is not as expected") //nolint:testifylint
+			assert.Equal(t, tt.length, len(got), "Generated short URL length is not as expected")
 		})
 	}
 }

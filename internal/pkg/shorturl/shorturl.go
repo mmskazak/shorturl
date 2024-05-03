@@ -1,6 +1,7 @@
 package shorturl
 
 import (
+	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/app/config"
 	"mmskazak/shorturl/internal/app/handlers"
@@ -53,5 +54,12 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 // Start запускает сервер приложения.
 func (a *App) Start() error {
 	log.Println("Server is running on " + a.server.Addr)
-	return a.server.ListenAndServe()
+	err := a.server.ListenAndServe()
+	if err != nil {
+		// Логирование ошибки
+		log.Println("Error starting server:", err)
+		// Возвращение ошибки вызывающему коду для обработки
+		return fmt.Errorf("error starting server: %w", err)
+	}
+	return nil
 }

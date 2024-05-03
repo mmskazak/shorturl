@@ -18,6 +18,11 @@ _golangci-lint-run: _golangci-lint-reports-mkdir
             -c .golangci.yml \
 	> ./golangci-lint/report-unformatted.json
 
+.PHONY: _golangci-lint-run-win
+_golangci-lint-run-win:
+	golangci-lint run -c .golangci.yml > ./golangci-lint/report-unformatted.json
+
+
 .PHONY: _golangci-lint-format-report
 _golangci-lint-format-report: _golangci-lint-run
 	cat ./golangci-lint/report-unformatted.json | jq > ./golangci-lint/report.json

@@ -14,7 +14,7 @@ import (
 const readTimeout = 10 * time.Second
 const writeTimeout = 10 * time.Second
 
-// Точка входа программы
+// Точка входа программы.
 func main() {
 	appInfo := helpers.GetAppNameAndVersion()
 	log.Println(appInfo)

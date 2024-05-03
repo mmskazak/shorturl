@@ -1,4 +1,4 @@
-package middleware //nolint: golint
+package middleware
 
 import (
 	"net/http"
