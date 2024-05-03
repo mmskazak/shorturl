@@ -7,7 +7,7 @@ import (
 )
 
 type MapStorage struct {
-	mu   sync.Mutex
+	mu   *sync.Mutex
 	data map[string]string
 }
 
