@@ -30,7 +30,7 @@ func TestApp_Start(t *testing.T) {
 				config: config.InitConfig(),
 				router: chi.NewRouter(),
 				server: &http.Server{
-					Addr:         ":8080",
+					Addr:         "localhost:8080",
 					Handler:      chi.NewRouter(),
 					ReadTimeout:  10 * time.Second,
 					WriteTimeout: 10 * time.Second,
@@ -65,6 +65,8 @@ func TestNewApp(t *testing.T) {
 		writeTimeout time.Duration
 	}
 
+	initCfg := config.InitConfig()
+
 	tests := []struct {
 		name string
 		args args
@@ -73,10 +75,7 @@ func TestNewApp(t *testing.T) {
 		{
 			name: "SuccessCreateFirstNewApp",
 			args: args{
-				cfg: &config.Config{
-					Address:  ":8080",
-					BaseHost: "http://localhost:8080",
-				},
+				cfg:          initCfg,
 				readTimeout:  10 * time.Second,
 				writeTimeout: 10 * time.Second,
 			},
@@ -84,7 +83,7 @@ func TestNewApp(t *testing.T) {
 		{
 			name: "SuccessCreateSecondNewApp",
 			args: args{
-				cfg:          config.InitConfig(),
+				cfg:          initCfg,
 				readTimeout:  20 * time.Second,
 				writeTimeout: 20 * time.Second,
 			},

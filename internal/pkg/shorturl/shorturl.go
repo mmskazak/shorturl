@@ -27,7 +27,7 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 	router.Get("/", handlers.MainPage)
 
 	ms := mapstorage.NewMapStorage()
-	baseHost := cfg.BaseHost // Получаем значение из конфига
+	baseHost := cfg.GetBaseHost() // Получаем значение из конфига
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +43,7 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 
 	return &App{
 		server: &http.Server{
-			Addr:         cfg.Address,
+			Addr:         cfg.GetAddress(),
 			Handler:      router,
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,

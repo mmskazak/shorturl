@@ -13,8 +13,8 @@ func TestInitConfig(t *testing.T) {
 		{
 			name: "Success init config",
 			want: &Config{
-				Address:  ":8080",
-				BaseHost: "http://localhost:8080",
+				address:  ":8080",
+				baseHost: "http://localhost:8080",
 			},
 		},
 	}
