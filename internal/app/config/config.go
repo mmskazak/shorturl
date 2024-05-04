@@ -5,11 +5,6 @@ import (
 	"os"
 )
 
-type InitGetConfig interface {
-	InitConfig() *Config
-	GetAppConfig() *Config
-}
-
 // Config содержит поля вашей конфигурации.
 type Config struct {
 	Address  string
