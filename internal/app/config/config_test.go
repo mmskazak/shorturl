@@ -3,6 +3,7 @@ package config
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestInitConfig(t *testing.T) {
@@ -13,8 +14,10 @@ func TestInitConfig(t *testing.T) {
 		{
 			name: "Success init config",
 			want: &Config{
-				address:  ":8080",
-				baseHost: "http://localhost:8080",
+				Address:      ":8080",
+				BaseHost:     "http://localhost:8080",
+				ReadTimeout:  10 * time.Second,
+				WriteTimeout: 10 * time.Second,
 			},
 		},
 	}

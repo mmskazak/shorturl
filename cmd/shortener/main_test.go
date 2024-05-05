@@ -50,7 +50,7 @@ func TestCreateShortURL_Post_Create(t *testing.T) {
 	cfg := config.InitConfig()
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	createShortURLHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateShortURL(w, r, ms, cfg.GetBaseHost())
+		handlers.CreateShortURL(w, r, ms, cfg.BaseHost)
 	}
 	r.Post("/", createShortURLHandler)
 

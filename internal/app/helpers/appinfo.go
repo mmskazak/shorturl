@@ -1,36 +1,31 @@
 package helpers
 
 import (
-	"log"
+	"errors"
 	"runtime/debug"
 	"strings"
 )
 
 type AppInfo struct {
-	name    string
-	version string
+	Name    string
+	Version string
 }
 
-func GetAppNameAndVersion() AppInfo {
+func GetAppNameAndVersion() (AppInfo, error) {
 	var app AppInfo
 
 	if info, ok := debug.ReadBuildInfo(); ok {
-		app.name = strings.ToUpper(info.Main.Path)
+		app.Name = strings.ToUpper(info.Main.Path)
 
 		for _, setting := range info.Settings {
 			if setting.Key == "vcs.revision" {
-				app.version = setting.Value
+				app.Version = setting.Value
 				break
 			}
 		}
+	} else {
+		return app, errors.New("debug.ReadBuildInfo() not have info")
 	}
 
-	if app.name == "" {
-		log.Println("name app unknown")
-	}
-	if app.version == "" {
-		log.Println("version app unknown")
-	}
-
-	return app
+	return app, nil
 }
