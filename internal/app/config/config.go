@@ -16,21 +16,21 @@ type Config struct {
 }
 
 func InitConfig() *Config {
-	var baseDurationReadTimeout time.Duration = 10
-	var baseDurationWriteTimeout time.Duration = 10
+	baseDurationReadTimeout := 10 * time.Second  //nolint:gomnd  // Explanation: Intentionally set to 10 seconds.
+	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // Explanation: Intentionally set to 10 seconds.
 
 	config := &Config{
 		Address:      ":8080",
-		BaseHost:     "http://localhost:8080",
+		BaseHost:     "https://localhost:8080",
 		ReadTimeout:  baseDurationReadTimeout,
 		WriteTimeout: baseDurationWriteTimeout,
 	}
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
-	flag.StringVar(&config.Address, "a", config.Address, "Устанавливаем ip адрес нашего сервера.")
-	flag.StringVar(&config.BaseHost, "b", config.BaseHost, "Устанавливаем базовый URL для сокращенного URL.")
-	flag.DurationVar(&config.ReadTimeout, "r", config.ReadTimeout, "ReadTimeout duration.")
-	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration.")
+	flag.StringVar(&config.Address, "a", config.Address, "IP-адерс сервера")
+	flag.StringVar(&config.BaseHost, "b", config.BaseHost, "Базовый URL")
+	flag.DurationVar(&config.ReadTimeout, "r", config.ReadTimeout, "ReadTimeout duration")
+	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration")
 
 	// делаем разбор командной строки
 	flag.Parse()

@@ -11,7 +11,7 @@ type Middleware func(http.Handler) http.Handler
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Логирование запроса
-		log.Println("Incoming request:", r.Method, r.URL.Path)
+		log.Printf("Incoming request: %v %v", r.Method, r.URL.Path)
 
 		// Проход далее по цепочке middleware и обработчиков
 		next.ServeHTTP(w, r)

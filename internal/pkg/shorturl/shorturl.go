@@ -53,7 +53,7 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 
 // Start запускает сервер приложения.
 func (a *App) Start() error {
-	log.Println("Server is running on " + a.server.Addr)
+	log.Printf("Server is running on %v", a.server.Addr)
 	err := a.server.ListenAndServe()
 	if err != nil {
 		// Логирование ошибки
