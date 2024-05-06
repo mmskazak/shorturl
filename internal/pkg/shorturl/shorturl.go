@@ -7,19 +7,24 @@ import (
 	"mmskazak/shorturl/internal/app/config"
 	"mmskazak/shorturl/internal/app/handlers"
 	"mmskazak/shorturl/internal/app/middleware"
-	"mmskazak/shorturl/internal/app/storage/mapstorage"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
+// IStorage второй раз объявляю интерфейс. Объявляем интерфейс где его используем.
+type IStorage interface {
+	GetShortURL(id string) (string, error)
+	SetShortURL(id string, targetURL string) error
+}
+
 type App struct {
 	server *http.Server
 }
 
 // NewApp создает новый экземпляр приложения.
-func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Duration) *App {
+func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, writeTimeout time.Duration) *App {
 	router := chi.NewRouter()
 
 	// Добавление middleware
@@ -27,18 +32,17 @@ func NewApp(cfg *config.Config, readTimeout time.Duration, writeTimeout time.Dur
 
 	router.Get("/", handlers.MainPage)
 
-	ms := mapstorage.NewMapStorage()
 	baseHost := cfg.BaseHost // Получаем значение из конфига
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleRedirect(w, r, ms)
+		handlers.HandleRedirect(w, r, storage)
 	}
 	router.Get("/{id}", handleRedirectHandler)
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	createShortURLHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateShortURL(w, r, ms, baseHost)
+		handlers.CreateShortURL(w, r, storage, baseHost)
 	}
 	router.Post("/", createShortURLHandler)
 

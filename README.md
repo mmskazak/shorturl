@@ -5,14 +5,14 @@
 ## Начало работы
 
 1. Склонируйте репозиторий в любую подходящую директорию на вашем компьютере.
-2. В корне репозитория выполните команду `go mod init <name>` (где `<name>` — адрес вашего репозитория на GitHub без префикса `https://`) для создания модуля.
+2. В корне репозитория выполните команду `go mod init <name>` (где `<name>` — адрес вашего репозитория на GitHub без префикса `http://`) для создания модуля.
 
 ## Обновление шаблона
 
 Чтобы иметь возможность получать обновления автотестов и других частей шаблона, выполните команду:
 
 ```
-git remote add -m main template https://github.com/Yandex-Practicum/go-musthave-shortener-tpl.git
+git remote add -m main template http://github.com/Yandex-Practicum/go-musthave-shortener-tpl.git
 ```
 
 Для обновления кода автотестов выполните команду:
@@ -29,4 +29,4 @@ git fetch template && git checkout template/main .github
 
 При мёрже ветки с инкрементом в основную ветку `main` будут запускаться все автотесты.
 
-Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).
+Подробнее про локальный и автоматический запуск читайте в [README автотестов](http://github.com/Yandex-Practicum/go-autotests).

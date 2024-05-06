@@ -258,7 +258,7 @@ linters-settings:
     # Require printf-like format specifier (%s, %d for example) not present.
     no-printf-like: false
     # List of custom rules to check against, where each rule is a single logger pattern, useful for wrapped loggers.
-    # For example: https://github.com/timonwong/loggercheck/blob/7395ab86595781e33f7afba27ad7b55e6956ebcd/testdata/custom-rules.txt
+    # For example: http://github.com/timonwong/loggercheck/blob/7395ab86595781e33f7afba27ad7b55e6956ebcd/testdata/custom-rules.txt
     rules: []
 
   makezero:

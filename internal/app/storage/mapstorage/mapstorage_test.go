@@ -26,13 +26,13 @@ func TestMapStorage_GetShortURL(t *testing.T) {
 			fields: fields{
 				mu: &sync.Mutex{},
 				data: map[string]string{
-					"existingID": "https://example.com",
+					"existingID": "http://example.com",
 				},
 			},
 			args: args{
 				id: "existingID",
 			},
-			want:    "https://example.com",
+			want:    "http://example.com",
 			wantErr: false,
 		},
 		{
@@ -40,7 +40,7 @@ func TestMapStorage_GetShortURL(t *testing.T) {
 			fields: fields{
 				mu: &sync.Mutex{},
 				data: map[string]string{
-					"existingID": "https://example.com",
+					"existingID": "http://example.com",
 				},
 			},
 			args: args{
@@ -91,7 +91,7 @@ func TestMapStorage_SetShortURL(t *testing.T) {
 			},
 			args: args{
 				id:        "newID",
-				targetURL: "https://example.com/new",
+				targetURL: "http://example.com/new",
 			},
 			wantErr: false,
 		},
@@ -99,12 +99,12 @@ func TestMapStorage_SetShortURL(t *testing.T) {
 			name: "Existing URL",
 			fields: fields{
 				data: map[string]string{
-					"existingID": "https://example.com/existing",
+					"existingID": "http://example.com/existing",
 				},
 			},
 			args: args{
 				id:        "existingID",
-				targetURL: "https://example.com/updated",
+				targetURL: "http://example.com/updated",
 			},
 			wantErr: true,
 		},
@@ -115,7 +115,7 @@ func TestMapStorage_SetShortURL(t *testing.T) {
 			},
 			args: args{
 				id:        "",
-				targetURL: "https://example.com/emptyid",
+				targetURL: "http://example.com/emptyid",
 			},
 			wantErr: true,
 		},

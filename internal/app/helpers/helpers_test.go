@@ -3,6 +3,8 @@ package helpers
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -10,32 +12,48 @@ func TestGenerateShortURL(t *testing.T) {
 	tests := []struct {
 		name   string
 		length int
+		err    bool
 	}{
 		{
-			name:   "Success generate short url",
+			name:   "length short URl equal 8",
 			length: 8,
+			err:    false,
 		},
 		{
-			name:   "Success generate short url",
+			name:   "length short URl equal 5",
 			length: 5,
+			err:    false,
 		},
 		{
-			name:   "Success generate short url",
+			name:   "length short URl equal 3",
+			length: 3,
+			err:    true,
+		},
+		{
+			name:   "length short URl equal 1",
 			length: 1,
+			err:    true,
 		},
 		{
-			name:   "Success generate short url",
+			name:   "length short URl equal 100",
 			length: 100,
+			err:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GenerateShortURL(tt.length)
-			assert.NotEmpty(t, got)
-			// Проверяем, что got является строкой
-			assert.IsType(t, "", got, "GenerateShortURL() should return a string")
-			// Проверяем длину полученной строки
-			assert.Equal(t, tt.length, len(got), "Generated short URL length is not as expected")
+			got, err := GenerateShortURL(tt.length)
+			if tt.err {
+				assert.Empty(t, got)
+				assert.Error(t, err)
+			}
+
+			if !tt.err {
+				require.NoError(t, err)
+				assert.NotEmpty(t, got)
+				assert.Equal(t, tt.length, len(got), "Сгенерированный короткий URL-адрес "+
+					"имеет не такую длину, как ожидалось")
+			}
 		})
 	}
 }

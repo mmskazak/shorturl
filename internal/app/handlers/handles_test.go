@@ -44,11 +44,11 @@ func TestCreateShortURL(t *testing.T) {
 
 	// Define a test handler function that wraps CreateShortURL
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		CreateShortURL(w, r, ms, "https://ya.ru")
+		CreateShortURL(w, r, ms, "http://ya.ru")
 	})
 
 	// Create a new request with a POST method and a body containing the original URL
-	reqBody := bytes.NewBufferString("https://ya.ru")
+	reqBody := bytes.NewBufferString("http://ya.ru")
 	req := httptest.NewRequest(http.MethodPost, "/", reqBody)
 
 	// Create a new response recorder to capture the response from the handler
@@ -89,7 +89,7 @@ func TestHandleRedirect(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			r := chi.NewRouter()
 			ms := mapstorage.NewMapStorage()
-			err := ms.SetShortURL("vAlIdIds", "https://ya.ru")
+			err := ms.SetShortURL("vAlIdIds", "http://ya.ru")
 			if err != nil {
 				t.Fatal(err)
 			}

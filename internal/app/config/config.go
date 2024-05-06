@@ -21,7 +21,7 @@ func InitConfig() *Config {
 
 	config := &Config{
 		Address:      ":8080",
-		BaseHost:     "https://localhost:8080",
+		BaseHost:     "http://localhost:8080",
 		ReadTimeout:  baseDurationReadTimeout,
 		WriteTimeout: baseDurationWriteTimeout,
 	}
@@ -35,15 +35,15 @@ func InitConfig() *Config {
 	// делаем разбор командной строки
 	flag.Parse()
 
-	if envServAddr := os.Getenv("SERVER_ADDRESS"); envServAddr != "" {
+	if envServAddr, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
 		config.Address = envServAddr
 	}
 
-	if envBaseURL := os.Getenv("BASE_URL"); envBaseURL != "" {
+	if envBaseURL, ok := os.LookupEnv("BASE_URL"); ok {
 		config.BaseHost = envBaseURL
 	}
 
-	if envReadTimeout := os.Getenv("READ_TIMEOUT"); envReadTimeout != "" {
+	if envReadTimeout, ok := os.LookupEnv("READ_TIMEOUT"); ok {
 		drt, err := time.ParseDuration(envReadTimeout)
 		if err != nil {
 			log.Printf("env READ_TIMEOUT не получилось привести к типу \"Duration\": %v", err)
@@ -52,7 +52,7 @@ func InitConfig() *Config {
 		}
 	}
 
-	if envWriteTimeout := os.Getenv("WRITE_TIMEOUT"); envWriteTimeout != "" {
+	if envWriteTimeout, ok := os.LookupEnv("WRITE_TIMEOUT"); ok {
 		dwt, err := time.ParseDuration(envWriteTimeout)
 		if err != nil {
 			log.Printf("env WRITE_TIMEOUT не получилось привести к типу \"Duration\": %v", err)

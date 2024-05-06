@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"mmskazak/shorturl/internal/app/storage/mapstorage"
 	"net/http"
 
 	"mmskazak/shorturl/internal/app/config"
@@ -21,7 +22,9 @@ func main() {
 
 	cfg := config.InitConfig()
 
-	app := shorturl.NewApp(cfg, cfg.ReadTimeout, cfg.WriteTimeout)
+	ms := mapstorage.NewMapStorage()
+
+	app := shorturl.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout)
 
 	if err := app.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("server error: %v", err)
