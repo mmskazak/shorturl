@@ -15,10 +15,10 @@ func main() {
 	appInfo, err := helpers.GetAppNameAndVersion()
 	if err != nil {
 		log.Printf("Ошибка при получении информации о приложении: %v", err)
+	} else {
+		log.Printf("Название приложения: %v", appInfo.Name)
+		log.Printf("Версия: %v", appInfo.Version)
 	}
-
-	log.Printf("Название приложения: %v", appInfo.Name)
-	log.Printf("Версия: %v", appInfo.Version)
 
 	cfg := config.InitConfig()
 
