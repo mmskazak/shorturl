@@ -1,4 +1,4 @@
-package shorturl
+package app
 
 import (
 	"errors"
