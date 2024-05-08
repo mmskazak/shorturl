@@ -23,6 +23,8 @@ type App struct {
 	server *http.Server
 }
 
+const ErrStartingServer = "error starting server"
+
 // NewApp создает новый экземпляр приложения.
 func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, writeTimeout time.Duration) *App {
 	router := chi.NewRouter()
@@ -62,9 +64,9 @@ func (a *App) Start() error {
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		// Логирование ошибки
-		log.Println("Error starting server:", err)
+		log.Printf(ErrStartingServer+": %v", err)
 		// Возвращение ошибки вызывающему коду для обработки
-		return fmt.Errorf("error starting server: %w", err)
+		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
 	return nil
 }

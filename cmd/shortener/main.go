@@ -20,7 +20,10 @@ func main() {
 		log.Printf("Версия: %v", appInfo.Version)
 	}
 
-	cfg := config.InitConfig()
+	cfg, errCfg := config.InitConfig()
+	if err != nil {
+		log.Printf("ошибка инициализации конфигурации в main %v", errCfg)
+	}
 
 	ms := mapstorage.NewMapStorage()
 

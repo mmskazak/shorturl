@@ -2,22 +2,36 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // Config содержит поля вашей конфигурации.
 type Config struct {
-	Address      string
-	BaseHost     string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	Address      string        `validate:"required"`
+	BaseHost     string        `validate:"required"`
+	ReadTimeout  time.Duration `validate:"required"`
+	WriteTimeout time.Duration `validate:"required"`
 }
 
-func InitConfig() *Config {
-	baseDurationReadTimeout := 10 * time.Second  //nolint:gomnd  // Explanation: Intentionally set to 10 seconds.
-	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // Explanation: Intentionally set to 10 seconds.
+func (c Config) validate() error {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	err := validate.Struct(c)
+	if err != nil {
+		return fmt.Errorf("ошибка валидации конфигурации %w", err)
+	}
+
+	return nil
+}
+
+func InitConfig() (*Config, error) {
+	baseDurationReadTimeout := 10 * time.Second  //nolint:gomnd  // 10 секунд.
+	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // 10 секунд.
 
 	config := &Config{
 		Address:      ":8080",
@@ -61,5 +75,9 @@ func InitConfig() *Config {
 		}
 	}
 
-	return config
+	if err := config.validate(); err != nil {
+		return &Config{}, fmt.Errorf("ошибка валидации конфигурации: %w", err)
+	}
+
+	return config, nil
 }
