@@ -1,6 +1,7 @@
 pre-commit:
   commands:
-    lint: golangci-lint run --fix
+    lint:
+      run: golangci-lint run --fix
 
 
 # EXAMPLE USAGE:
