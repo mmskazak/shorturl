@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+
 	appInfo, err := helpers.GetAppNameAndVersion()
 	if err != nil {
 		log.Printf("Ошибка при получении информации о приложении: %v", err)
