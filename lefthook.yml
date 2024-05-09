@@ -1,7 +1,7 @@
 pre-commit:
   commands:
     lint:
-      run: golangci-lint run --fix
+      run: golangci-lint run -c .golangci.yml --fix
 
 
 # EXAMPLE USAGE:
