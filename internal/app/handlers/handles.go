@@ -24,7 +24,6 @@ const (
 )
 
 func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
-
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
