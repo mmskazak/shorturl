@@ -21,7 +21,7 @@ func main() {
 	}
 
 	cfg, errCfg := config.InitConfig()
-	if err != nil {
+	if errCfg != nil {
 		log.Printf("ошибка инициализации конфигурации в main %v", errCfg)
 	}
 
