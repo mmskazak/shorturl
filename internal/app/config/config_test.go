@@ -1,9 +1,10 @@
 package config
 
 import (
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestInitConfig(t *testing.T) {
@@ -27,7 +28,8 @@ func TestInitConfig(t *testing.T) {
 			if err != nil {
 				t.Errorf("InitConfig() error = %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+
+			if !cmp.Equal(got, tt.want) {
 				t.Errorf("InitConfig() = %v, want %v", got, tt.want)
 			}
 		})

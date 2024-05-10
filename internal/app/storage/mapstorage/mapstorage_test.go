@@ -69,15 +69,16 @@ func TestMapStorage_GetShortURL(t *testing.T) {
 }
 
 func TestMapStorage_SetShortURL(t *testing.T) {
-	t.Skip()
 	type fields struct {
 		mu   *sync.Mutex
 		data map[string]string
 	}
+
 	type args struct {
 		id        string
 		targetURL string
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -87,41 +88,45 @@ func TestMapStorage_SetShortURL(t *testing.T) {
 		{
 			name: "New URL",
 			fields: fields{
+				mu:   &sync.Mutex{},
 				data: make(map[string]string),
 			},
 			args: args{
 				id:        "newID",
-				targetURL: "http://example.com/new",
+				targetURL: "https://example.com/new",
 			},
 			wantErr: false,
 		},
 		{
 			name: "Existing URL",
 			fields: fields{
+				mu: &sync.Mutex{},
 				data: map[string]string{
-					"existingID": "http://example.com/existing",
+					"existingID": "https://example.com/existing",
 				},
 			},
 			args: args{
 				id:        "existingID",
-				targetURL: "http://example.com/updated",
+				targetURL: "https://example.com/updated",
 			},
 			wantErr: true,
 		},
 		{
 			name: "Empty ID",
 			fields: fields{
+				mu:   &sync.Mutex{},
 				data: map[string]string{},
 			},
 			args: args{
 				id:        "",
-				targetURL: "http://example.com/emptyid",
+				targetURL: "https://example.com/emptyid",
 			},
 			wantErr: true,
 		},
 		{
 			name: "Empty URL",
 			fields: fields{
+				mu:   &sync.Mutex{},
 				data: map[string]string{},
 			},
 			args: args{

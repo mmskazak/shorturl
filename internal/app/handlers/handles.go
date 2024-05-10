@@ -93,21 +93,17 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 }
 
 func saveUniqueShortURL(storage IStorage, originalURL string) (string, error) {
-	id, err := helpers.GenerateShortURL(defaultShortURLLength)
-	if err != nil {
-		return "", fmt.Errorf("функция GenerateShortURL вернула ошибку %w", err)
-	}
-
-	// Повторяем генерацию, пока не найдем уникальный идентификатор
 	for range maxIteration {
-		err := storage.SetShortURL(id, originalURL)
-		if err == nil {
-			return id, nil
-		}
-
-		id, err = helpers.GenerateShortURL(defaultShortURLLength)
+		id, err := helpers.GenerateShortURL(defaultShortURLLength)
 		if err != nil {
 			return "", fmt.Errorf("функция GenerateShortURL вернула ошибку %w", err)
+		}
+
+		err = storage.SetShortURL(id, originalURL)
+		if err == nil {
+			return id, nil
+		} else {
+			return "", fmt.Errorf("метод SetShortURL вернула ошибку %w", err)
 		}
 	}
 	return "", errors.New("не удалось сгенерировать уникальный идентификатор")

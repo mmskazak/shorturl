@@ -61,11 +61,10 @@ func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, wri
 // Start запускает сервер приложения.
 func (a *App) Start() error {
 	log.Printf("Server is running on %v", a.server.Addr)
+
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		// Логирование ошибки
-		log.Printf(ErrStartingServer+": %v", err)
-		// Возвращение ошибки вызывающему коду для обработки
+		log.Printf("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
 	return nil
