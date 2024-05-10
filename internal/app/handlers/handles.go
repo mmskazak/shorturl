@@ -24,6 +24,13 @@ const (
 )
 
 func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("Ошибка Body.Close() в функции CreateShortURL: %v", err)
+		}
+	}(r.Body)
+
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
