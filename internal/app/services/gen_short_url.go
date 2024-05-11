@@ -1,4 +1,4 @@
-package helpers
+package services
 
 import (
 	"crypto/rand"
@@ -7,8 +7,10 @@ import (
 	"math/big"
 )
 
-// GenerateShortURL генерирует случайный строковый идентификатор заданной длины.
-func GenerateShortURL(length int) (string, error) {
+type GenShortURL struct {
+}
+
+func (s *GenShortURL) Generate(length int) (string, error) {
 	const minLengthShortURL = 4
 	if length < minLengthShortURL {
 		return "", errors.New("length short URl too small")
@@ -26,4 +28,8 @@ func GenerateShortURL(length int) (string, error) {
 		b[i] = charset[randomIndex.Int64()]
 	}
 	return string(b), nil
+}
+
+func NewGenIDService() *GenShortURL {
+	return &GenShortURL{}
 }

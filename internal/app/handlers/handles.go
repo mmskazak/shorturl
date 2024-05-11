@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mmskazak/shorturl/internal/app/helpers"
 	"net/http"
 	"net/url"
+
+	"mmskazak/shorturl/internal/app/services"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -17,20 +18,21 @@ type IStorage interface {
 	SetShortURL(id string, targetURL string) error
 }
 
+type IGenShortURL interface {
+	Generate(int) (string, error)
+}
+
 const (
 	defaultShortURLLength  = 8
 	maxIteration           = 10
 	InternalServerErrorMsg = "Внутренняя ошибка сервера"
 )
 
-func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Printf("Ошибка Body.Close() в функции CreateShortURL: %v", err)
-		}
-	}(r.Body)
+var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
+var ErrMethodSetShortURLNotCanSave = errors.New("метод SetShortURL не смог сохранить URL, ошибка")
+var ErrFuncGenerate = errors.New("функция GenerateShortURL вернула ошибку")
 
+func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -39,8 +41,9 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, ba
 		return
 	}
 	originalURL := string(body)
+	generator := services.NewGenIDService()
 
-	id, err := saveUniqueShortURL(storage, originalURL)
+	id, err := saveUniqueShortURL(storage, generator, originalURL)
 
 	if err != nil {
 		log.Printf("Ошибка saveUniqueShortURL: %v", err)
@@ -99,19 +102,22 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func saveUniqueShortURL(storage IStorage, originalURL string) (string, error) {
+func saveUniqueShortURL(storage IStorage, generator IGenShortURL, originalURL string) (string, error) {
+	if originalURL == "" {
+		return "", ErrOriginalURLIsEmpty
+	}
+
+	var err error
 	for range maxIteration {
-		id, err := helpers.GenerateShortURL(defaultShortURLLength)
+		id, err := generator.Generate(defaultShortURLLength)
 		if err != nil {
-			return "", fmt.Errorf("функция GenerateShortURL вернула ошибку %w", err)
+			return "", fmt.Errorf("%w: %w", ErrFuncGenerate, err)
 		}
 
 		err = storage.SetShortURL(id, originalURL)
 		if err == nil {
 			return id, nil
-		} else {
-			return "", fmt.Errorf("метод SetShortURL вернула ошибку %w", err)
 		}
 	}
-	return "", errors.New("не удалось сгенерировать уникальный идентификатор")
+	return "", fmt.Errorf("%w: %w", ErrMethodSetShortURLNotCanSave, err)
 }

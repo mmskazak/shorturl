@@ -1,14 +1,14 @@
-package helpers
+package services
 
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateShortURL(t *testing.T) {
+	service := NewGenIDService()
 	tests := []struct {
 		name   string
 		length int
@@ -42,7 +42,7 @@ func TestGenerateShortURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GenerateShortURL(tt.length)
+			got, err := service.Generate(tt.length)
 			if tt.err {
 				assert.Empty(t, got)
 				assert.Error(t, err)
