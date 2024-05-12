@@ -22,7 +22,7 @@ func main() {
 
 	cfg, err := config.InitConfig()
 	if err != nil {
-		log.Printf("ошибка инициализации конфигурации в main %v", err)
+		log.Fatalf("ошибка инициализации конфигурации в main %v", err)
 	}
 
 	ms := mapstorage.NewMapStorage()
