@@ -1,0 +1,188 @@
+package handlers
+
+import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"mmskazak/shorturl/internal/app/storage/mapstorage"
+)
+
+func TestMainPage(t *testing.T) {
+	// Create a new chi router
+	r := chi.NewRouter()
+
+	// Define the route and bind the handler
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		MainPage(w, r)
+	})
+
+	// Создаем фейковый HTTP запрос
+	req, err := http.NewRequest(http.MethodGet, "/", http.NoBody)
+	require.NoError(t, err)
+
+	// Create a new response recorder to capture the response from the handler
+	w := httptest.NewRecorder()
+
+	// Call the handler function with the test request and response recorder
+	r.ServeHTTP(w, req)
+
+	// Check that the response status code is 201 Created
+	require.Equal(t, http.StatusOK, w.Code)
+
+	assert.Equal(t, w.Body.String(), "Сервис сокращения URL")
+}
+
+func TestCreateShortURL(t *testing.T) {
+	// Initialize a new MapStorage for testing
+	ms := mapstorage.NewMapStorage()
+
+	// Define a test handler function that wraps CreateShortURL
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		CreateShortURL(w, r, ms, "http://ya.ru")
+	})
+
+	// Create a new request with a POST method and a body containing the original URL
+	reqBody := bytes.NewBufferString("http://ya.ru")
+	req := httptest.NewRequest(http.MethodPost, "/", reqBody)
+
+	// Create a new response recorder to capture the response from the handler
+	w := httptest.NewRecorder()
+
+	// Call the handler function with the test request and response recorder
+	handler.ServeHTTP(w, req)
+
+	// Check that the response status code is 201 Created
+	require.Equal(t, http.StatusCreated, w.Code)
+	assert.NotEmpty(t, w.Body.String())
+}
+
+func TestHandleRedirect(t *testing.T) {
+	testCases := []struct {
+		name         string
+		path         string
+		expectedCode int
+	}{
+		{
+			name:         "NotFound",
+			path:         "/x0x0x0x0",
+			expectedCode: http.StatusNotFound,
+		},
+		{
+			name:         "BadRequest",
+			path:         "/x0x0",
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name:         "Redirect",
+			path:         "/vAlIdIds",
+			expectedCode: http.StatusTemporaryRedirect,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := chi.NewRouter()
+			ms := mapstorage.NewMapStorage()
+			err := ms.SetShortURL("vAlIdIds", "http://ya.ru")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
+				HandleRedirect(w, r, ms)
+			}
+			r.Get("/{id}", handleRedirectHandler)
+
+			req, err := http.NewRequest(http.MethodGet, tc.path, http.NoBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			assert.Equal(t, tc.expectedCode, rr.Code)
+		})
+	}
+}
+
+type GenURLDummy struct{}
+
+func (g *GenURLDummy) Generate(_ int) (string, error) {
+	return "test0001", nil
+}
+
+func Test_saveUniqueShortURL(t *testing.T) {
+	storageWithValue := mapstorage.NewMapStorage()
+	err := storageWithValue.SetShortURL("test0001", "https://ya.ru")
+	require.NoError(t, err)
+
+	type args struct {
+		storage     IStorage
+		generator   IGenShortURL
+		originalURL string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "success save",
+			args: args{
+				storage:     mapstorage.NewMapStorage(),
+				generator:   &GenURLDummy{}, // return always test0001
+				originalURL: "https://ya.ru",
+			},
+			want:    "test0001",
+			wantErr: false,
+		},
+		{
+			name: "error method not can save",
+			args: args{
+				storage:     storageWithValue,
+				generator:   &GenURLDummy{},
+				originalURL: "https://google.com",
+			},
+			want:    "",
+			wantErr: true,
+			err:     ErrMethodSetShortURLNotCanSave,
+		},
+		{
+			name: "originalURL is empty",
+			args: args{
+				storage:     mapstorage.NewMapStorage(),
+				generator:   &GenURLDummy{},
+				originalURL: "",
+			},
+			want:    "",
+			wantErr: true,
+			err:     ErrOriginalURLIsEmpty,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				got, err := saveUniqueShortURL(tt.args.storage, tt.args.generator, tt.args.originalURL)
+				require.Error(t, err)
+				assert.ErrorIs(t, err, tt.err)
+				assert.Equalf(t, tt.want, got,
+					"saveUniqueShortURL(%v, %v, %v)", tt.args.storage, tt.args.generator, tt.args.originalURL)
+				return
+			}
+			got, err := saveUniqueShortURL(tt.args.storage, tt.args.generator, tt.args.originalURL)
+			require.NoError(t, err)
+			assert.Equalf(t, tt.want, got,
+				"saveUniqueShortURL(%v, %v, %v)", tt.args.storage, tt.args.generator, tt.args.originalURL)
+		})
+	}
+}
