@@ -4,25 +4,27 @@ import (
 	"errors"
 	"log"
 	"mmskazak/shorturl/internal/app"
+	"mmskazak/shorturl/internal/app/logger"
 	"mmskazak/shorturl/internal/app/storage/mapstorage"
 	"net/http"
 
 	"mmskazak/shorturl/internal/app/config"
-	"mmskazak/shorturl/internal/app/helpers"
 )
 
 func main() {
-	appInfo, err := helpers.GetAppNameAndVersion()
-	if err != nil {
-		log.Printf("Ошибка при получении информации о приложении: %v", err)
-	} else {
-		log.Printf("Название приложения: %v", appInfo.Name)
-		log.Printf("Версия: %v", appInfo.Version)
-	}
-
 	cfg, err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("ошибка инициализации конфигурации в main %v", err)
+	}
+
+	level, err := cfg.LogLevel.Value()
+	if err != nil {
+		log.Printf("ошибка получения уровня логирония %v", err)
+	}
+
+	_, err = logger.Init(level)
+	if err != nil {
+		log.Fatalf("ошибка инициализации логера в main %v", err)
 	}
 
 	ms := mapstorage.NewMapStorage()

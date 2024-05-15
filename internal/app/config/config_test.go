@@ -19,6 +19,7 @@ func TestInitConfig(t *testing.T) {
 				BaseHost:     "http://localhost:8080",
 				ReadTimeout:  10 * time.Second,
 				WriteTimeout: 10 * time.Second,
+				LogLevel:     "info",
 			},
 		},
 	}
