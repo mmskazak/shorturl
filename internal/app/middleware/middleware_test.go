@@ -22,7 +22,6 @@ func (w *ResponseWriterDummy) Write(b []byte) (int, error) {
 func (w *ResponseWriterDummy) WriteHeader(int) {}
 
 func Test_loggingResponseWriter_Write(t *testing.T) {
-
 	rwd := ResponseWriterDummy{}
 
 	type fields struct {
