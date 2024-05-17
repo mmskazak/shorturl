@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,8 +10,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"mmskazak/shorturl/internal/app/storage/mapstorage"
 )
 
 func TestMainPage(t *testing.T) {
@@ -125,7 +124,7 @@ func Test_saveUniqueShortURL(t *testing.T) {
 
 	type args struct {
 		storage     IStorage
-		generator   IGenShortURL
+		generator   IGenIDForURL
 		originalURL string
 	}
 

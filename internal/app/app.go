@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"mmskazak/shorturl/internal/app/config"
-	"mmskazak/shorturl/internal/app/handlers"
-	"mmskazak/shorturl/internal/app/middleware"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/handlers"
+	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"time"
 

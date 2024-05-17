@@ -7,10 +7,10 @@ import (
 	"math/big"
 )
 
-type GenShortURL struct {
+type GenID struct {
 }
 
-func (s *GenShortURL) Generate(length int) (string, error) {
+func (s *GenID) Generate(length int) (string, error) {
 	const minLengthShortURL = 4
 	if length < minLengthShortURL {
 		return "", errors.New("length short URl too small")
@@ -30,6 +30,6 @@ func (s *GenShortURL) Generate(length int) (string, error) {
 	return string(b), nil
 }
 
-func NewGenIDService() *GenShortURL {
-	return &GenShortURL{}
+func NewGenIDService() *GenID {
+	return &GenID{}
 }

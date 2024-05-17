@@ -3,14 +3,11 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"log"
+	"mmskazak/shorturl/internal/services"
 	"net/http"
-	"net/url"
-
-	"mmskazak/shorturl/internal/app/services"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type IStorage interface {
@@ -18,7 +15,7 @@ type IStorage interface {
 	SetShortURL(id string, targetURL string) error
 }
 
-type IGenShortURL interface {
+type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
 
@@ -42,33 +39,23 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, ba
 	}
 	originalURL := string(body)
 	generator := services.NewGenIDService()
+	shortURLService := services.NewShortURLService()
+	dto := services.DTOShortURL{
+		OriginalURL:  originalURL,
+		BaseHost:     baseHost,
+		MaxIteration: maxIteration,
+		LengthID:     defaultShortURLLength,
+	}
 
-	id, err := saveUniqueShortURL(storage, generator, originalURL)
-
+	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
 	if err != nil {
 		log.Printf("Ошибка saveUniqueShortURL: %v", err)
 		http.Error(w, "Сервису не удалось сформировать короткий URL", http.StatusInternalServerError)
 		return
 	}
 
-	base, err := url.Parse(baseHost)
-	if err != nil {
-		log.Printf("Ошибка при разборе базового URL: %v", err)
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
-		return
-	}
-
-	idPath, err := url.Parse(id)
-	if err != nil {
-		log.Printf("Ошибка при разборе пути ID: %v", err)
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
-		return
-	}
-
-	shortURL := base.ResolveReference(idPath)
-
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(shortURL.String()))
+	_, err = w.Write([]byte(shortURL))
 	if err != nil {
 		log.Printf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
@@ -102,7 +89,7 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func saveUniqueShortURL(storage IStorage, generator IGenShortURL, originalURL string) (string, error) {
+func saveUniqueShortURL(storage IStorage, generator IGenIDForURL, originalURL string) (string, error) {
 	if originalURL == "" {
 		return "", ErrOriginalURLIsEmpty
 	}

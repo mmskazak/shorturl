@@ -2,10 +2,9 @@ package middleware
 
 import (
 	"fmt"
+	"mmskazak/shorturl/internal/logger"
 	"net/http"
 	"time"
-
-	"mmskazak/shorturl/internal/app/logger"
 )
 
 type (

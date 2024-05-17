@@ -4,11 +4,10 @@ import (
 	"errors"
 	"log"
 	"mmskazak/shorturl/internal/app"
-	"mmskazak/shorturl/internal/app/logger"
-	"mmskazak/shorturl/internal/app/storage/mapstorage"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/logger"
+	"mmskazak/shorturl/internal/storage/mapstorage"
 	"net/http"
-
-	"mmskazak/shorturl/internal/app/config"
 )
 
 func main() {
