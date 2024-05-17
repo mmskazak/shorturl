@@ -1,4 +1,4 @@
-package services
+package shorturlservice
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 )
 
 var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
+var ErrBaseHostIsEmpty = errors.New("base host is empty")
 var ErrServiceGenerateID = errors.New("generateID failed")
 
 type IGenIDForURL interface {
@@ -30,6 +31,10 @@ type ShortURLService struct{}
 func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForURL, storage IStorage) (string, error) {
 	if dto.OriginalURL == "" {
 		return "", ErrOriginalURLIsEmpty
+	}
+
+	if dto.BaseHost == "" {
+		return "", ErrBaseHostIsEmpty
 	}
 
 	var err error

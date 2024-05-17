@@ -3,7 +3,8 @@ package handlers
 import (
 	"io"
 	"log"
-	"mmskazak/shorturl/internal/services"
+	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -33,9 +34,9 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 		return
 	}
 	originalURL := string(body)
-	generator := services.NewGenIDService()
-	shortURLService := services.NewShortURLService()
-	dto := services.DTOShortURL{
+	generator := genidurl.NewGenIDService()
+	shortURLService := shorturlservice.NewShortURLService()
+	dto := shorturlservice.DTOShortURL{
 		OriginalURL:  originalURL,
 		BaseHost:     baseHost,
 		MaxIteration: maxIteration,

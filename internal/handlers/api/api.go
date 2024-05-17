@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"mmskazak/shorturl/internal/services"
+	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 )
 
@@ -41,9 +42,9 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 		return
 	}
 
-	generator := services.NewGenIDService()
-	shortURLService := services.NewShortURLService()
-	dto := services.DTOShortURL{
+	generator := genidurl.NewGenIDService()
+	shortURLService := shorturlservice.NewShortURLService()
+	dto := shorturlservice.DTOShortURL{
 		OriginalURL:  jsonReq.URL,
 		BaseHost:     baseHost,
 		MaxIteration: maxIteration,
