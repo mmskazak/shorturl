@@ -8,7 +8,6 @@ import (
 
 var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
 var ErrServiceGenerateID = errors.New("generateID failed")
-var ErrMethodSetShortURLNotCanSave = errors.New("method SetShortURL not can save URL, mistake")
 
 type IGenIDForURL interface {
 	Generate(int) (string, error)

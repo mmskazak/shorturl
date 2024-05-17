@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"log"
 	"mmskazak/shorturl/internal/services"
@@ -26,11 +24,7 @@ const (
 	InternalServerErrorMsg = "Внутренняя ошибка сервера"
 )
 
-var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
-var ErrMethodSetShortURLNotCanSave = errors.New("метод SetShortURL не смог сохранить URL, ошибка")
-var ErrFuncGenerate = errors.New("функция GenerateShortURL вернула ошибку")
-
-func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
+func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -88,24 +82,4 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		log.Printf("Ошибка при обращении к главной странице: %v", err)
 	}
-}
-
-func saveUniqueShortURL(storage IStorage, generator IGenIDForURL, originalURL string) (string, error) {
-	if originalURL == "" {
-		return "", ErrOriginalURLIsEmpty
-	}
-
-	var err error
-	for range maxIteration {
-		id, err := generator.Generate(defaultShortURLLength)
-		if err != nil {
-			return "", fmt.Errorf("%w: %w", ErrFuncGenerate, err)
-		}
-
-		err = storage.SetShortURL(id, originalURL)
-		if err == nil {
-			return id, nil
-		}
-	}
-	return "", fmt.Errorf("%w: %w", ErrMethodSetShortURLNotCanSave, err)
 }

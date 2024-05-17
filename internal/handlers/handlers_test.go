@@ -43,7 +43,7 @@ func TestCreateShortURL(t *testing.T) {
 
 	// Define a test handler function that wraps CreateShortURL
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		CreateShortURL(w, r, ms, "http://ya.ru")
+		HandleCreateShortURL(w, r, ms, "http://ya.ru")
 	})
 
 	// Create a new request with a POST method and a body containing the original URL
@@ -107,81 +107,6 @@ func TestHandleRedirect(t *testing.T) {
 			r.ServeHTTP(rr, req)
 
 			assert.Equal(t, tc.expectedCode, rr.Code)
-		})
-	}
-}
-
-type GenURLDummy struct{}
-
-func (g *GenURLDummy) Generate(_ int) (string, error) {
-	return "test0001", nil
-}
-
-func Test_saveUniqueShortURL(t *testing.T) {
-	storageWithValue := mapstorage.NewMapStorage()
-	err := storageWithValue.SetShortURL("test0001", "https://ya.ru")
-	require.NoError(t, err)
-
-	type args struct {
-		storage     IStorage
-		generator   IGenIDForURL
-		originalURL string
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-		err     error
-	}{
-		{
-			name: "success save",
-			args: args{
-				storage:     mapstorage.NewMapStorage(),
-				generator:   &GenURLDummy{}, // return always test0001
-				originalURL: "https://ya.ru",
-			},
-			want:    "test0001",
-			wantErr: false,
-		},
-		{
-			name: "error method not can save",
-			args: args{
-				storage:     storageWithValue,
-				generator:   &GenURLDummy{},
-				originalURL: "https://google.com",
-			},
-			want:    "",
-			wantErr: true,
-			err:     ErrMethodSetShortURLNotCanSave,
-		},
-		{
-			name: "originalURL is empty",
-			args: args{
-				storage:     mapstorage.NewMapStorage(),
-				generator:   &GenURLDummy{},
-				originalURL: "",
-			},
-			want:    "",
-			wantErr: true,
-			err:     ErrOriginalURLIsEmpty,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.wantErr {
-				got, err := saveUniqueShortURL(tt.args.storage, tt.args.generator, tt.args.originalURL)
-				require.Error(t, err)
-				assert.ErrorIs(t, err, tt.err)
-				assert.Equalf(t, tt.want, got,
-					"saveUniqueShortURL(%v, %v, %v)", tt.args.storage, tt.args.generator, tt.args.originalURL)
-				return
-			}
-			got, err := saveUniqueShortURL(tt.args.storage, tt.args.generator, tt.args.originalURL)
-			require.NoError(t, err)
-			assert.Equalf(t, tt.want, got,
-				"saveUniqueShortURL(%v, %v, %v)", tt.args.storage, tt.args.generator, tt.args.originalURL)
 		})
 	}
 }
