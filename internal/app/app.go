@@ -32,6 +32,7 @@ func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, wri
 
 	// Добавление middleware
 	router.Use(middleware.LoggingMiddleware)
+	router.Use(middleware.GzipMiddleware)
 
 	router.Get("/", web.MainPage)
 
