@@ -55,6 +55,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			}(gzipWriter)
 
 			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Del("Content-Length")
 			gzipResponseWriter := &GzipResponseWriter{Writer: gzipWriter, ResponseWriter: w}
 			next.ServeHTTP(gzipResponseWriter, r)
 			return
