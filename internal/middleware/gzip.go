@@ -2,18 +2,33 @@ package middleware
 
 import (
 	"compress/gzip"
+	"fmt"
+	"io"
 	"mmskazak/shorturl/internal/logger"
 	"net/http"
 	"strings"
 )
 
+type GzipResponseWriter struct {
+	Writer io.Writer
+	http.ResponseWriter
+}
+
+func (w *GzipResponseWriter) Write(b []byte) (int, error) {
+	write, err := w.Writer.Write(b)
+	if err != nil {
+		return 0, fmt.Errorf("error writing to gzip writer: %w", err)
+	}
+	return write, nil
+}
+
 func GzipMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			gz, err := gzip.NewReader(r.Body)
+		// Handle gzip request body
+		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+			gzipReader, err := gzip.NewReader(r.Body)
 			if err != nil {
-				logger.Log.Errorln(err)
-				http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+				http.Error(w, "Invalid gzip body", http.StatusBadRequest)
 				return
 			}
 			defer func(gz *gzip.Reader) {
@@ -21,26 +36,24 @@ func GzipMiddleware(next http.Handler) http.Handler {
 				if err != nil {
 					logger.Log.Errorln(err)
 				}
-			}(gz)
+			}(gzipReader)
+			r.Body = gzipReader
+		}
 
-			gzWriter := gzip.NewWriter(w)
-			defer func(gzWriter *gzip.Writer) {
-				err := gzWriter.Close()
+		// Handle gzip response
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			gzipWriter := gzip.NewWriter(w)
+			defer func(gzipWriter *gzip.Writer) {
+				err := gzipWriter.Close()
 				if err != nil {
 					logger.Log.Errorln(err)
 				}
-			}(gzWriter)
-
-			gzResponseWriter := &gzipResponseWriter{
-				gzWriter:       gzWriter,
-				ResponseWriter: w,
-			}
+			}(gzipWriter)
 
 			w.Header().Set("Content-Encoding", "gzip")
-
-			next.ServeHTTP(gzResponseWriter, r)
-		} else {
-			next.ServeHTTP(w, r)
+			gzipResponseWriter := &GzipResponseWriter{Writer: gzipWriter, ResponseWriter: w}
+			next.ServeHTTP(gzipResponseWriter, r)
+			return
 		}
 	})
 }

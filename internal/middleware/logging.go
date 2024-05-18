@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"compress/gzip"
 	"fmt"
 	"mmskazak/shorturl/internal/logger"
 	"net/http"
@@ -38,33 +37,6 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 
 func (r *loggingResponseWriter) Header() http.Header {
 	return r.ResponseWriter.Header()
-}
-
-// Добавляем реализацию http.ResponseWriter.
-type gzipResponseWriter struct {
-	ResponseWriter http.ResponseWriter // встраиваем оригинальный http.ResponseWriter
-	gzWriter       *gzip.Writer
-}
-
-// Write - переопределенный метод Write для сжатия данных.
-func (w *gzipResponseWriter) Write(b []byte) (int, error) {
-	// Записываем данные в сжатый поток с использованием gzip.Writer
-	countByte, err := w.gzWriter.Write(b)
-	if err != nil {
-		logger.Log.Errorln(err)
-		return 0, fmt.Errorf("переопределенный метод Write для сжатия данных, ошибка: %w", err)
-	}
-	return countByte, nil
-}
-
-// Header - реализация метода Header интерфейса http.ResponseWriter.
-func (w *gzipResponseWriter) Header() http.Header {
-	return w.ResponseWriter.Header()
-}
-
-// WriteHeader - реализация метода WriteHeader интерфейса http.ResponseWriter.
-func (w *gzipResponseWriter) WriteHeader(statusCode int) {
-	w.ResponseWriter.WriteHeader(statusCode)
 }
 
 // LoggingMiddleware для логирования запросов.
