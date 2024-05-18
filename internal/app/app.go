@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/handlers"
 	"mmskazak/shorturl/internal/handlers/api"
+	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"time"
@@ -33,19 +33,19 @@ func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, wri
 	// Добавление middleware
 	router.Use(middleware.LoggingMiddleware)
 
-	router.Get("/", handlers.MainPage)
+	router.Get("/", web.MainPage)
 
 	baseHost := cfg.BaseHost // Получаем значение из конфига
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleRedirect(w, r, storage)
+		web.HandleRedirect(w, r, storage)
 	}
 	router.Get("/{id}", handleRedirectHandler)
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	shortURLCreate := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleCreateShortURL(w, r, storage, baseHost)
+		web.HandleCreateShortURL(w, r, storage, baseHost)
 	}
 	router.Post("/", shortURLCreate)
 

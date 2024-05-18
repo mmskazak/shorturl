@@ -22,6 +22,10 @@ const (
 )
 
 func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
+	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Accept", "application/json")
+
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
