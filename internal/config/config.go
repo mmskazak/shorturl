@@ -16,11 +16,12 @@ import (
 
 // Config содержит поля вашей конфигурации.
 type Config struct {
-	Address      string        `validate:"required"`
-	BaseHost     string        `validate:"required"`
-	LogLevel     LogLevel      `validate:"required"`
-	ReadTimeout  time.Duration `validate:"required"`
-	WriteTimeout time.Duration `validate:"required"`
+	Address         string        `validate:"required"`
+	BaseHost        string        `validate:"required"`
+	LogLevel        LogLevel      `validate:"required"`
+	ReadTimeout     time.Duration `validate:"required"`
+	WriteTimeout    time.Duration `validate:"required"`
+	FileStoragePath string        `validate:"required"`
 }
 
 func (c Config) validate() error {
@@ -63,11 +64,12 @@ func InitConfig() (*Config, error) {
 	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // 10 секунд.
 
 	config := &Config{
-		Address:      ":8080",
-		BaseHost:     "http://localhost:8080",
-		LogLevel:     "info",
-		ReadTimeout:  baseDurationReadTimeout,
-		WriteTimeout: baseDurationWriteTimeout,
+		Address:         ":8080",
+		BaseHost:        "http://localhost:8080",
+		LogLevel:        "info",
+		ReadTimeout:     baseDurationReadTimeout,
+		WriteTimeout:    baseDurationWriteTimeout,
+		FileStoragePath: "/tmp/short-url-db.json",
 	}
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
