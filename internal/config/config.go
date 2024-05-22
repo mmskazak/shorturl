@@ -68,7 +68,7 @@ func InitConfig() (*Config, error) {
 		LogLevel:        "info",
 		ReadTimeout:     baseDurationReadTimeout,
 		WriteTimeout:    baseDurationWriteTimeout,
-		FileStoragePath: "tmp/short-url-db.json",
+		FileStoragePath: "/tmp/short-url-db.json",
 	}
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
