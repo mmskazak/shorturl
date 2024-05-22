@@ -9,22 +9,21 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap/zapcore"
 )
 
 // Config содержит поля вашей конфигурации.
-type Config struct {
+type Config struct { //nolint:govet // nolint:gocritic
 	Address         string        `validate:"required"`
 	BaseHost        string        `validate:"required"`
-	LogLevel        LogLevel      `validate:"required"`
+	FileStoragePath string        `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
-	FileStoragePath string        `validate:"required"`
+	LogLevel        LogLevel      `validate:"required"`
 }
 
-func (c Config) validate() error {
+func (c *Config) validate() error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	err := validate.Struct(c)
@@ -69,7 +68,7 @@ func InitConfig() (*Config, error) {
 		LogLevel:        "info",
 		ReadTimeout:     baseDurationReadTimeout,
 		WriteTimeout:    baseDurationWriteTimeout,
-		FileStoragePath: "/tmp/short-url-db.json",
+		FileStoragePath: "tmp/short-url-db.json",
 	}
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
