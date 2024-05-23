@@ -78,6 +78,7 @@ func InitConfig() (*Config, error) {
 	flag.DurationVar(&config.ReadTimeout, "r", config.ReadTimeout, "ReadTimeout duration")
 	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration")
 	flag.StringVar((*string)(&config.LogLevel), "l", string(config.LogLevel), "log level")
+	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "file storage path")
 
 	// делаем разбор командной строки
 	flag.Parse()
@@ -110,6 +111,10 @@ func InitConfig() (*Config, error) {
 
 	if envLogLevel, ok := os.LookupEnv("LOG_LEVEL"); ok {
 		config.LogLevel = LogLevel(envLogLevel)
+	}
+
+	if fileStoragePath, ok := os.LookupEnv(" FILE_STORAGE_PATH "); ok {
+		config.FileStoragePath = fileStoragePath
 	}
 
 	if err := config.validate(); err != nil {
