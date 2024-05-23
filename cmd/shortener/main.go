@@ -24,45 +24,48 @@ func main() {
 	if err != nil {
 		log.Printf("ошибка получения уровня логирония %v", err)
 	}
-
-	pathToStorage := cfg.FileStoragePath
-
 	_, err = logger.Init(level)
 	if err != nil {
 		log.Fatalf("ошибка инициализации логера в main %v", err)
 	}
 
-	// filepath.Split возвращает пару (директория, имя файла), но нам нужно только директорию
-	directoryPath, _ := filepath.Split(pathToStorage)
-	err = os.MkdirAll(directoryPath, os.ModePerm)
-	if err != nil {
-		log.Fatalf("ошибка создания дирректории для файла хранилища %v", err)
-	}
-
-	logger.Log.Info(pathToStorage)
-	consumer, err := rwstorage.NewConsumer(pathToStorage)
-	if err != nil {
-		log.Fatalf("ошибка создания консьюмера для чтения из хранилища")
-	}
-
-	ms := mapstorage.NewMapStorage(cfg.FileStoragePath)
-
-	// Читаем события в цикле
-	for {
-		dataOfURL, err := consumer.ReadDataFromFile()
+	var ms *mapstorage.MapStorage
+	pathToStorage := cfg.FileStoragePath
+	if pathToStorage != "" {
+		logger.Log.Debug(pathToStorage)
+		// filepath.Split возвращает пару (директория, имя файла), но нам нужно только директорию
+		directoryPath, _ := filepath.Split(pathToStorage)
+		err = os.MkdirAll(directoryPath, os.ModePerm)
 		if err != nil {
-			if err.Error() != "EOF" {
-				fmt.Printf("Ошибка при чтении: %v\n", err)
-				break
-			}
-			fmt.Println("Достигнут конец файла.")
-			break
+			log.Fatalf("ошибка создания дирректории для файла хранилища %v", err)
 		}
 
-		// Обрабатываем прочитанное событие
-		fmt.Printf("Прочитанны данные: %+v\n", dataOfURL)
-		ms.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
-		fmt.Printf("длинна мапы: %+v\n", len(ms.Data))
+		consumer, err := rwstorage.NewConsumer(pathToStorage)
+		if err != nil {
+			log.Fatalf("ошибка создания консьюмера для чтения из хранилища")
+		}
+
+		ms = mapstorage.NewMapStorage(cfg.FileStoragePath)
+
+		// Читаем события в цикле
+		for {
+			dataOfURL, err := consumer.ReadDataFromFile()
+			if err != nil {
+				if err.Error() != "EOF" {
+					fmt.Printf("Ошибка при чтении: %v\n", err)
+					break
+				}
+				fmt.Println("Достигнут конец файла.")
+				break
+			}
+
+			// Обрабатываем прочитанное событие
+			fmt.Printf("Прочитанны данные: %+v\n", dataOfURL)
+			ms.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
+			fmt.Printf("длинна мапы: %+v\n", len(ms.Data))
+		}
+	} else {
+		ms = mapstorage.NewMapStorage(cfg.FileStoragePath)
 	}
 
 	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout)
