@@ -7,91 +7,97 @@ import (
 	"os"
 )
 
-type RecordURL struct {
+type ShortURLStruct struct {
+	UUID        string `json:"uuid"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
 
 type Producer struct {
-	file   *os.File
+	file *os.File
+	// добавляем Writer в Producer
 	writer *bufio.Writer
 }
 
-const filePerm = 0o600
-
 func NewProducer(filename string) (*Producer, error) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, filePerm) // open file
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		return nil, err //nolint:wrapcheck // Failed to open file
+		return nil, err
 	}
 
 	return &Producer{
-		file:   file,
+		file: file,
+		// создаём новый Writer
 		writer: bufio.NewWriter(file),
 	}, nil
 }
 
-func (p *Producer) WriteData(shData *RecordURL) error {
+func (p *Producer) WriteData(shData *ShortURLStruct) error {
 	data, err := json.Marshal(&shData)
 	if err != nil {
-		return err //nolint:wrapcheck // Failed to marshal data
+		return err
 	}
 
+	// записываем событие в буфер
 	if _, err := p.writer.Write(data); err != nil {
-		return err //nolint:wrapcheck // Failed to write data
+		return err
 	}
 
+	// добавляем перенос строки
 	if err := p.writer.WriteByte('\n'); err != nil {
-		return err //nolint:wrapcheck // Failed to write newline
+		return err
 	}
 
-	if err := p.writer.Flush(); err != nil {
-		return err //nolint:wrapcheck // Failed to flush buffer
-	}
-
-	return nil
-}
-
-func (p *Producer) Close() {
-	if err := p.file.Close(); err != nil {
-		log.Printf("Error closing file: %v", err)
-	}
+	// записываем буфер в файл
+	return p.writer.Flush()
 }
 
 type Consumer struct {
-	file   *os.File
+	file *os.File
+	// добавляем reader в Consumer
 	reader *bufio.Reader
 }
 
 func NewConsumer(filename string) (*Consumer, error) {
-	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, filePerm)
+	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return nil, err //nolint:wrapcheck // Failed to open file
+		return nil, err
 	}
 
 	return &Consumer{
-		file:   file,
+		file: file,
+		// создаём новый Reader
 		reader: bufio.NewReader(file),
 	}, nil
 }
 
-func (c *Consumer) ReadDataFromFile() (*RecordURL, error) {
+func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
+	// читаем данные до символа переноса строки
 	data, err := c.reader.ReadBytes('\n')
 	if err != nil {
-		return nil, err //nolint:wrapcheck // Failed to read data
+		return nil, err
 	}
 
-	event := RecordURL{}
+	// преобразуем данные из JSON-представления в структуру
+	event := ShortURLStruct{}
 	err = json.Unmarshal(data, &event)
 	if err != nil {
-		return nil, err //nolint:wrapcheck // Failed to unmarshal data
+		return nil, err
 	}
 
 	return &event, nil
 }
 
+func (p *Producer) Close() {
+	// Закрываем буфер
+	if err := p.file.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (c *Consumer) Close() {
+	// Закрываем файл
 	if err := c.file.Close(); err != nil {
-		log.Printf("Error closing file: %v", err)
+		log.Fatal(err)
 	}
 }
