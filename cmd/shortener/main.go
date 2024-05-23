@@ -40,7 +40,8 @@ func main() {
 		log.Fatalf("ошибка создания дирректории для файла хранилища %v", err)
 	}
 
-	consumer, err := rwstorage.NewConsumer(filename)
+	logger.Log.Info(pathToStorage)
+	consumer, err := rwstorage.NewConsumer(pathToStorage)
 	if err != nil {
 		log.Fatalf("ошибка создания консьюмера для чтения из хранилища")
 	}
