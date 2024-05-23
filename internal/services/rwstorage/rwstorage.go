@@ -87,7 +87,7 @@ func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
 	shortURL := ShortURLStruct{}
 	err = json.Unmarshal(data, &shortURL)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshal shor url  %w", err)
+		return nil, fmt.Errorf("error unmarshal shor url %w", err)
 	}
 
 	return &shortURL, nil

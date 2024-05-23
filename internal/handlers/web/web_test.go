@@ -39,7 +39,7 @@ func TestMainPage(t *testing.T) {
 
 func TestCreateShortURL(t *testing.T) {
 	// Initialize a new MapStorage for testing
-	ms := mapstorage.NewMapStorage()
+	ms := mapstorage.NewMapStorage("")
 
 	// Define a test handler function that wraps CreateShortURL
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,7 @@ func TestHandleRedirect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			ms := mapstorage.NewMapStorage()
+			ms := mapstorage.NewMapStorage("")
 			err := ms.SetShortURL("vAlIdIds", "http://ya.ru")
 			if err != nil {
 				t.Fatal(err)

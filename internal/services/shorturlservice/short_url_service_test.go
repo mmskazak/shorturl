@@ -39,7 +39,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					LengthID:     8,
 				},
 				generator: &GenerateIDDummy{},
-				storage:   mapstorage.NewMapStorage(),
+				storage:   mapstorage.NewMapStorage(""),
 			},
 			want:    "http://localhost.com/TeSt0001",
 			wantErr: assert.NoError,
@@ -54,7 +54,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					LengthID:     8,
 				},
 				generator: &GenerateIDDummy{},
-				storage:   mapstorage.NewMapStorage(),
+				storage:   mapstorage.NewMapStorage(""),
 			},
 			want:    "",
 			wantErr: assert.Error,
@@ -69,7 +69,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					LengthID:     10,
 				},
 				generator: &GenerateIDDummy{},
-				storage:   mapstorage.NewMapStorage(),
+				storage:   mapstorage.NewMapStorage(""),
 			},
 			want:    "",
 			wantErr: assert.Error,
@@ -85,7 +85,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 				},
 				generator: &GenerateIDDummy{},
 				storage: func() *mapstorage.MapStorage {
-					msTest := mapstorage.NewMapStorage()
+					msTest := mapstorage.NewMapStorage("")
 					err := msTest.SetShortURL(testID, "http://google.com")
 					if err != nil {
 						require.NoError(t, err)
