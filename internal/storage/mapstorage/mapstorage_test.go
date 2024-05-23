@@ -54,7 +54,7 @@ func TestMapStorage_GetShortURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &MapStorage{
 				mu:   tt.fields.mu,
-				data: tt.fields.data,
+				Data: tt.fields.data,
 			}
 			got, err := m.GetShortURL(tt.args.id)
 			if (err != nil) != tt.wantErr {
@@ -141,7 +141,7 @@ func TestMapStorage_SetShortURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &MapStorage{
 				mu:   tt.fields.mu,
-				data: tt.fields.data,
+				Data: tt.fields.data,
 			}
 			if err := m.SetShortURL(tt.args.id, tt.args.targetURL); (err != nil) != tt.wantErr {
 				t.Errorf("SetShortURL() error = %v, wantErr %v", err, tt.wantErr)
@@ -159,7 +159,7 @@ func TestNewMapStorage(t *testing.T) {
 			name: "New instance",
 			want: &MapStorage{
 				mu:   &sync.Mutex{},
-				data: make(map[string]string),
+				Data: make(map[string]string),
 			},
 		},
 	}

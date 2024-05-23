@@ -3,8 +3,13 @@ package rwstorage
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+)
+
+const (
+	PermFile0644 = 0o644
 )
 
 type ShortURLStruct struct {
@@ -20,9 +25,9 @@ type Producer struct {
 }
 
 func NewProducer(filename string) (*Producer, error) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, PermFile0644)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error open file %w", err)
 	}
 
 	return &Producer{
@@ -35,21 +40,21 @@ func NewProducer(filename string) (*Producer, error) {
 func (p *Producer) WriteData(shData *ShortURLStruct) error {
 	data, err := json.Marshal(&shData)
 	if err != nil {
-		return err
+		return fmt.Errorf("error marshal data %w", err)
 	}
 
 	// записываем событие в буфер
 	if _, err := p.writer.Write(data); err != nil {
-		return err
+		return fmt.Errorf("error write data %w", err)
 	}
 
 	// добавляем перенос строки
 	if err := p.writer.WriteByte('\n'); err != nil {
-		return err
+		return fmt.Errorf("error write перенос строки %w", err)
 	}
 
 	// записываем буфер в файл
-	return p.writer.Flush()
+	return p.writer.Flush() //nolint: wrapcheck,gocritic // просто пробрасываем ошибку дальше
 }
 
 type Consumer struct {
@@ -59,9 +64,9 @@ type Consumer struct {
 }
 
 func NewConsumer(filename string) (*Consumer, error) {
-	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, PermFile0644)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error write перенос строки %w", err)
 	}
 
 	return &Consumer{
@@ -75,17 +80,17 @@ func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
 	// читаем данные до символа переноса строки
 	data, err := c.reader.ReadBytes('\n')
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error read from file %w", err)
 	}
 
 	// преобразуем данные из JSON-представления в структуру
-	event := ShortURLStruct{}
-	err = json.Unmarshal(data, &event)
+	shortURL := ShortURLStruct{}
+	err = json.Unmarshal(data, &shortURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error unmarshal shor url  %w", err)
 	}
 
-	return &event, nil
+	return &shortURL, nil
 }
 
 func (p *Producer) Close() {

@@ -18,13 +18,13 @@ import (
 type Config struct {
 	Address         string        `validate:"required"`
 	BaseHost        string        `validate:"required"`
+	FileStoragePath string        `validate:"required"`
 	LogLevel        LogLevel      `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
-	FileStoragePath string        `validate:"required"`
 }
 
-func (c Config) validate() error {
+func (c *Config) validate() error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	err := validate.Struct(c)

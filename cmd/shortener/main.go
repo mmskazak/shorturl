@@ -74,11 +74,11 @@ func main() {
 		log.Fatalf("server error: %v", err)
 	}
 
-	defer cleanup(ms, filename)
+	defer recordMapToFile(ms, filename)
 	log.Println("Application has shut down gracefully.")
 }
 
-func cleanup(ms *mapstorage.MapStorage, filename string) {
+func recordMapToFile(ms *mapstorage.MapStorage, filename string) {
 	producer, err := rwstorage.NewProducer(filename)
 	if err != nil {
 		log.Fatalf("ошибка создания продюсера %v", err)
