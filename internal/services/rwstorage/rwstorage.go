@@ -80,7 +80,7 @@ func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
 	// читаем данные до символа переноса строки
 	data, err := c.reader.ReadBytes('\n')
 	if err != nil {
-		return nil, fmt.Errorf("error read from file %w", err)
+		return nil, err //nolint: wrapcheck,gocritic // нужна чистая ошибка, может быть EOF
 	}
 
 	// преобразуем данные из JSON-представления в структуру
