@@ -3,10 +3,10 @@ package app
 import (
 	"errors"
 	"fmt"
-	"log"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
+	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"time"
@@ -67,11 +67,11 @@ func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, wri
 
 // Start запускает сервер приложения.
 func (a *App) Start() error {
-	log.Printf("Server is running on %v", a.server.Addr)
+	logger.Log.Info("Server is running on %v", a.server.Addr)
 
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Printf("%v: %v", ErrStartingServer, err)
+		logger.Logf.Errorf("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
 	return nil

@@ -9,7 +9,7 @@ import (
 
 var Log *zap.SugaredLogger
 
-func Init(level zapcore.Level) (*zap.SugaredLogger, error) {
+func InitWriteToOutput(level zapcore.Level) (*zap.SugaredLogger, error) {
 	cfg := zap.NewProductionConfig()
 	cfg.Level = zap.NewAtomicLevelAt(level)
 
@@ -20,6 +20,7 @@ func Init(level zapcore.Level) (*zap.SugaredLogger, error) {
 	}
 
 	sugar := logger.Sugar()
+
 	Log = sugar
 	return sugar, nil
 }

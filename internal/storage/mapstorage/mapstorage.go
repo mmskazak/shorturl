@@ -3,7 +3,7 @@ package mapstorage
 import (
 	"errors"
 	"fmt"
-	"log"
+	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/services/rwstorage"
 	"strconv"
 	"sync"
@@ -67,7 +67,7 @@ func (m *MapStorage) SetShortURL(id string, targetURL string) error {
 			return fmt.Errorf("ошибка записи строки в файл %w", err)
 		}
 		producer.Close()
-		log.Println("Короткая ссылка записана в файл")
+		logger.Logf.Infof("Добавлени которкая ссылка %v", shData)
 	}
 	return nil
 }

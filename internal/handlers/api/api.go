@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"io"
-	"log"
+	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
@@ -29,7 +29,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("Не удалось прочитать тело запроса %v", err)
+		logger.Logf.Errorf("Не удалось прочитать тело запроса %v", err)
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
@@ -41,7 +41,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 
 	err = json.Unmarshal(body, &jsonReq)
 	if err != nil {
-		log.Printf("Ошибка json.Unmarshal: %v", err)
+		logger.Logf.Errorf("Ошибка json.Unmarshal: %v", err)
 		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
 		return
 	}
@@ -57,7 +57,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 
 	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
 	if err != nil {
-		log.Printf("Ошибка saveUniqueShortURL: %v", err)
+		logger.Logf.Errorf("Ошибка saveUniqueShortURL: %v", err)
 		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
 		return
 	}
@@ -71,7 +71,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 	}
 	shortURLAsJSON, err := json.Marshal(jsonResp)
 	if err != nil {
-		log.Printf("Ошибка json.Marshal: %v", err)
+		logger.Logf.Errorf("Ошибка json.Marshal: %v", err)
 		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
 		return
 	}
@@ -79,7 +79,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(shortURLAsJSON)
 	if err != nil {
-		log.Printf("Ошибка ResponseWriter: %v", err)
+		logger.Logf.Errorf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		return
 	}

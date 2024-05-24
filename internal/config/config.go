@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"mmskazak/shorturl/internal/logger"
 	"os"
 	"strings"
 	"time"
@@ -94,7 +94,7 @@ func InitConfig() (*Config, error) {
 	if envReadTimeout, ok := os.LookupEnv("READ_TIMEOUT"); ok {
 		drt, err := time.ParseDuration(envReadTimeout)
 		if err != nil {
-			log.Printf("env READ_TIMEOUT не получилось привести к типу \"Duration\": %v", err)
+			logger.Logf.Errorf("env READ_TIMEOUT не получилось привести к типу \"Duration\": %v", err)
 		} else {
 			config.ReadTimeout = drt
 		}
@@ -103,7 +103,7 @@ func InitConfig() (*Config, error) {
 	if envWriteTimeout, ok := os.LookupEnv("WRITE_TIMEOUT"); ok {
 		dwt, err := time.ParseDuration(envWriteTimeout)
 		if err != nil {
-			log.Printf("env WRITE_TIMEOUT не получилось привести к типу \"Duration\": %v", err)
+			logger.Logf.Errorf("env WRITE_TIMEOUT не получилось привести к типу \"Duration\": %v", err)
 		} else {
 			config.ReadTimeout = dwt
 		}

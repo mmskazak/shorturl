@@ -1,0 +1,3 @@
+{"level":"info","ts":1716545531.4761484,"caller":"shortener/main.go:35","msg":"Тестовый лог"}
+{"level":"info","ts":1716560792.8307772,"caller":"shortener/main.go:35","msg":"Тестовый лог"}
+{"level":"info","ts":1716560860.8571804,"caller":"shortener/main.go:35","msg":"Тестовый лог"}

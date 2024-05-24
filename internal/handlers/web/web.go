@@ -2,7 +2,7 @@ package web
 
 import (
 	"io"
-	"log"
+	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
@@ -29,7 +29,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("Не удалось прочитать тело запроса %v", err)
+		logger.Logf.Errorf("Не удалось прочитать тело запроса %v", err)
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
@@ -45,7 +45,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 
 	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
 	if err != nil {
-		log.Printf("Ошибка saveUniqueShortURL: %v", err)
+		logger.Logf.Errorf("Ошибка saveUniqueShortURL: %v", err)
 		http.Error(w, "Сервису не удалось сформировать короткий URL", http.StatusInternalServerError)
 		return
 	}
@@ -53,7 +53,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(shortURL))
 	if err != nil {
-		log.Printf("Ошибка ResponseWriter: %v", err)
+		logger.Logf.Errorf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		return
 	}
@@ -81,6 +81,6 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 	_, err := w.Write([]byte("Сервис сокращения URL"))
 	if err != nil {
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
-		log.Printf("Ошибка при обращении к главной странице: %v", err)
+		logger.Logf.Errorf("Ошибка при обращении к главной странице: %v", err)
 	}
 }
