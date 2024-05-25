@@ -64,13 +64,12 @@ func TestGzipMiddleware(t *testing.T) {
 			handler.ServeHTTP(rr, req)
 
 			// Check the response
-			result := rr.Result() //nolint: bodyclose,gocritic // а как закрыть?
-			defer func(Body io.ReadCloser) {
-				err := Body.Close()
-				if err != nil {
+			result := rr.Result()
+			defer func() {
+				if err := result.Body.Close(); err != nil {
 					log.Fatalf("failed to close response body: %v", err)
 				}
-			}(result.Body)
+			}()
 
 			if tt.expectGzip {
 				assert.Equal(t, "gzip", result.Header.Get("Content-Encoding"))
