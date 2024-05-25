@@ -43,9 +43,13 @@ func GzipMiddleware(next http.Handler) http.Handler {
 		contentType := w.Header().Get("Content-Type")
 		isCompressingContent := strings.HasPrefix(contentType, "application/json") ||
 			strings.HasPrefix(contentType, "text/html")
+		fmt.Println("contentType:", contentType)
 
 		// Handle gzip response
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && isCompressingContent {
+			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Del("Content-Length")
+
 			gzipWriter := gzip.NewWriter(w)
 			defer func(gzipWriter *gzip.Writer) {
 				err := gzipWriter.Close()
@@ -54,8 +58,6 @@ func GzipMiddleware(next http.Handler) http.Handler {
 				}
 			}(gzipWriter)
 
-			w.Header().Set("Content-Encoding", "gzip")
-			w.Header().Del("Content-Length")
 			gzipResponseWriter := &GzipResponseWriter{Writer: gzipWriter, ResponseWriter: w}
 			next.ServeHTTP(gzipResponseWriter, r)
 			return
