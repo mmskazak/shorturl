@@ -14,8 +14,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// IStorage второй раз объявляю интерфейс. Объявляем интерфейс где его используем.
-type IStorage interface {
+// Storage второй раз объявляю интерфейс. Объявляем интерфейс где его используем.
+type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 }
@@ -27,7 +27,7 @@ type App struct {
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
-func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, writeTimeout time.Duration) *App {
+func NewApp(cfg *config.Config, storage Storage, readTimeout time.Duration, writeTimeout time.Duration) *App {
 	router := chi.NewRouter()
 
 	// Добавление middleware

@@ -21,7 +21,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 	type args struct {
 		dto       DTOShortURL
 		generator IGenIDForURL
-		storage   IStorage
+		storage   Storage
 	}
 	tests := []struct {
 		name    string

@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type IStorage interface {
+type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 }
@@ -25,7 +25,7 @@ const (
 	InternalServerErrorMsg = "Внутренняя ошибка сервера"
 )
 
-func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
+func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storage, baseHost string) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -59,7 +59,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStora
 	}
 }
 
-func HandleRedirect(w http.ResponseWriter, r *http.Request, data IStorage) {
+func HandleRedirect(w http.ResponseWriter, r *http.Request, data Storage) {
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
 

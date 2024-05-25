@@ -14,7 +14,7 @@ type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
 
-type IStorage interface {
+type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 }
@@ -28,7 +28,7 @@ type DTOShortURL struct {
 
 type ShortURLService struct{}
 
-func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForURL, storage IStorage) (string, error) {
+func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForURL, storage Storage) (string, error) {
 	if dto.OriginalURL == "" {
 		return "", ErrOriginalURLIsEmpty
 	}

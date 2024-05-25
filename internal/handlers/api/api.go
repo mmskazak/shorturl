@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-type IStorage interface {
+type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 }
@@ -21,7 +21,7 @@ const (
 	ServiceNotCanCreateShortURL = "Сервису не удалось сформировать короткий URL"
 )
 
-func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
+func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storage, baseHost string) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Accept", "application/json")
