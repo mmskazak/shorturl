@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"mmskazak/shorturl/internal/logger"
+	"log"
 	"os"
 )
 
@@ -96,13 +96,13 @@ func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
 func (p *Producer) Close() {
 	// Закрываем буфер
 	if err := p.file.Close(); err != nil {
-		logger.Logf.Fatal(err)
+		log.Fatalf("error producer file close %v", err)
 	}
 }
 
 func (c *Consumer) Close() {
 	// Закрываем файл
 	if err := c.file.Close(); err != nil {
-		logger.Logf.Fatal(err)
+		log.Fatalf("error consumer file close %v", err)
 	}
 }

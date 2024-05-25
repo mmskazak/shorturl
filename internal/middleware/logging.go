@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"mmskazak/shorturl/internal/logger"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // Берём структуру для хранения сведений об ответе.
@@ -40,7 +41,7 @@ func (r *loggingResponseWriter) Header() http.Header {
 }
 
 // LoggingMiddleware для логирования запросов.
-func LoggingMiddleware(next http.Handler) http.Handler {
+func LoggingMiddleware(next http.Handler, zapLog *zap.SugaredLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -59,7 +60,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		logger.Log.Infoln(
+		zapLog.Infoln(
 			"uri", r.RequestURI,
 			"method", r.Method,
 			"status", responseData.status, // получаем перехваченный код статуса ответа

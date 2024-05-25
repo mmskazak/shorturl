@@ -7,9 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var Log *zap.SugaredLogger
-
-func InitWriteToOutput(level zapcore.Level) (*zap.SugaredLogger, error) {
+func Init(level zapcore.Level) (*zap.SugaredLogger, error) {
 	cfg := zap.NewProductionConfig()
 	cfg.Level = zap.NewAtomicLevelAt(level)
 
@@ -21,6 +19,5 @@ func InitWriteToOutput(level zapcore.Level) (*zap.SugaredLogger, error) {
 
 	sugar := logger.Sugar()
 
-	Log = sugar
 	return sugar, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"mmskazak/shorturl/internal/app"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/logger"
@@ -13,7 +14,6 @@ import (
 	"path/filepath"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -23,43 +23,34 @@ const (
 func main() {
 	cfg, err := config.InitConfig()
 	if err != nil {
-		logger.Logf.Fatalf("Ошибка инициализации конфигурации: %v", err)
+		log.Fatalf("Ошибка инициализации конфигурации: %v", err)
 	}
 
 	level, err := cfg.LogLevel.Value()
 	if err != nil {
-		logger.Logf.Warnf("Ошибка получения уровня логирования: %v", err)
+		log.Printf("Ошибка получения уровня логирования: %v", err)
 	}
 
-	if err := initLoggers(level); err != nil {
-		logger.Logf.Fatalf("Ошибка инициализации логеров: %v", err)
-	}
-
-	ms, err := initializeStorage(cfg, logger.Logf)
+	zapLog, err := logger.Init(level)
 	if err != nil {
-		logger.Logf.Fatalf("Ошибка инициализации хранилища: %v", err)
+		log.Printf("ошибка инициализации логера output: %v", err)
 	}
 
-	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout)
+	ms, err := initializeStorage(cfg, zapLog)
+	if err != nil {
+		log.Fatalf("Ошибка инициализации хранилища: %v", err)
+	}
+
+	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		logger.Logf.Fatalf("Ошибка сервера: %v", err)
+		log.Fatalf("Ошибка сервера: %v", err)
 	}
 
-	logger.Logf.Info("Приложение завершило работу.")
+	log.Println("Приложение завершило работу.")
 }
 
-func initLoggers(level zapcore.Level) error {
-	if _, err := logger.InitWriteToOutput(level); err != nil {
-		return fmt.Errorf("ошибка инициализации логера output: %w", err)
-	}
-	if _, err := logger.InitWriteToFile(level); err != nil {
-		return fmt.Errorf("ошибка инициализации логера file: %w", err)
-	}
-	return nil
-}
-
-func initializeStorage(cfg *config.Config, logf *zap.SugaredLogger) (*mapstorage.MapStorage, error) {
+func initializeStorage(cfg *config.Config, zapLog *zap.SugaredLogger) (*mapstorage.MapStorage, error) {
 	pathToStorage := cfg.FileStoragePath
 	var ms *mapstorage.MapStorage
 
@@ -67,7 +58,6 @@ func initializeStorage(cfg *config.Config, logf *zap.SugaredLogger) (*mapstorage
 		return mapstorage.NewMapStorage(pathToStorage), nil
 	}
 
-	logf.Debug(pathToStorage)
 	if err := os.MkdirAll(filepath.Dir(pathToStorage), os.FileMode(PermFile0750)); err != nil {
 		return nil, fmt.Errorf("ошибка создания директории для файла хранилища: %w", err)
 	}
@@ -78,14 +68,14 @@ func initializeStorage(cfg *config.Config, logf *zap.SugaredLogger) (*mapstorage
 	}
 
 	ms = mapstorage.NewMapStorage(pathToStorage)
-	if err := readFileStorage(consumer, ms, logf); err != nil {
+	if err := readFileStorage(consumer, ms, zapLog); err != nil {
 		return nil, fmt.Errorf("error read storage data: %w", err)
 	}
 
 	return ms, nil
 }
 
-func readFileStorage(consumer *rwstorage.Consumer, ms *mapstorage.MapStorage, logf *zap.SugaredLogger) error {
+func readFileStorage(consumer *rwstorage.Consumer, ms *mapstorage.MapStorage, zapLog *zap.SugaredLogger) error {
 	for {
 		dataOfURL, err := consumer.ReadDataFromFile()
 		if err != nil {
@@ -96,9 +86,9 @@ func readFileStorage(consumer *rwstorage.Consumer, ms *mapstorage.MapStorage, lo
 			break
 		}
 
-		logf.Infof("Прочитанные данные: %+v\n", dataOfURL)
+		zapLog.Infof("Прочитанные данные: %+v\n", dataOfURL)
 		ms.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
-		logf.Infof("Длина мапы: %+v\n", len(ms.Data))
+		zapLog.Infof("Длина мапы: %+v\n", len(ms.Data))
 	}
 	return nil
 }

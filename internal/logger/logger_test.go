@@ -55,12 +55,9 @@ func TestInitWriteToOutput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got1, err1 := InitWriteToOutput(tt.args.level)
-			require.NoError(t, err1)
-			assert.NotNil(t, got1)
-			got2, err2 := InitWriteToOutput(tt.args.level)
-			require.NoError(t, err2)
-			assert.NotNil(t, got2)
+			got, err := Init(tt.args.level)
+			require.NoError(t, err)
+			assert.NotNil(t, got)
 		})
 	}
 }

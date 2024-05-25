@@ -4,7 +4,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"mmskazak/shorturl/internal/logger"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -34,7 +34,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			defer func(gz *gzip.Reader) {
 				err := gz.Close()
 				if err != nil {
-					logger.Log.Errorln(err)
+					log.Printf("error gzReader close %v", err)
 				}
 			}(gzipReader)
 			r.Body = gzipReader
@@ -54,7 +54,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			defer func(gzipWriter *gzip.Writer) {
 				err := gzipWriter.Close()
 				if err != nil {
-					logger.Log.Errorln(err)
+					log.Printf("error close gzipWriter %v", err)
 				}
 			}(gzipWriter)
 

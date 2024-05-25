@@ -3,13 +3,15 @@ package app
 import (
 	"errors"
 	"fmt"
+	"log"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
-	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -27,11 +29,20 @@ type App struct {
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
-func NewApp(cfg *config.Config, storage Storage, readTimeout time.Duration, writeTimeout time.Duration) *App {
+func NewApp(cfg *config.Config,
+	storage Storage,
+	readTimeout time.Duration,
+	writeTimeout time.Duration,
+	zapLog *zap.SugaredLogger) *App {
 	router := chi.NewRouter()
 
+	// Add the custom logging middleware to the router
+	LoggingMiddlewareRich := func(next http.Handler) http.Handler {
+		return middleware.LoggingMiddleware(next, zapLog)
+	}
+
 	// Добавление middleware
-	router.Use(middleware.LoggingMiddleware)
+	router.Use(LoggingMiddlewareRich)
 	router.Use(middleware.GzipMiddleware)
 
 	router.Get("/", web.MainPage)
@@ -67,11 +78,11 @@ func NewApp(cfg *config.Config, storage Storage, readTimeout time.Duration, writ
 
 // Start запускает сервер приложения.
 func (a *App) Start() error {
-	logger.Log.Info("Server is running on %v", a.server.Addr)
+	log.Printf("Server is running on %v\n", a.server.Addr)
 
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		logger.Logf.Errorf("%v: %v", ErrStartingServer, err)
+		log.Printf("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
 	return nil
