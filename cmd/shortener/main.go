@@ -26,15 +26,7 @@ func main() {
 		log.Printf("ошибка инициализации логера output: %v", err)
 	}
 
-	var storageType string
-	switch {
-	case cfg.FileStoragePath == "":
-		storageType = "inmemory"
-	case cfg.FileStoragePath != "":
-		storageType = "infile"
-	}
-
-	ms, err := storage.NewStorage(storageType, cfg)
+	ms, err := storage.NewStorage(cfg)
 	if err != nil {
 		log.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}

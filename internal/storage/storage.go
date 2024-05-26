@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"fmt"
+	"errors"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage/infile"
 	"mmskazak/shorturl/internal/storage/inmemory"
@@ -12,13 +12,13 @@ type Storage interface {
 	SetShortURL(id string, targetURL string) error
 }
 
-func NewStorage(storageType string, cfg *config.Config) (Storage, error) {
-	switch storageType {
-	case "inmemory":
+func NewStorage(cfg *config.Config) (Storage, error) {
+	switch {
+	case cfg.FileStoragePath == "":
 		return inmemory.NewInMemory() //nolint:wrapcheck //ошибка обрабатывается далее
-	case "infile":
+	case cfg.FileStoragePath != "":
 		return infile.NewInFile(cfg) //nolint:wrapcheck //ошибка обрабатываетсяч далее
 	default:
-		return nil, fmt.Errorf("unknown storage type: %s", storageType)
+		return nil, errors.New("error creating new storage")
 	}
 }
