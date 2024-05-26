@@ -27,7 +27,7 @@ type Producer struct {
 func NewProducer(filename string) (*Producer, error) {
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, PermFile0644)
 	if err != nil {
-		return nil, fmt.Errorf("error open file %w", err)
+		return nil, fmt.Errorf("error open infile %w", err)
 	}
 
 	return &Producer{
@@ -96,13 +96,13 @@ func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
 func (p *Producer) Close() {
 	// Закрываем буфер
 	if err := p.file.Close(); err != nil {
-		log.Fatalf("error producer file close %v", err)
+		log.Fatalf("error producer infile close %v", err)
 	}
 }
 
 func (c *Consumer) Close() {
 	// Закрываем файл
 	if err := c.file.Close(); err != nil {
-		log.Fatalf("error consumer file close %v", err)
+		log.Fatalf("error consumer infile close %v", err)
 	}
 }

@@ -8,6 +8,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	noStatus = 0
+)
+
 // Берём структуру для хранения сведений об ответе.
 type responseData struct {
 	status int
@@ -27,6 +31,9 @@ func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 		return 0, fmt.Errorf("ошибка в middleware.loggingResponseWriter.Write %w", err)
 	}
 	r.responseData.size += size // захватываем размер
+	if r.responseData.status == noStatus {
+		r.responseData.status = http.StatusOK
+	}
 	return size, nil
 }
 

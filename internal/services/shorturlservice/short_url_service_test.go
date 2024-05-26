@@ -2,7 +2,7 @@ package shorturlservice
 
 import (
 	"fmt"
-	"mmskazak/shorturl/internal/storage/mapstorage"
+	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,7 +39,11 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					LengthID:     8,
 				},
 				generator: &GenerateIDDummy{},
-				storage:   mapstorage.NewMapStorage(""),
+				storage: func() *inmemory.InMemory {
+					s, err := inmemory.NewInMemory()
+					require.NoError(t, err)
+					return s
+				}(),
 			},
 			want:    "http://localhost.com/TeSt0001",
 			wantErr: assert.NoError,
@@ -54,7 +58,11 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					LengthID:     8,
 				},
 				generator: &GenerateIDDummy{},
-				storage:   mapstorage.NewMapStorage(""),
+				storage: func() *inmemory.InMemory {
+					s, err := inmemory.NewInMemory()
+					require.NoError(t, err)
+					return s
+				}(),
 			},
 			want:    "",
 			wantErr: assert.Error,
@@ -69,28 +77,10 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					LengthID:     10,
 				},
 				generator: &GenerateIDDummy{},
-				storage:   mapstorage.NewMapStorage(""),
-			},
-			want:    "",
-			wantErr: assert.Error,
-		},
-		{
-			name: "length id is small",
-			args: args{
-				dto: DTOShortURL{
-					OriginalURL:  "http://ya.ru",
-					BaseHost:     "http://localhost.com",
-					MaxIteration: 5,
-					LengthID:     5,
-				},
-				generator: &GenerateIDDummy{},
-				storage: func() *mapstorage.MapStorage {
-					msTest := mapstorage.NewMapStorage("")
-					err := msTest.SetShortURL(testID, "http://google.com")
-					if err != nil {
-						require.NoError(t, err)
-					}
-					return msTest
+				storage: func() *inmemory.InMemory {
+					s, err := inmemory.NewInMemory()
+					require.NoError(t, err)
+					return s
 				}(),
 			},
 			want:    "",

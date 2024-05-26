@@ -16,7 +16,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Storage второй раз объявляю интерфейс. Объявляем интерфейс где его используем.
 type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error

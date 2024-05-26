@@ -18,7 +18,7 @@ import (
 type Config struct {
 	Address         string        `validate:"required"`
 	BaseHost        string        `validate:"required"`
-	FileStoragePath string        `validate:"required"`
+	FileStoragePath string        `validate:"omitempty"`
 	LogLevel        LogLevel      `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
@@ -29,7 +29,7 @@ func (c *Config) validate() error {
 
 	err := validate.Struct(c)
 	if err != nil {
-		return fmt.Errorf("ошибка валидации конфигурации %w", err)
+		return fmt.Errorf("error validate %w", err)
 	}
 
 	return nil

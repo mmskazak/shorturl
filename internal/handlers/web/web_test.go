@@ -2,7 +2,9 @@ package web
 
 import (
 	"bytes"
-	"mmskazak/shorturl/internal/storage/mapstorage"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/storage/infile"
+	"mmskazak/shorturl/internal/storage/inmemory"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -39,7 +41,10 @@ func TestMainPage(t *testing.T) {
 
 func TestCreateShortURL(t *testing.T) {
 	// Initialize a new MapStorage for testing
-	ms := mapstorage.NewMapStorage("")
+	cfg := config.Config{
+		FileStoragePath: "/tmp/file.json",
+	}
+	ms, _ := infile.NewInFile(&cfg)
 
 	// Define a test handler function that wraps CreateShortURL
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +92,7 @@ func TestHandleRedirect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			ms := mapstorage.NewMapStorage("")
+			ms, _ := inmemory.NewInMemory()
 			err := ms.SetShortURL("vAlIdIds", "http://ya.ru")
 			if err != nil {
 				t.Fatal(err)
