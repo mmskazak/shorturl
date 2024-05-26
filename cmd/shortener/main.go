@@ -10,10 +10,6 @@ import (
 	"net/http"
 )
 
-const (
-	PermFile0750 = 0o750
-)
-
 func main() {
 	cfg, err := config.InitConfig()
 	if err != nil {
