@@ -1,7 +1,6 @@
 package infile
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/config"
@@ -10,11 +9,8 @@ import (
 	"strconv"
 )
 
-var ErrNotFound = errors.New("key not found")
-var ErrKeyAlreadyExists = errors.New("key already exists")
-
 type InFile struct {
-	*inmemory.InMemory
+	InMe     *inmemory.InMemory
 	FilePath string
 }
 
@@ -25,7 +21,7 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 	}
 
 	ms := &InFile{
-		InMemory: inm,
+		InMe:     inm,
 		FilePath: cfg.FileStoragePath,
 	}
 
@@ -37,28 +33,14 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 }
 
 func (m *InFile) GetShortURL(id string) (string, error) {
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
-	targetURL, ok := m.Data[id]
-	if !ok {
-		return "", ErrNotFound
-	}
-	return targetURL, nil
+	return m.InMe.GetShortURL(id) //nolint:wrapcheck //ошибка обрабатывается далее
 }
 
 func (m *InFile) SetShortURL(id string, targetURL string) error {
-	if id == "" {
-		return errors.New("id is empty")
+	err := m.InMe.SetShortURL(id, targetURL)
+	if err != nil {
+		return fmt.Errorf("error setting short url: %w", err)
 	}
-	if targetURL == "" {
-		return errors.New("URL is empty")
-	}
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
-	if _, ok := m.Data[id]; ok {
-		return ErrKeyAlreadyExists
-	}
-	m.Data[id] = targetURL
 
 	if m.FilePath != "" {
 		producer, err := rwstorage.NewProducer(m.FilePath)
@@ -67,7 +49,7 @@ func (m *InFile) SetShortURL(id string, targetURL string) error {
 		}
 
 		shData := rwstorage.ShortURLStruct{
-			UUID:        strconv.Itoa(len(m.Data)),
+			UUID:        strconv.Itoa(len(m.InMe.Data)),
 			ShortURL:    id,
 			OriginalURL: targetURL,
 		}
@@ -99,8 +81,8 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 		}
 
 		log.Printf("Прочитанные данные: %+v\n", dataOfURL)
-		m.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
-		log.Printf("Длина мапы: %+v\n", len(m.Data))
+		m.InMe.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
+		log.Printf("Длина мапы: %+v\n", len(m.InMe.Data))
 	}
 	return nil
 }
