@@ -2,19 +2,46 @@ package shorturlservice
 
 import (
 	"fmt"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/storage/infile"
 	"mmskazak/shorturl/internal/storage/inmemory"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const testID = "TeSt0001"
+const (
+	testID = "TeSt0001"
+)
 
 type GenerateIDDummy struct{}
 
 func (g *GenerateIDDummy) Generate(_ int) (string, error) {
 	return testID, nil
+}
+
+func createTempFile(t *testing.T, content string) string {
+	t.Helper() // Mark this function as a test helper
+
+	tmpFile, err := os.CreateTemp("", "shorturl-*.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = tmpFile.WriteString(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = tmpFile.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return tmpFile.Name()
 }
 
 func TestShortURLService_GenerateShortURL(t *testing.T) {
@@ -79,6 +106,74 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 				generator: &GenerateIDDummy{},
 				storage: func() *inmemory.InMemory {
 					s, err := inmemory.NewInMemory()
+					require.NoError(t, err)
+					return s
+				}(),
+			},
+			want:    "",
+			wantErr: assert.Error,
+		},
+		{
+			name: "success",
+			args: args{
+				dto: DTOShortURL{
+					OriginalURL:  "http://ya.ru",
+					BaseHost:     "http://localhost.com",
+					MaxIteration: 10,
+					LengthID:     8,
+				},
+				generator: &GenerateIDDummy{},
+				storage: func() *infile.InFile {
+					cfg := config.Config{
+						FileStoragePath: createTempFile(t, ""),
+					}
+					s, err := infile.NewInFile(&cfg)
+					require.NoError(t, err)
+					return s
+				}(),
+			},
+			want:    "http://localhost.com/TeSt0001",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "success with InFile",
+			args: args{
+				dto: DTOShortURL{
+					OriginalURL:  "http://ya.ru",
+					BaseHost:     "http://localhost.com",
+					MaxIteration: 10,
+					LengthID:     8,
+				},
+				generator: &GenerateIDDummy{},
+				storage: func() *infile.InFile {
+					cfg := config.Config{
+						FileStoragePath: createTempFile(t, ""),
+					}
+					s, err := infile.NewInFile(&cfg)
+					require.NoError(t, err)
+					return s
+				}(),
+			},
+			want:    "http://localhost.com/TeSt0001",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "error with InFile",
+			args: args{
+				dto: DTOShortURL{
+					OriginalURL:  "http://ya.ru",
+					BaseHost:     "http://localhost.com",
+					MaxIteration: 10,
+					LengthID:     8,
+				},
+				generator: &GenerateIDDummy{},
+				storage: func() *infile.InFile {
+					cfg := config.Config{
+						FileStoragePath: createTempFile(t, ""),
+					}
+					s, err := infile.NewInFile(&cfg)
+					require.NoError(t, err)
+					err = s.SetShortURL(testID, "http://ya.ru")
 					require.NoError(t, err)
 					return s
 				}(),
