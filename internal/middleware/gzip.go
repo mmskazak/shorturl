@@ -61,8 +61,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			gzipResponseWriter := &GzipResponseWriter{writer: gzipWriter, ResponseWriter: w}
 			next.ServeHTTP(gzipResponseWriter, r)
 			return
-		} else {
-			next.ServeHTTP(w, r)
 		}
+		next.ServeHTTP(w, r)
 	})
 }
