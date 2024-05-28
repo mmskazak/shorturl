@@ -92,11 +92,10 @@ func TestHandleRedirect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			ms, _ := inmemory.NewInMemory()
-			err := ms.SetShortURL("vAlIdIds", "http://ya.ru")
-			if err != nil {
-				t.Fatal(err)
-			}
+			ms, err := inmemory.NewInMemory()
+			require.NoError(t, err)
+			err = ms.SetShortURL("vAlIdIds", "http://ya.ru")
+			require.NoError(t, err)
 
 			handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
 				HandleRedirect(w, r, ms)
@@ -104,9 +103,7 @@ func TestHandleRedirect(t *testing.T) {
 			r.Get("/{id}", handleRedirectHandler)
 
 			req, err := http.NewRequest(http.MethodGet, tc.path, http.NoBody)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)

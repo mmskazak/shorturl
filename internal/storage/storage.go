@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage/infile"
 	"mmskazak/shorturl/internal/storage/inmemory"
@@ -15,9 +16,17 @@ type Storage interface {
 func NewStorage(cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.FileStoragePath == "":
-		return inmemory.NewInMemory() //nolint:wrapcheck //ошибка обрабатывается далее
+		sm, err := inmemory.NewInMemory()
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize an in-memory store: %w", err)
+		}
+		return sm, nil
 	case cfg.FileStoragePath != "":
-		return infile.NewInFile(cfg) //nolint:wrapcheck //ошибка обрабатываетсяч далее
+		sf, err := infile.NewInFile(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize an in-file store: %w", err)
+		}
+		return sf, nil
 	default:
 		return nil, errors.New("error creating new storage")
 	}
