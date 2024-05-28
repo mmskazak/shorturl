@@ -10,12 +10,12 @@ import (
 )
 
 type GzipResponseWriter struct {
-	Writer io.Writer
+	writer io.Writer
 	http.ResponseWriter
 }
 
 func (w *GzipResponseWriter) Write(b []byte) (int, error) {
-	write, err := w.Writer.Write(b)
+	write, err := w.writer.Write(b)
 	if err != nil {
 		return 0, fmt.Errorf("error writing to gzip writer: %w", err)
 	}
@@ -58,7 +58,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 				}
 			}(gzipWriter)
 
-			gzipResponseWriter := &GzipResponseWriter{Writer: gzipWriter, ResponseWriter: w}
+			gzipResponseWriter := &GzipResponseWriter{writer: gzipWriter, ResponseWriter: w}
 			next.ServeHTTP(gzipResponseWriter, r)
 			return
 		} else {
