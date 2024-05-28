@@ -20,8 +20,8 @@ type responseData struct {
 
 // Добавляем реализацию http.ResponseWriter.
 type loggingResponseWriter struct {
-	ResponseWriter http.ResponseWriter // встраиваем оригинальный http.ResponseWriter
-	responseData   *responseData
+	http.ResponseWriter // встраиваем оригинальный http.ResponseWriter
+	responseData        *responseData
 }
 
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
@@ -41,10 +41,6 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	// записываем код статуса, используя оригинальный http.ResponseWriter
 	r.ResponseWriter.WriteHeader(statusCode)
 	r.responseData.status = statusCode // захватываем код статуса
-}
-
-func (r *loggingResponseWriter) Header() http.Header {
-	return r.ResponseWriter.Header()
 }
 
 // LoggingMiddleware для логирования запросов.
