@@ -28,14 +28,14 @@ func main() {
 
 	ms, err := storage.NewStorage(cfg)
 	if err != nil {
-		log.Fatalf("Ошибка инициализации хранилища: %v", err)
+		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}
 
 	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("Ошибка сервера: %v", err)
+		zapLog.Fatalf("Ошибка сервера: %v", err)
 	}
 
-	log.Println("Приложение завершило работу.")
+	zapLog.Infoln("Приложение завершило работу.")
 }
