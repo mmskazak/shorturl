@@ -105,7 +105,7 @@ func TestInFile_GetShortURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &InFile{
 				inMe:     tt.fields.InMe,
-				FilePath: tt.fields.FilePath,
+				filePath: tt.fields.FilePath,
 			}
 			got, err := m.GetShortURL(tt.args.id)
 			if (err != nil) != tt.wantErr {

@@ -81,7 +81,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &InMemory{
 				mu:   tt.fields.Mu,
-				Data: tt.fields.Data,
+				data: tt.fields.Data,
 			}
 			if err := m.SetShortURL(tt.args.id, tt.args.targetURL); (err != nil) != tt.wantErr {
 				t.Errorf("SetShortURL() error = %v, wantErr %v", err, tt.wantErr)

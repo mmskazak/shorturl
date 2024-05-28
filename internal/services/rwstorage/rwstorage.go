@@ -59,8 +59,8 @@ func (p *Producer) WriteData(shData *ShortURLStruct) error {
 
 type Consumer struct {
 	file *os.File
-	// добавляем reader в Consumer
-	reader *bufio.Reader
+	// добавляем Reader в Consumer
+	Reader *bufio.Scanner
 }
 
 func NewConsumer(filename string) (*Consumer, error) {
@@ -72,20 +72,17 @@ func NewConsumer(filename string) (*Consumer, error) {
 	return &Consumer{
 		file: file,
 		// создаём новый Reader
-		reader: bufio.NewReader(file),
+		Reader: bufio.NewScanner(file),
 	}, nil
 }
 
-func (c *Consumer) ReadDataFromFile() (*ShortURLStruct, error) {
+func (c *Consumer) ReadLineInFile() (*ShortURLStruct, error) {
 	// читаем данные до символа переноса строки
-	data, err := c.reader.ReadBytes('\n')
-	if err != nil {
-		return nil, err //nolint: wrapcheck,gocritic // нужна чистая ошибка, может быть EOF
-	}
+	data := c.Reader.Text()
 
 	// преобразуем данные из JSON-представления в структуру
 	shortURL := ShortURLStruct{}
-	err = json.Unmarshal(data, &shortURL)
+	err := json.Unmarshal([]byte(data), &shortURL)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshal shor url %w", err)
 	}

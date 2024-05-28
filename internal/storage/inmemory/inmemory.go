@@ -10,20 +10,25 @@ var ErrNotFound = errors.New("key not found")
 
 type InMemory struct {
 	mu   *sync.Mutex
-	Data map[string]string
+	data map[string]string
+}
+
+// NumberOfEntries - количество записей.
+func (m *InMemory) NumberOfEntries() int {
+	return len(m.data)
 }
 
 func NewInMemory() (*InMemory, error) {
 	return &InMemory{
 		mu:   &sync.Mutex{},
-		Data: make(map[string]string),
+		data: make(map[string]string),
 	}, nil
 }
 
 func (m *InMemory) GetShortURL(id string) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	targetURL, ok := m.Data[id]
+	targetURL, ok := m.data[id]
 	if !ok {
 		return "", ErrNotFound
 	}
@@ -39,9 +44,9 @@ func (m *InMemory) SetShortURL(id string, targetURL string) error {
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if _, ok := m.Data[id]; ok {
+	if _, ok := m.data[id]; ok {
 		return ErrKeyAlreadyExists
 	}
-	m.Data[id] = targetURL
+	m.data[id] = targetURL
 	return nil
 }

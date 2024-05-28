@@ -11,7 +11,7 @@ import (
 
 type InFile struct {
 	inMe     *inmemory.InMemory
-	FilePath string
+	filePath string
 }
 
 func NewInFile(cfg *config.Config) (*InFile, error) {
@@ -22,7 +22,7 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 
 	ms := &InFile{
 		inMe:     inm,
-		FilePath: cfg.FileStoragePath,
+		filePath: cfg.FileStoragePath,
 	}
 
 	if err := readFileStorage(ms, cfg); err != nil {
@@ -42,14 +42,14 @@ func (m *InFile) SetShortURL(id string, targetURL string) error {
 		return fmt.Errorf("error setting short url: %w", err)
 	}
 
-	if m.FilePath != "" {
-		producer, err := rwstorage.NewProducer(m.FilePath)
+	if m.filePath != "" {
+		producer, err := rwstorage.NewProducer(m.filePath)
 		if err != nil {
 			return fmt.Errorf("ошибка создания producer %w", err)
 		}
 
 		shData := rwstorage.ShortURLStruct{
-			UUID:        strconv.Itoa(len(m.inMe.Data)),
+			UUID:        strconv.Itoa(m.inMe.NumberOfEntries()),
 			ShortURL:    id,
 			OriginalURL: targetURL,
 		}
@@ -70,19 +70,18 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 		return fmt.Errorf("error read file storage %w", err)
 	}
 
-	for {
-		dataOfURL, err := consumer.ReadDataFromFile()
+	for consumer.Reader.Scan() {
+		dataOfURL, err := consumer.ReadLineInFile()
 		if err != nil {
-			if err.Error() != "EOF" {
-				return fmt.Errorf("ошибка при чтении: %w", err)
-			}
-			fmt.Println("Достигнут конец файла.")
-			break
+			return fmt.Errorf("consumer error read line in file: %w", err)
 		}
 
 		log.Printf("Прочитанные данные: %+v\n", dataOfURL)
-		m.inMe.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
-		log.Printf("Длина мапы: %+v\n", len(m.inMe.Data))
+		err = m.inMe.SetShortURL(dataOfURL.ShortURL, dataOfURL.OriginalURL)
+		if err != nil {
+			return fmt.Errorf("error setting short url: %w", err)
+		}
+		log.Printf("Длина мапы: %+v\n", m.inMe.NumberOfEntries())
 	}
 	return nil
 }
