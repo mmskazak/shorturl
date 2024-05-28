@@ -10,7 +10,7 @@ import (
 )
 
 type InFile struct {
-	InMe     *inmemory.InMemory
+	inMe     *inmemory.InMemory
 	FilePath string
 }
 
@@ -21,7 +21,7 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 	}
 
 	ms := &InFile{
-		InMe:     inm,
+		inMe:     inm,
 		FilePath: cfg.FileStoragePath,
 	}
 
@@ -33,11 +33,11 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 }
 
 func (m *InFile) GetShortURL(id string) (string, error) {
-	return m.InMe.GetShortURL(id) //nolint:wrapcheck //ошибка обрабатывается далее
+	return m.inMe.GetShortURL(id) //nolint:wrapcheck //ошибка обрабатывается далее
 }
 
 func (m *InFile) SetShortURL(id string, targetURL string) error {
-	err := m.InMe.SetShortURL(id, targetURL)
+	err := m.inMe.SetShortURL(id, targetURL)
 	if err != nil {
 		return fmt.Errorf("error setting short url: %w", err)
 	}
@@ -49,7 +49,7 @@ func (m *InFile) SetShortURL(id string, targetURL string) error {
 		}
 
 		shData := rwstorage.ShortURLStruct{
-			UUID:        strconv.Itoa(len(m.InMe.Data)),
+			UUID:        strconv.Itoa(len(m.inMe.Data)),
 			ShortURL:    id,
 			OriginalURL: targetURL,
 		}
@@ -81,8 +81,8 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 		}
 
 		log.Printf("Прочитанные данные: %+v\n", dataOfURL)
-		m.InMe.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
-		log.Printf("Длина мапы: %+v\n", len(m.InMe.Data))
+		m.inMe.Data[dataOfURL.ShortURL] = dataOfURL.OriginalURL
+		log.Printf("Длина мапы: %+v\n", len(m.inMe.Data))
 	}
 	return nil
 }
