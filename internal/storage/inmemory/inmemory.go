@@ -2,10 +2,10 @@ package inmemory
 
 import (
 	"errors"
+	"mmskazak/shorturl/internal/storage"
 	"sync"
 )
 
-var ErrNotFound = errors.New("key not found")
 var ErrKeyAlreadyExists = errors.New("key already exists")
 
 type InMemory struct {
@@ -25,7 +25,7 @@ func (m *InMemory) GetShortURL(id string) (string, error) {
 	defer m.mu.Unlock()
 	targetURL, ok := m.Data[id]
 	if !ok {
-		return "", ErrNotFound
+		return "", storage.ErrNotFound
 	}
 	return targetURL, nil
 }

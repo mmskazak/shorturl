@@ -8,6 +8,8 @@ import (
 	"mmskazak/shorturl/internal/storage/inmemory"
 )
 
+var ErrNotFound = errors.New("key not found")
+
 type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
