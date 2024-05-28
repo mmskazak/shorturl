@@ -9,20 +9,20 @@ var ErrNotFound = errors.New("key not found")
 var ErrKeyAlreadyExists = errors.New("key already exists")
 
 type InMemory struct {
-	Mu   *sync.Mutex
+	mu   *sync.Mutex
 	Data map[string]string
 }
 
 func NewInMemory() (*InMemory, error) {
 	return &InMemory{
-		Mu:   &sync.Mutex{},
+		mu:   &sync.Mutex{},
 		Data: make(map[string]string),
 	}, nil
 }
 
 func (m *InMemory) GetShortURL(id string) (string, error) {
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	targetURL, ok := m.Data[id]
 	if !ok {
 		return "", ErrNotFound
@@ -37,8 +37,8 @@ func (m *InMemory) SetShortURL(id string, targetURL string) error {
 	if targetURL == "" {
 		return errors.New("URL is empty")
 	}
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if _, ok := m.Data[id]; ok {
 		return ErrKeyAlreadyExists
 	}
