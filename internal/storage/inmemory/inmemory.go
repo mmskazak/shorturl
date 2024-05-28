@@ -2,11 +2,9 @@ package inmemory
 
 import (
 	"errors"
+	"mmskazak/shorturl/internal/common"
 	"sync"
 )
-
-var ErrKeyAlreadyExists = errors.New("key already exists")
-var ErrNotFound = errors.New("key not found")
 
 type InMemory struct {
 	mu   *sync.Mutex
@@ -30,7 +28,7 @@ func (m *InMemory) GetShortURL(id string) (string, error) {
 	defer m.mu.Unlock()
 	targetURL, ok := m.data[id]
 	if !ok {
-		return "", ErrNotFound
+		return "", common.ErrNotFound
 	}
 	return targetURL, nil
 }
@@ -45,7 +43,7 @@ func (m *InMemory) SetShortURL(id string, targetURL string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.data[id]; ok {
-		return ErrKeyAlreadyExists
+		return common.ErrKeyAlreadyExists
 	}
 	m.data[id] = targetURL
 	return nil
