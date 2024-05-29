@@ -2,7 +2,7 @@ package inmemory
 
 import (
 	"errors"
-	"mmskazak/shorturl/internal/common"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"sync"
 )
 
@@ -28,7 +28,7 @@ func (m *InMemory) GetShortURL(id string) (string, error) {
 	defer m.mu.Unlock()
 	targetURL, ok := m.data[id]
 	if !ok {
-		return "", common.ErrNotFound
+		return "", storageErrors.ErrNotFound
 	}
 	return targetURL, nil
 }
@@ -43,7 +43,7 @@ func (m *InMemory) SetShortURL(id string, targetURL string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.data[id]; ok {
-		return common.ErrKeyAlreadyExists
+		return storageErrors.ErrKeyAlreadyExists
 	}
 	m.data[id] = targetURL
 	return nil
