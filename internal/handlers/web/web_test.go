@@ -1,7 +1,10 @@
-package handlers
+package web
 
 import (
 	"bytes"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/storage/infile"
+	"mmskazak/shorturl/internal/storage/inmemory"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,8 +12,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"mmskazak/shorturl/internal/app/storage/mapstorage"
 )
 
 func TestMainPage(t *testing.T) {
@@ -40,11 +41,14 @@ func TestMainPage(t *testing.T) {
 
 func TestCreateShortURL(t *testing.T) {
 	// Initialize a new MapStorage for testing
-	ms := mapstorage.NewMapStorage()
+	cfg := config.Config{
+		FileStoragePath: "/tmp/file.json",
+	}
+	ms, _ := infile.NewInFile(&cfg)
 
 	// Define a test handler function that wraps CreateShortURL
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		CreateShortURL(w, r, ms, "http://ya.ru")
+		HandleCreateShortURL(w, r, ms, "http://ya.ru")
 	})
 
 	// Create a new request with a POST method and a body containing the original URL
@@ -88,11 +92,10 @@ func TestHandleRedirect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			ms := mapstorage.NewMapStorage()
-			err := ms.SetShortURL("vAlIdIds", "http://ya.ru")
-			if err != nil {
-				t.Fatal(err)
-			}
+			ms, err := inmemory.NewInMemory()
+			require.NoError(t, err)
+			err = ms.SetShortURL("vAlIdIds", "http://ya.ru")
+			require.NoError(t, err)
 
 			handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
 				HandleRedirect(w, r, ms)
@@ -100,89 +103,12 @@ func TestHandleRedirect(t *testing.T) {
 			r.Get("/{id}", handleRedirectHandler)
 
 			req, err := http.NewRequest(http.MethodGet, tc.path, http.NoBody)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 
 			assert.Equal(t, tc.expectedCode, rr.Code)
-		})
-	}
-}
-
-type GenURLDummy struct{}
-
-func (g *GenURLDummy) Generate(_ int) (string, error) {
-	return "test0001", nil
-}
-
-func Test_saveUniqueShortURL(t *testing.T) {
-	storageWithValue := mapstorage.NewMapStorage()
-	err := storageWithValue.SetShortURL("test0001", "https://ya.ru")
-	require.NoError(t, err)
-
-	type args struct {
-		storage     IStorage
-		generator   IGenShortURL
-		originalURL string
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-		err     error
-	}{
-		{
-			name: "success save",
-			args: args{
-				storage:     mapstorage.NewMapStorage(),
-				generator:   &GenURLDummy{}, // return always test0001
-				originalURL: "https://ya.ru",
-			},
-			want:    "test0001",
-			wantErr: false,
-		},
-		{
-			name: "error method not can save",
-			args: args{
-				storage:     storageWithValue,
-				generator:   &GenURLDummy{},
-				originalURL: "https://google.com",
-			},
-			want:    "",
-			wantErr: true,
-			err:     ErrMethodSetShortURLNotCanSave,
-		},
-		{
-			name: "originalURL is empty",
-			args: args{
-				storage:     mapstorage.NewMapStorage(),
-				generator:   &GenURLDummy{},
-				originalURL: "",
-			},
-			want:    "",
-			wantErr: true,
-			err:     ErrOriginalURLIsEmpty,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.wantErr {
-				got, err := saveUniqueShortURL(tt.args.storage, tt.args.generator, tt.args.originalURL)
-				require.Error(t, err)
-				assert.ErrorIs(t, err, tt.err)
-				assert.Equalf(t, tt.want, got,
-					"saveUniqueShortURL(%v, %v, %v)", tt.args.storage, tt.args.generator, tt.args.originalURL)
-				return
-			}
-			got, err := saveUniqueShortURL(tt.args.storage, tt.args.generator, tt.args.originalURL)
-			require.NoError(t, err)
-			assert.Equalf(t, tt.want, got,
-				"saveUniqueShortURL(%v, %v, %v)", tt.args.storage, tt.args.generator, tt.args.originalURL)
 		})
 	}
 }

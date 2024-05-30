@@ -1,24 +1,21 @@
-package handlers
+package web
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"log"
+	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
-	"net/url"
-
-	"mmskazak/shorturl/internal/app/services"
 
 	"github.com/go-chi/chi/v5"
 )
 
-type IStorage interface {
+type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 }
 
-type IGenShortURL interface {
+type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
 
@@ -28,11 +25,7 @@ const (
 	InternalServerErrorMsg = "Внутренняя ошибка сервера"
 )
 
-var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
-var ErrMethodSetShortURLNotCanSave = errors.New("метод SetShortURL не смог сохранить URL, ошибка")
-var ErrFuncGenerate = errors.New("функция GenerateShortURL вернула ошибку")
-
-func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, baseHost string) {
+func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storage, baseHost string) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -41,34 +34,24 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, ba
 		return
 	}
 	originalURL := string(body)
-	generator := services.NewGenIDService()
+	generator := genidurl.NewGenIDService()
+	shortURLService := shorturlservice.NewShortURLService()
+	dto := shorturlservice.DTOShortURL{
+		OriginalURL:  originalURL,
+		BaseHost:     baseHost,
+		MaxIteration: maxIteration,
+		LengthID:     defaultShortURLLength,
+	}
 
-	id, err := saveUniqueShortURL(storage, generator, originalURL)
-
+	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
 	if err != nil {
 		log.Printf("Ошибка saveUniqueShortURL: %v", err)
 		http.Error(w, "Сервису не удалось сформировать короткий URL", http.StatusInternalServerError)
 		return
 	}
 
-	base, err := url.Parse(baseHost)
-	if err != nil {
-		log.Printf("Ошибка при разборе базового URL: %v", err)
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
-		return
-	}
-
-	idPath, err := url.Parse(id)
-	if err != nil {
-		log.Printf("Ошибка при разборе пути ID: %v", err)
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
-		return
-	}
-
-	shortURL := base.ResolveReference(idPath)
-
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(shortURL.String()))
+	_, err = w.Write([]byte(shortURL))
 	if err != nil {
 		log.Printf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
@@ -76,7 +59,7 @@ func CreateShortURL(w http.ResponseWriter, r *http.Request, storage IStorage, ba
 	}
 }
 
-func HandleRedirect(w http.ResponseWriter, r *http.Request, data IStorage) {
+func HandleRedirect(w http.ResponseWriter, r *http.Request, data Storage) {
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
 
@@ -100,24 +83,4 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		log.Printf("Ошибка при обращении к главной странице: %v", err)
 	}
-}
-
-func saveUniqueShortURL(storage IStorage, generator IGenShortURL, originalURL string) (string, error) {
-	if originalURL == "" {
-		return "", ErrOriginalURLIsEmpty
-	}
-
-	var err error
-	for range maxIteration {
-		id, err := generator.Generate(defaultShortURLLength)
-		if err != nil {
-			return "", fmt.Errorf("%w: %w", ErrFuncGenerate, err)
-		}
-
-		err = storage.SetShortURL(id, originalURL)
-		if err == nil {
-			return id, nil
-		}
-	}
-	return "", fmt.Errorf("%w: %w", ErrMethodSetShortURLNotCanSave, err)
 }

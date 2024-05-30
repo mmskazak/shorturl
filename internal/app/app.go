@@ -4,17 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"mmskazak/shorturl/internal/app/config"
-	"mmskazak/shorturl/internal/app/handlers"
-	"mmskazak/shorturl/internal/app/middleware"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/handlers/api"
+	"mmskazak/shorturl/internal/handlers/web"
+	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// IStorage второй раз объявляю интерфейс. Объявляем интерфейс где его используем.
-type IStorage interface {
+type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 }
@@ -26,27 +28,42 @@ type App struct {
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
-func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, writeTimeout time.Duration) *App {
+func NewApp(cfg *config.Config,
+	storage Storage,
+	readTimeout time.Duration,
+	writeTimeout time.Duration,
+	zapLog *zap.SugaredLogger) *App {
 	router := chi.NewRouter()
 
-	// Добавление middleware
-	router.Use(middleware.LoggingMiddleware)
+	// Add the custom logging middleware to the router
+	LoggingMiddlewareRich := func(next http.Handler) http.Handler {
+		return middleware.LoggingMiddleware(next, zapLog)
+	}
 
-	router.Get("/", handlers.MainPage)
+	// Добавление middleware
+	router.Use(LoggingMiddlewareRich)
+	router.Use(middleware.GzipMiddleware)
+
+	router.Get("/", web.MainPage)
 
 	baseHost := cfg.BaseHost // Получаем значение из конфига
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.HandleRedirect(w, r, storage)
+		web.HandleRedirect(w, r, storage)
 	}
 	router.Get("/{id}", handleRedirectHandler)
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	createShortURLHandler := func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateShortURL(w, r, storage, baseHost)
+	shortURLCreate := func(w http.ResponseWriter, r *http.Request) {
+		web.HandleCreateShortURL(w, r, storage, baseHost)
 	}
-	router.Post("/", createShortURLHandler)
+	router.Post("/", shortURLCreate)
+
+	shortURLCreateAPI := func(w http.ResponseWriter, r *http.Request) {
+		api.HandleCreateShortURL(w, r, storage, baseHost)
+	}
+	router.Post("/api/shorten", shortURLCreateAPI)
 
 	return &App{
 		server: &http.Server{
@@ -60,7 +77,7 @@ func NewApp(cfg *config.Config, storage IStorage, readTimeout time.Duration, wri
 
 // Start запускает сервер приложения.
 func (a *App) Start() error {
-	log.Printf("Server is running on %v", a.server.Addr)
+	log.Printf("Server is running on %v\n", a.server.Addr)
 
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {

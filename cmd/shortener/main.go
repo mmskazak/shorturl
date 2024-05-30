@@ -4,32 +4,38 @@ import (
 	"errors"
 	"log"
 	"mmskazak/shorturl/internal/app"
-	"mmskazak/shorturl/internal/app/storage/mapstorage"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/logger"
+	"mmskazak/shorturl/internal/storage"
 	"net/http"
-
-	"mmskazak/shorturl/internal/app/config"
-	"mmskazak/shorturl/internal/app/helpers"
 )
 
 func main() {
-	appInfo, err := helpers.GetAppNameAndVersion()
-	if err != nil {
-		log.Printf("Ошибка при получении информации о приложении: %v", err)
-	} else {
-		log.Printf("Название приложения: %v", appInfo.Name)
-		log.Printf("Версия: %v", appInfo.Version)
-	}
-
 	cfg, err := config.InitConfig()
 	if err != nil {
-		log.Fatalf("ошибка инициализации конфигурации в main %v", err)
+		log.Fatalf("Ошибка инициализации конфигурации: %v", err)
 	}
 
-	ms := mapstorage.NewMapStorage()
+	level, err := cfg.LogLevel.Value()
+	if err != nil {
+		log.Printf("Ошибка получения уровня логирования: %v", err)
+	}
 
-	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout)
+	zapLog, err := logger.Init(level)
+	if err != nil {
+		log.Printf("ошибка инициализации логера output: %v", err)
+	}
+
+	ms, err := storage.NewStorage(cfg)
+	if err != nil {
+		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
+	}
+
+	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("server error: %v", err)
+		zapLog.Fatalf("Ошибка сервера: %v", err)
 	}
+
+	zapLog.Infoln("Приложение завершило работу.")
 }
