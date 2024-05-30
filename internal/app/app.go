@@ -78,7 +78,7 @@ func NewApp(cfg *config.Config,
 
 		web.PingPostgreSQL(w, r, pinger)
 	}
-	router.Post("/ping", pingPostgreSQL)
+	router.Get("/ping", pingPostgreSQL)
 
 	return &App{
 		server: &http.Server{
