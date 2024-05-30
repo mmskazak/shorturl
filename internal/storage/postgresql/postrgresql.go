@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type PostgreSQL struct {
@@ -11,7 +13,7 @@ type PostgreSQL struct {
 }
 
 func NewPostgreSQL(connectionString string) (*PostgreSQL, error) {
-	db, err := sql.Open("postgres", connectionString)
+	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open connection to postgresql: %w", err)
 	}
