@@ -21,6 +21,10 @@ type Storage interface {
 	SetShortURL(id string, targetURL string) error
 }
 
+type Pinger interface {
+	Ping() error
+}
+
 type App struct {
 	server *http.Server
 }
@@ -64,6 +68,17 @@ func NewApp(cfg *config.Config,
 		api.HandleCreateShortURL(w, r, storage, baseHost)
 	}
 	router.Post("/api/shorten", shortURLCreateAPI)
+
+	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
+		pinger, ok := storage.(Pinger)
+		if !ok {
+			http.Error(w, ErrStartingServer, http.StatusInternalServerError)
+			return
+		}
+
+		web.PingPostgreSQL(w, r, pinger)
+	}
+	router.Post("/ping", pingPostgreSQL)
 
 	return &App{
 		server: &http.Server{

@@ -6,6 +6,7 @@ import (
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage/infile"
 	"mmskazak/shorturl/internal/storage/inmemory"
+	"mmskazak/shorturl/internal/storage/postgresql"
 )
 
 type Storage interface {
@@ -15,6 +16,12 @@ type Storage interface {
 
 func NewStorage(cfg *config.Config) (Storage, error) {
 	switch {
+	case cfg.DataBaseDSN != "":
+		pg, err := postgresql.NewPostgreSQL(cfg.DataBaseDSN)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to postgresql: %w", err)
+		}
+		return pg, nil
 	case cfg.FileStoragePath == "":
 		sm, err := inmemory.NewInMemory()
 		if err != nil {

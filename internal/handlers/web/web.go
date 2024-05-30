@@ -19,6 +19,10 @@ type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
 
+type Pinger interface {
+	Ping() error
+}
+
 const (
 	defaultShortURLLength  = 8
 	maxIteration           = 10
@@ -83,4 +87,13 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		log.Printf("Ошибка при обращении к главной странице: %v", err)
 	}
+}
+
+func PingPostgreSQL(w http.ResponseWriter, _ *http.Request, storage Pinger) {
+	err := storage.Ping()
+	if err != nil {
+		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

@@ -19,6 +19,7 @@ type Config struct {
 	Address         string        `validate:"required"`
 	BaseHost        string        `validate:"required"`
 	FileStoragePath string        `validate:"omitempty"`
+	DataBaseDSN     string        `validate:"omitempty"`
 	LogLevel        LogLevel      `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
@@ -79,6 +80,7 @@ func InitConfig() (*Config, error) {
 	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration")
 	flag.StringVar((*string)(&config.LogLevel), "l", string(config.LogLevel), "log level")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
+	flag.StringVar(&config.DataBaseDSN, "d", config.DataBaseDSN, "Database connection string")
 
 	// делаем разбор командной строки
 	flag.Parse()
@@ -117,8 +119,13 @@ func InitConfig() (*Config, error) {
 		config.FileStoragePath = fileStoragePath
 	}
 
+	if dataBaseDSN, ok := os.LookupEnv("DATABASE_DSN"); ok {
+		config.DataBaseDSN = dataBaseDSN
+	}
+
 	if err := config.validate(); err != nil {
-		return &Config{}, fmt.Errorf("ошибка валидации конфигурации: %w", err)
+		return &Config{},
+			fmt.Errorf("ошибка валидации конфигурации: %w", err)
 	}
 
 	return config, nil
