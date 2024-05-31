@@ -3,6 +3,7 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"mmskazak/shorturl/internal/config"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -93,4 +94,22 @@ func (pg *PostgreSQL) SetShortURL(shortURL string, targetURL string) error {
 		return fmt.Errorf("failed to insert record: %w", err)
 	}
 	return nil
+}
+
+func (pg *PostgreSQL) Ping() error {
+	err := pg.db.Ping()
+	if err != nil {
+		return fmt.Errorf("failed to ping PostgreSQL: %w", err)
+	}
+	return nil
+}
+
+func (pg *PostgreSQL) Close() {
+	if pg.db != nil {
+		err := pg.db.Close()
+		if err != nil {
+			log.Fatalf("Error closing database connection: %v\n", err)
+		}
+		log.Println("Database connection closed.")
+	}
 }
