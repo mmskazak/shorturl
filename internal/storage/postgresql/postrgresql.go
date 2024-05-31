@@ -29,7 +29,7 @@ func NewPostgreSQL(connectionString string) (*PostgreSQL, error) {
 	}
 
 	return &PostgreSQL{
-		db: db,
+		db,
 	}, nil
 }
 
