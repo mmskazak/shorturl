@@ -32,7 +32,6 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 
 	// Проверяем наличие базы данных dbshorturl и создаем ее при необходимости
 	var dbExists bool
-
 	err = db.QueryRow("SELECT EXISTS (SELECT datname FROM pg_catalog.pg_database WHERE datname = 'dbshorturl')").Scan(&dbExists) //nolint:lll //так удобнее читать
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if database exists: %w", err)
@@ -46,19 +45,13 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	}
 
 	// Подключаемся к базе данных dbshorturl
-	dbshorturl, err := sql.Open("pgx", cfg.DataBaseDSN+" dbname=dbshorturl")
+	_, err = db.Exec("USE dbshorturl")
 	if err != nil {
-		return nil, fmt.Errorf("failed to open connection to dbshorturl: %w", err)
-	}
-
-	// Проверяем соединение с dbshorturl
-	err = dbshorturl.Ping()
-	if err != nil {
-		return nil, fmt.Errorf("failed to ping dbshorturl connection: %w", err)
+		return nil, fmt.Errorf("failed to select database dbshorturl: %w", err)
 	}
 
 	// Создаем таблицу shorturl, если она не существует
-	_, err = dbshorturl.Exec(`
+	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS shorturl (
 			id SERIAL PRIMARY KEY,
 			short_url VARCHAR(10) NOT NULL,
@@ -70,7 +63,7 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	}
 
 	return &PostgreSQL{
-		dbshorturl,
+		db,
 	}, nil
 }
 
