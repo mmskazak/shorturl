@@ -17,7 +17,7 @@ type Storage interface {
 func NewStorage(cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.DataBaseDSN != "":
-		pg, err := postgresql.NewPostgreSQL(cfg.DataBaseDSN)
+		pg, err := postgresql.NewPostgreSQL(cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect to postgresql: %w", err)
 		}
