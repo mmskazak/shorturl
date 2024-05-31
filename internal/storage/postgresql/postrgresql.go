@@ -44,14 +44,26 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 		}
 	}
 
-	// Подключаемся к базе данных dbshorturl
-	_, err = db.Exec("USE dbshorturl")
+	// Закрываем соединение с базой данных postgres
+	err = db.Close()
 	if err != nil {
-		return nil, fmt.Errorf("failed to select database dbshorturl: %w", err)
+		return nil, fmt.Errorf("failed to close PostgreSQL connection: %w", err)
+	}
+
+	// Подключаемся к базе данных dbshorturl
+	dbShortURL, err := sql.Open("pgx", cfg.DataBaseDSN+" dbname=dbshorturl")
+	if err != nil {
+		return nil, fmt.Errorf("failed to open connection to dbshorturl: %w", err)
+	}
+
+	// Проверяем соединение с dbshorturl
+	err = dbShortURL.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("failed to ping dbshorturl connection: %w", err)
 	}
 
 	// Создаем таблицу shorturl, если она не существует
-	_, err = db.Exec(`
+	_, err = dbShortURL.Exec(`
 		CREATE TABLE IF NOT EXISTS shorturl (
 			id SERIAL PRIMARY KEY,
 			short_url VARCHAR(10) NOT NULL,
@@ -63,7 +75,7 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	}
 
 	return &PostgreSQL{
-		db,
+		dbShortURL,
 	}, nil
 }
 
