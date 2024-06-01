@@ -55,6 +55,7 @@ func NewApp(cfg *config.Config,
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
+		zapLog.Infoln("Запрос получен handleRedirectHandler")
 		web.HandleRedirect(w, r, storage)
 	}
 	router.Get("/{id}", handleRedirectHandler)
