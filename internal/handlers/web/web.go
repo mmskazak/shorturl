@@ -66,15 +66,14 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 func HandleRedirect(w http.ResponseWriter, r *http.Request, data Storage) {
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
-	log.Printf("LOG Получен запрос: %v", id)
 
 	originalURL, err := data.GetShortURL(id)
-	log.Printf("LOG Оригинальный URL: %v", originalURL)
+
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-	log.Printf("LOG Отдаем ответ: %v и Статус %v", originalURL, http.StatusTemporaryRedirect)
+
 	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
 }
 
