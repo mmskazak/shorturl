@@ -8,6 +8,7 @@ import (
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
+	"mmskazak/shorturl/internal/storage/postgresql"
 	"net/http"
 	"time"
 
@@ -59,15 +60,25 @@ func NewApp(cfg *config.Config,
 	router.Get("/{id}", handleRedirectHandler)
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	shortURLCreate := func(w http.ResponseWriter, r *http.Request) {
+	handleCreateShortURL := func(w http.ResponseWriter, r *http.Request) {
 		web.HandleCreateShortURL(w, r, storage, baseHost)
 	}
-	router.Post("/", shortURLCreate)
+	router.Post("/", handleCreateShortURL)
 
 	shortURLCreateAPI := func(w http.ResponseWriter, r *http.Request) {
 		api.HandleCreateShortURL(w, r, storage, baseHost)
 	}
 	router.Post("/api/shorten", shortURLCreateAPI)
+
+	handleSaveShortenURLsBatch := func(w http.ResponseWriter, r *http.Request) {
+		s, ok := storage.(postgresql.SaverBatch)
+		if !ok {
+			http.Error(w, ErrStartingServer, http.StatusInternalServerError)
+			return
+		}
+		api.SaveShortenURLsBatch(w, r, s, cfg.BaseHost)
+	}
+	router.Post("/api/shorten/batch", handleSaveShortenURLsBatch)
 
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
 		pinger, ok := storage.(Pinger)

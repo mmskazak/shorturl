@@ -27,7 +27,7 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 
 	// Создаем таблицу shorturl, если она не существует
 	_, err = dbShortURL.Exec(`
-			CREATE TABLE IF NOT EXISTS shorturl (
+			CREATE TABLE IF NOT EXISTS urls (
 				id SERIAL PRIMARY KEY,
 				short_url VARCHAR(10) NOT NULL,
 				original_url TEXT NOT NULL
@@ -43,10 +43,10 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	}, nil
 }
 
-func (pg *PostgreSQL) GetShortURL(shortURL string) (string, error) {
+func (p *PostgreSQL) GetShortURL(shortURL string) (string, error) {
 	var originalURL string
 	// Выполняем запрос SQL для получения original_url по short_url
-	err := pg.db.QueryRow("SELECT original_url FROM shorturl WHERE short_url = $1", shortURL).Scan(&originalURL)
+	err := p.db.QueryRow("SELECT original_url FROM urls WHERE short_url = $1", shortURL).Scan(&originalURL)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", fmt.Errorf("short URL not found %w", err)
@@ -56,29 +56,29 @@ func (pg *PostgreSQL) GetShortURL(shortURL string) (string, error) {
 	return originalURL, nil
 }
 
-func (pg *PostgreSQL) SetShortURL(shortURL string, targetURL string) error {
+func (p *PostgreSQL) SetShortURL(shortURL string, targetURL string) error {
 	// Вставляем запись в базу данных
-	_, err := pg.db.Exec("INSERT INTO shorturl (short_url, original_url) VALUES ($1, $2)", shortURL, targetURL)
+	_, err := p.db.Exec("INSERT INTO urls (short_url, original_url) VALUES ($1, $2)", shortURL, targetURL)
 	if err != nil {
 		return fmt.Errorf("failed to insert record: %w", err)
 	}
 	return nil
 }
 
-func (pg *PostgreSQL) Ping() error {
-	err := pg.db.Ping()
+func (p *PostgreSQL) Ping() error {
+	err := p.db.Ping()
 	if err != nil {
 		return fmt.Errorf("failed to ping PostgreSQL: %w", err)
 	}
 	return nil
 }
 
-func (pg *PostgreSQL) Close() error {
-	if pg.db == nil {
+func (p *PostgreSQL) Close() error {
+	if p.db == nil {
 		return nil
 	}
 
-	err := pg.db.Close()
+	err := p.db.Close()
 	if err != nil {
 		return fmt.Errorf("error closing database connection: %w", err)
 	}

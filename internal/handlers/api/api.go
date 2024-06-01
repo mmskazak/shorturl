@@ -2,10 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
+	"mmskazak/shorturl/internal/storage/postgresql"
 	"net/http"
 )
 
@@ -81,6 +83,39 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 	if err != nil {
 		log.Printf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
+		return
+	}
+}
+
+func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage postgresql.SaverBatch, baseHost string) {
+	// Парсинг JSON из тела запроса
+	var requestData []postgresql.Incoming
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Сохранение пакета коротких URL
+	outputs, err := storage.SaveBatch(requestData, baseHost)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error saving batch: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Преобразование результата в JSON
+	responseData, err := json.Marshal(outputs)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error encoding response body: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Отправка успешного ответа
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_, err = w.Write(responseData)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error write response body: %v", err), http.StatusInternalServerError)
 		return
 	}
 }
