@@ -29,7 +29,7 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	_, err = dbShortURL.Exec(`
 			CREATE TABLE IF NOT EXISTS urls (
 				id SERIAL PRIMARY KEY,
-				short_url VARCHAR(10) NOT NULL,
+				short_url VARCHAR(255) NOT NULL,
 				original_url TEXT NOT NULL
 			)
 		`)
