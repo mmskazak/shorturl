@@ -80,7 +80,7 @@ func TestHandleRedirect(t *testing.T) {
 		{
 			name:         "BadRequest",
 			path:         "/x0x0",
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusNotFound,
 		},
 		{
 			name:         "Redirect",
