@@ -67,11 +67,6 @@ func HandleRedirect(w http.ResponseWriter, r *http.Request, data Storage) {
 	// Получение значения id из URL-адреса
 	id := chi.URLParam(r, "id")
 
-	if len(id) != defaultShortURLLength {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
 	originalURL, err := data.GetShortURL(id)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
