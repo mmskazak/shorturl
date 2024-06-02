@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"mmskazak/shorturl/internal/storage/postgresql"
 	"net/url"
-	"path"
 )
 
 var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
@@ -57,8 +56,25 @@ func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForU
 		if err != nil {
 			conflictError, ok := IsConflictError(err)
 			if ok {
-				shortURL := path.Join(dto.BaseHost, conflictError.ShortURL)
-				return shortURL, ErrConflict
+				// Парсинг базового хоста
+				baseURL, err := url.Parse(dto.BaseHost)
+				if err != nil {
+					return "", fmt.Errorf("не получилось распарсить dto base_host %w", err)
+				}
+
+				// Парсинг сокращенного URL
+				shortURL, err := url.Parse(conflictError.ShortURL)
+				if err != nil {
+					return "", fmt.Errorf("не получилось распарсить conflict_Error short_url %w", err)
+				}
+
+				// Разрешение ссылки относительно базового URL-адреса
+				resolvedURL := baseURL.ResolveReference(shortURL)
+
+				// Получение строки URL
+				finalURL := resolvedURL.String()
+
+				return finalURL, ErrConflict
 			}
 		}
 
