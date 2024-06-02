@@ -51,6 +51,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
 	if errors.Is(err, shorturlservice.ErrConflict) {
 		http.Error(w, shortURL, http.StatusConflict)
+		return
 	}
 
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mmskazak/shorturl/internal/storage/postgresql"
 	"net/url"
+	"path"
 )
 
 var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
@@ -53,12 +54,12 @@ func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForU
 		}
 
 		err = storage.SetShortURL(id, dto.OriginalURL)
-		conflictError, ok := IsConflictError(err)
-
-		idPath, err := url.Parse(conflictError.ShortURL)
-		shortURL := base.ResolveReference(idPath)
-		if ok {
-			return shortURL.String(), ErrConflict
+		if err != nil {
+			conflictError, ok := IsConflictError(err)
+			if ok {
+				shortURL := path.Join(dto.BaseHost, conflictError.ShortURL)
+				return shortURL, ErrConflict
+			}
 		}
 
 		if err == nil {

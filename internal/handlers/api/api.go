@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,6 +15,14 @@ import (
 type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
+}
+
+type JSONRequest struct {
+	URL string `json:"url"`
+}
+
+type JSONResponse struct {
+	ShortURL string `json:"result"`
 }
 
 const (
@@ -36,9 +45,6 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 		return
 	}
 
-	type JSONRequest struct {
-		URL string `json:"url"`
-	}
 	jsonReq := JSONRequest{}
 
 	err = json.Unmarshal(body, &jsonReq)
@@ -58,16 +64,29 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 	}
 
 	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
+	if errors.Is(err, shorturlservice.ErrConflict) {
+		shortURLAsJSON, err := buildJSONResponse(shortURL)
+		if err != nil {
+			log.Printf("Ошибка buildJSONResponse: %v", err)
+			http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusConflict)
+		_, err = w.Write([]byte(shortURLAsJSON))
+		if err != nil {
+			log.Printf("Ошибка write, err := w.Write([]byte(shortURLAsJson)): %v", err)
+			http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	if err != nil {
 		log.Printf("Ошибка saveUniqueShortURL: %v", err)
 		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
 		return
 	}
-
-	type JSONResponse struct {
-		ShortURL string `json:"result"`
-	}
-
 	jsonResp := JSONResponse{
 		ShortURL: shortURL,
 	}
@@ -118,4 +137,16 @@ func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage postgr
 		http.Error(w, fmt.Sprintf("error write response body: %v", err), http.StatusInternalServerError)
 		return
 	}
+}
+
+func buildJSONResponse(shortURL string) (string, error) {
+	jsonResp := JSONResponse{
+		ShortURL: shortURL,
+	}
+	shortURLAsJSON, err := json.Marshal(jsonResp)
+	if err != nil {
+		return "", fmt.Errorf("ошибка json marshal %w", err)
+	}
+
+	return string(shortURLAsJSON), nil
 }

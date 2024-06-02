@@ -43,7 +43,6 @@ func GzipMiddleware(next http.Handler) http.Handler {
 		contentType := w.Header().Get("Content-Type")
 		isCompressingContent := strings.HasPrefix(contentType, "application/json") ||
 			strings.HasPrefix(contentType, "text/html")
-		fmt.Println("contentType:", contentType)
 
 		// Handle gzip response
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && isCompressingContent {

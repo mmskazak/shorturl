@@ -11,13 +11,15 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+const ErrDatabaseUniqueViolation = "23505"
+
 type PostgreSQL struct {
 	db *sql.DB
 }
 
 type ConflictError struct {
-	ShortURL string
 	Err      error
+	ShortURL string
 }
 
 func (e *ConflictError) Error() string {
@@ -38,12 +40,14 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	}
 
 	// Создаем таблицу shorturl, если она не существует
-	_, err = dbShortURL.Exec(`CREATE TABLE IF NOT EXISTS urls (
+	_, err = dbShortURL.Exec(`
+    CREATE TABLE IF NOT EXISTS urls (
         id SERIAL PRIMARY KEY,
         short_url VARCHAR(255) NOT NULL,
-        original_url TEXT NOT NULL
+        original_url TEXT NOT NULL,
+        CONSTRAINT unique_original_url UNIQUE (original_url)
     );
-    CREATE INDEX IF NOT EXISTS idx_original_url ON urls(original_url);`)
+`)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create table shorturl: %w", err)
@@ -71,12 +75,11 @@ func (p *PostgreSQL) SetShortURL(shortURL string, targetURL string) error {
 	_, err := p.db.Exec(`
         INSERT INTO urls (short_url, original_url)
         VALUES ($1, $2)
-        ON CONFLICT (original_url)
-        DO NOTHING
     `, shortURL, targetURL)
+
 	if err != nil {
 		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		if errors.As(err, &pgErr) && pgErr.Code == ErrDatabaseUniqueViolation {
 			var existingShortURL string
 			errQuery := p.db.QueryRow(`
                 SELECT short_url FROM urls WHERE original_url = $1
