@@ -2,14 +2,26 @@ package postgresql
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+
 	"mmskazak/shorturl/internal/config"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type PostgreSQL struct {
 	db *sql.DB
+}
+
+type ConflictError struct {
+	ShortURL string
+	Err      error
+}
+
+func (e *ConflictError) Error() string {
+	return fmt.Sprintf("conflict: short URL already exists: %v", e.ShortURL)
 }
 
 func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
@@ -26,13 +38,12 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
 	}
 
 	// Создаем таблицу shorturl, если она не существует
-	_, err = dbShortURL.Exec(`
-			CREATE TABLE IF NOT EXISTS urls (
-				id SERIAL PRIMARY KEY,
-				short_url VARCHAR(255) NOT NULL,
-				original_url TEXT NOT NULL
-			)
-		`)
+	_, err = dbShortURL.Exec(`CREATE TABLE IF NOT EXISTS urls (
+        id SERIAL PRIMARY KEY,
+        short_url VARCHAR(255) NOT NULL,
+        original_url TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_original_url ON urls(original_url);`)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create table shorturl: %w", err)
@@ -57,9 +68,28 @@ func (p *PostgreSQL) GetShortURL(shortURL string) (string, error) {
 }
 
 func (p *PostgreSQL) SetShortURL(shortURL string, targetURL string) error {
-	// Вставляем запись в базу данных
-	_, err := p.db.Exec("INSERT INTO urls (short_url, original_url) VALUES ($1, $2)", shortURL, targetURL)
+	_, err := p.db.Exec(`
+        INSERT INTO urls (short_url, original_url)
+        VALUES ($1, $2)
+        ON CONFLICT (original_url)
+        DO NOTHING
+    `, shortURL, targetURL)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			var existingShortURL string
+			errQuery := p.db.QueryRow(`
+                SELECT short_url FROM urls WHERE original_url = $1
+            `, targetURL).Scan(&existingShortURL)
+			if errQuery != nil {
+				return fmt.Errorf("falied to get short url for original url: %w", err)
+			}
+
+			return &ConflictError{
+				ShortURL: existingShortURL,
+				Err:      err,
+			}
+		}
 		return fmt.Errorf("failed to insert record: %w", err)
 	}
 	return nil
