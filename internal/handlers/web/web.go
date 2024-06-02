@@ -50,7 +50,13 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 
 	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
 	if errors.Is(err, shorturlservice.ErrConflict) {
-		http.Error(w, shortURL, http.StatusConflict)
+		w.WriteHeader(http.StatusConflict)
+		_, err := w.Write([]byte(shortURL))
+		if err != nil {
+			log.Printf("Ошибка записи ответа w.Write([]byte(shortURL)) при конфликте original url %v", err)
+			http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
+			return
+		}
 		return
 	}
 
