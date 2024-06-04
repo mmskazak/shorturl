@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/storage"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
@@ -30,18 +33,25 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 		return nil, fmt.Errorf("ошибка подготовки оператора: %w", err)
 	}
 	defer func() {
-		if cerr := stmt.Close(); cerr != nil {
-			log.Printf("ошибка при закрытии stmt: %v", cerr)
+		if err := stmt.Close(); err != nil {
+			log.Printf("ошибка при закрытии stmt: %v", err)
 		}
 	}()
 
 	for _, item := range items {
 		_, err = stmt.Exec(&item.CorrelationID, &item.OriginalURL)
 		if err != nil {
-			err = tx.Rollback()
-			if err != nil {
-				return nil, fmt.Errorf("error rolback transaction %w", err)
+			errRollback := tx.Rollback()
+			if errRollback != nil {
+				return nil, fmt.Errorf("error rolback transaction %w", errRollback)
 			}
+
+			// Проверим, является ли ошибка нарушением ограничения внешнего ключа
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgErr.Code == ErrDatabaseUniqueViolation {
+				return nil, storageErrors.ErrOriginalURLAlreadyExists
+			}
+
 			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
