@@ -9,6 +9,7 @@ import (
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	storageInterface "mmskazak/shorturl/internal/storage"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
 )
 
@@ -113,6 +114,10 @@ func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage storag
 	// Сохранение пакета коротких URL
 	outputs, err := storage.SaveBatch(requestData, baseHost)
 	if err != nil {
+		if errors.Is(err, storageErrors.ErrOriginalURLAlreadyExists) {
+			http.Error(w, fmt.Sprintf("conflict saving batch: %v", err), http.StatusConflict)
+			return
+		}
 		http.Error(w, fmt.Sprintf("error saving batch: %v", err), http.StatusInternalServerError)
 		return
 	}

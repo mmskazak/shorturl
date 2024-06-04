@@ -7,8 +7,9 @@ import (
 
 func TestInMemory_SetShortURL(t *testing.T) {
 	type fields struct {
-		Mu   *sync.Mutex
-		Data map[string]string
+		mu           *sync.Mutex
+		data         map[string]string
+		indexForData map[string]string
 	}
 	type args struct {
 		id        string
@@ -23,8 +24,9 @@ func TestInMemory_SetShortURL(t *testing.T) {
 		{
 			name: "first success",
 			fields: fields{
-				Mu:   &sync.Mutex{},
-				Data: map[string]string{},
+				mu:           &sync.Mutex{},
+				data:         map[string]string{},
+				indexForData: map[string]string{},
 			},
 			args: args{
 				id:        "test0001",
@@ -35,10 +37,15 @@ func TestInMemory_SetShortURL(t *testing.T) {
 		{
 			name: "second success",
 			fields: fields{
-				Mu: &sync.Mutex{},
-				Data: func() map[string]string {
+				mu: &sync.Mutex{},
+				data: func() map[string]string {
 					return map[string]string{
 						"test0001": "https://www.google.com",
+					}
+				}(),
+				indexForData: func() map[string]string {
+					return map[string]string{
+						"https://www.google.com": "test0001",
 					}
 				}(),
 			},
@@ -51,10 +58,9 @@ func TestInMemory_SetShortURL(t *testing.T) {
 		{
 			name: "tree has error",
 			fields: fields{
-				Mu: &sync.Mutex{},
-				Data: func() map[string]string {
-					return map[string]string{}
-				}(),
+				mu:           &sync.Mutex{},
+				data:         map[string]string{},
+				indexForData: map[string]string{},
 			},
 			args: args{
 				id:        "test0001",
@@ -65,10 +71,9 @@ func TestInMemory_SetShortURL(t *testing.T) {
 		{
 			name: "tree has error",
 			fields: fields{
-				Mu: &sync.Mutex{},
-				Data: func() map[string]string {
-					return map[string]string{}
-				}(),
+				mu:           &sync.Mutex{},
+				data:         map[string]string{},
+				indexForData: map[string]string{},
 			},
 			args: args{
 				id:        "",
@@ -80,8 +85,9 @@ func TestInMemory_SetShortURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &InMemory{
-				mu:   tt.fields.Mu,
-				data: tt.fields.Data,
+				mu:           tt.fields.mu,
+				data:         tt.fields.data,
+				indexForData: tt.fields.indexForData,
 			}
 			if err := m.SetShortURL(tt.args.id, tt.args.targetURL); (err != nil) != tt.wantErr {
 				t.Errorf("SetShortURL() error = %v, wantErr %v", err, tt.wantErr)

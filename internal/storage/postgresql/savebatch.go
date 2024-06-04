@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/storage"
-	"net/url"
 )
 
 func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
@@ -46,7 +45,7 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
-		fullShortURL, err := getFullShortURL(baseHost, item.CorrelationID)
+		fullShortURL, err := storage.GetFullShortURL(baseHost, item.CorrelationID)
 		if err != nil {
 			return nil, fmt.Errorf("error getFullShortURL from two parts %w", err)
 		}
@@ -63,14 +62,4 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 	}
 
 	return outputs, nil
-}
-
-func getFullShortURL(baseHost, correlationID string) (string, error) {
-	u, err := url.Parse(baseHost)
-	if err != nil {
-		return "", fmt.Errorf("error parsing baseHost: %w", err)
-	}
-	// ResolveReference correctly concatenates the base URL and the path
-	u = u.ResolveReference(&url.URL{Path: correlationID})
-	return u.String(), nil
 }

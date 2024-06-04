@@ -26,12 +26,12 @@ func main() {
 		log.Printf("ошибка инициализации логера output: %v", err)
 	}
 
-	ms, err := factory.NewStorage(cfg)
+	storage, err := factory.NewStorage(cfg)
 	if err != nil {
 		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}
 
-	newApp := app.NewApp(cfg, ms, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
+	newApp := app.NewApp(cfg, storage, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)

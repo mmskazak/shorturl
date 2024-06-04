@@ -1,5 +1,10 @@
 package storage
 
+import (
+	"fmt"
+	"net/url"
+)
+
 type Incoming struct {
 	CorrelationID string `json:"correlation_id"` // строковый идентификатор
 	OriginalURL   string `json:"original_url"`   // оригинальный URL
@@ -14,4 +19,14 @@ type Storage interface {
 	GetShortURL(id string) (string, error)
 	SetShortURL(id string, targetURL string) error
 	SaveBatch(items []Incoming, baseHost string) ([]Output, error)
+}
+
+func GetFullShortURL(baseHost, correlationID string) (string, error) {
+	u, err := url.Parse(baseHost)
+	if err != nil {
+		return "", fmt.Errorf("error parsing baseHost: %w", err)
+	}
+	// ResolveReference correctly concatenates the base URL and the path
+	u = u.ResolveReference(&url.URL{Path: correlationID})
+	return u.String(), nil
 }

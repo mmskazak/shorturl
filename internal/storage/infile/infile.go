@@ -43,25 +43,24 @@ func (m *InFile) SetShortURL(id string, targetURL string) error {
 		return fmt.Errorf("error setting short url: %w", err)
 	}
 
-	if m.filePath != "" {
-		producer, err := rwstorage.NewProducer(m.filePath)
-		if err != nil {
-			return fmt.Errorf("ошибка создания producer %w", err)
-		}
-
-		shData := rwstorage.ShortURLStruct{
-			UUID:        strconv.Itoa(m.inMe.NumberOfEntries()),
-			ShortURL:    id,
-			OriginalURL: targetURL,
-		}
-
-		err = producer.WriteData(&shData)
-		if err != nil {
-			return fmt.Errorf("ошибка записи строки в файл %w", err)
-		}
-		producer.Close()
-		log.Printf("Добавлени которкая ссылка %v", shData)
+	producer, err := rwstorage.NewProducer(m.filePath)
+	if err != nil {
+		return fmt.Errorf("ошибка создания producer %w", err)
 	}
+
+	shData := rwstorage.ShortURLStruct{
+		UUID:        strconv.Itoa(m.inMe.NumberOfEntries()),
+		ShortURL:    id,
+		OriginalURL: targetURL,
+	}
+
+	err = producer.WriteData(&shData)
+	if err != nil {
+		return fmt.Errorf("ошибка записи строки в файл %w", err)
+	}
+	producer.Close()
+	log.Printf("Добавлени которкая ссылка %v", shData)
+
 	return nil
 }
 
@@ -88,6 +87,33 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 }
 
 func (m *InFile) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
-	result := make([]storage.Output, len(items))
-	return result, nil
+	outputs, err := m.inMe.SaveBatch(items, baseHost)
+	if err != nil {
+		return nil, fmt.Errorf("error saving batch infile: %w", err)
+	}
+
+	producer, err := rwstorage.NewProducer(m.filePath)
+	if err != nil {
+		return nil, fmt.Errorf("save batch ошибка создания producer %w", err)
+	}
+	defer producer.Close()
+
+	number := m.inMe.NumberOfEntries() - len(items)
+	for _, item := range items {
+		number++
+		m.inMe.NumberOfEntries()
+		shData := rwstorage.ShortURLStruct{
+			UUID:        strconv.Itoa(number),
+			ShortURL:    item.CorrelationID,
+			OriginalURL: item.OriginalURL,
+		}
+
+		err = producer.WriteData(&shData)
+		if err != nil {
+			return nil, fmt.Errorf("save batch ошибка записи строки в файл %w", err)
+		}
+		log.Printf("Добавлени которкая ссылка %v", shData)
+	}
+
+	return outputs, nil
 }
