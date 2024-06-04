@@ -6,7 +6,7 @@ import (
 	"mmskazak/shorturl/internal/app"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/logger"
-	"mmskazak/shorturl/internal/storage"
+	"mmskazak/shorturl/internal/storage/factory"
 	"net/http"
 )
 
@@ -26,7 +26,7 @@ func main() {
 		log.Printf("ошибка инициализации логера output: %v", err)
 	}
 
-	ms, err := storage.NewStorage(cfg)
+	ms, err := factory.NewStorage(cfg)
 	if err != nil {
 		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}

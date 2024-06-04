@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"errors"
+	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"sync"
 )
@@ -47,4 +48,9 @@ func (m *InMemory) SetShortURL(id string, targetURL string) error {
 	}
 	m.data[id] = targetURL
 	return nil
+}
+
+func (m *InMemory) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
+	result := make([]storage.Output, len(items))
+	return result, nil
 }

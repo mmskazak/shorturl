@@ -8,7 +8,7 @@ import (
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
-	"mmskazak/shorturl/internal/storage/postgresql"
+	storageInterface "mmskazak/shorturl/internal/storage"
 	"net/http"
 	"time"
 
@@ -16,11 +16,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 )
-
-type Storage interface {
-	GetShortURL(id string) (string, error)
-	SetShortURL(id string, targetURL string) error
-}
 
 type Pinger interface {
 	Ping() error
@@ -34,7 +29,7 @@ const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
 func NewApp(cfg *config.Config,
-	storage Storage,
+	storage storageInterface.Storage,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 	zapLog *zap.SugaredLogger) *App {
@@ -72,12 +67,7 @@ func NewApp(cfg *config.Config,
 	router.Post("/api/shorten", shortURLCreateAPI)
 
 	handleSaveShortenURLsBatch := func(w http.ResponseWriter, r *http.Request) {
-		s, ok := storage.(postgresql.SaverBatch)
-		if !ok {
-			http.Error(w, ErrStartingServer, http.StatusInternalServerError)
-			return
-		}
-		api.SaveShortenURLsBatch(w, r, s, cfg.BaseHost)
+		api.SaveShortenURLsBatch(w, r, storage, cfg.BaseHost)
 	}
 	router.Post("/api/shorten/batch", handleSaveShortenURLsBatch)
 

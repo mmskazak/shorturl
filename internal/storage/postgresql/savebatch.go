@@ -4,31 +4,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"mmskazak/shorturl/internal/storage"
 	"net/url"
 )
 
-type SaverBatch interface {
-	SaveBatch([]Incoming, string) ([]Output, error)
-}
-
-type Incoming struct {
-	CorrelationID string `json:"correlation_id"` // строковый идентификатор
-	OriginalURL   string `json:"original_url"`   // оригинальный URL
-}
-
-type Output struct {
-	CorrelationID string `json:"correlation_id"` // строковый идентификатор
-	ShortURL      string `json:"short_url"`      // короткий URL
-}
-
-func (p *PostgreSQL) SaveBatch(items []Incoming, baseHost string) ([]Output, error) {
+func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
 	lenItems := len(items)
 
 	if lenItems == 0 {
 		return nil, errors.New("batch with original URL is empty")
 	}
 
-	outputs := make([]Output, 0, lenItems)
+	outputs := make([]storage.Output, 0, lenItems)
 
 	tx, err := p.db.Begin()
 	if err != nil {
@@ -64,7 +51,7 @@ func (p *PostgreSQL) SaveBatch(items []Incoming, baseHost string) ([]Output, err
 			return nil, fmt.Errorf("error getFullShortURL from two parts %w", err)
 		}
 
-		outputs = append(outputs, Output{
+		outputs = append(outputs, storage.Output{
 			CorrelationID: item.CorrelationID,
 			ShortURL:      fullShortURL,
 		})

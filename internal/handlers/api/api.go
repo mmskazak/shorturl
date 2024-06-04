@@ -8,14 +8,9 @@ import (
 	"log"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	"mmskazak/shorturl/internal/storage/postgresql"
+	storageInterface "mmskazak/shorturl/internal/storage"
 	"net/http"
 )
-
-type Storage interface {
-	GetShortURL(id string) (string, error)
-	SetShortURL(id string, targetURL string) error
-}
 
 type JSONRequest struct {
 	URL string `json:"url"`
@@ -32,7 +27,7 @@ const (
 	ServiceNotCanCreateShortURL = "Сервису не удалось сформировать короткий URL"
 )
 
-func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storage, baseHost string) {
+func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage storageInterface.Storage, baseHost string) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Accept", "application/json")
@@ -106,9 +101,9 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage Storag
 	}
 }
 
-func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage postgresql.SaverBatch, baseHost string) {
+func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage storageInterface.Storage, baseHost string) {
 	// Парсинг JSON из тела запроса
-	var requestData []postgresql.Incoming
+	var requestData []storageInterface.Incoming
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)

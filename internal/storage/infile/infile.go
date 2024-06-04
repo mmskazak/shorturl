@@ -5,6 +5,7 @@ import (
 	"log"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/services/rwstorage"
+	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"strconv"
 )
@@ -84,4 +85,9 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 		log.Printf("Длина мапы: %+v\n", m.inMe.NumberOfEntries())
 	}
 	return nil
+}
+
+func (m *InFile) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
+	result := make([]storage.Output, len(items))
+	return result, nil
 }
