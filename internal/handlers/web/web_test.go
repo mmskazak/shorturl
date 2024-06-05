@@ -2,12 +2,13 @@ package web
 
 import (
 	"bytes"
-	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/storage/infile"
 	"mmskazak/shorturl/internal/storage/inmemory"
+	"mmskazak/shorturl/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/golang/mock/gomock"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -40,28 +41,31 @@ func TestMainPage(t *testing.T) {
 }
 
 func TestCreateShortURL(t *testing.T) {
-	// Initialize a new MapStorage for testing
-	cfg := config.Config{
-		FileStoragePath: "/tmp/file.json",
-	}
-	ms, _ := infile.NewInFile(&cfg)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	// Define a test handler function that wraps CreateShortURL
+	// Создаем мок-объект для Storage
+	mockStorage := mocks.NewMockStorage(ctrl)
+
+	// Определяем, что мы ожидаем вызов SetShortURL с аргументами и возвращаем nil ошибку
+	mockStorage.EXPECT().SetShortURL(gomock.Any(), "http://ya.ru").Return(nil)
+
+	// Создаем хендлер с мок-объектом
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		HandleCreateShortURL(w, r, ms, "http://ya.ru")
+		HandleCreateShortURL(w, r, mockStorage, "http://localhost")
 	})
 
-	// Create a new request with a POST method and a body containing the original URL
+	// Создаем новый запрос с методом POST и телом, содержащим оригинальный URL
 	reqBody := bytes.NewBufferString("http://ya.ru")
 	req := httptest.NewRequest(http.MethodPost, "/", reqBody)
 
-	// Create a new response recorder to capture the response from the handler
+	// Создаем новый response recorder для захвата ответа от хендлера
 	w := httptest.NewRecorder()
 
-	// Call the handler function with the test request and response recorder
+	// Вызываем хендлер с тестовым запросом и response recorder
 	handler.ServeHTTP(w, req)
 
-	// Check that the response status code is 201 Created
+	// Проверяем, что статус ответа 201 Created
 	require.Equal(t, http.StatusCreated, w.Code)
 	assert.NotEmpty(t, w.Body.String())
 }
