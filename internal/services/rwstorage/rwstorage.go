@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -111,5 +112,36 @@ func (p *Producer) WriteBatch(batch []ShortURLStruct) error {
 			return fmt.Errorf("ошибка записи данных %w", err)
 		}
 	}
+	return nil
+}
+
+func (p *Producer) AppendToFile(sourceFilePath, destFilePath string) error {
+	sourceFile, err := os.Open(sourceFilePath)
+	if err != nil {
+		return fmt.Errorf("error opening source file: %w", err)
+	}
+	defer func(sourceFile *os.File) {
+		err := sourceFile.Close()
+		if err != nil {
+			log.Printf("error close source file %v", err)
+		}
+	}(sourceFile)
+
+	destFile, err := os.OpenFile(destFilePath, os.O_APPEND|os.O_WRONLY, PermFile0644)
+	if err != nil {
+		return fmt.Errorf("error opening destination file: %w", err)
+	}
+	defer func(destFile *os.File) {
+		err := destFile.Close()
+		if err != nil {
+			log.Printf("error close destination file %v", err)
+		}
+	}(destFile)
+
+	_, err = io.Copy(destFile, sourceFile)
+	if err != nil {
+		return fmt.Errorf("error copying data from source to destination: %w", err)
+	}
+
 	return nil
 }

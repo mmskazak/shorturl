@@ -44,11 +44,11 @@ func (m *InMemory) SetShortURL(id string, targetURL string) error {
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if _, ok := m.data[id]; ok {
-		return storageErrors.ErrKeyAlreadyExists
-	}
 	if _, ok := m.indexForData[targetURL]; ok {
 		return storageErrors.ErrOriginalURLAlreadyExists
+	}
+	if _, ok := m.data[id]; ok {
+		return storageErrors.ErrKeyAlreadyExists
 	}
 	m.data[id] = targetURL
 	m.indexForData[targetURL] = id

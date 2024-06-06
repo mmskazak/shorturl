@@ -9,6 +9,9 @@ import (
 	"strconv"
 )
 
+// Определяем константу для сообщения об ошибке.
+const errMsgSaveBatchAndRemove = "error save batch and removing temp file %w"
+
 type InFile struct {
 	inMe     *inmemory.InMemory
 	filePath string
