@@ -68,8 +68,7 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 
 		for rows.Next() {
 			var shortURL string
-			var correlationID string
-			if err := rows.Scan(&correlationID, &shortURL); err != nil {
+			if err := rows.Scan(&shortURL); err != nil {
 				return nil, fmt.Errorf("error scanning row: %w", err)
 			}
 
@@ -79,7 +78,7 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 			}
 
 			outputs = append(outputs, storage.Output{
-				CorrelationID: correlationID,
+				CorrelationID: shortURL,
 				ShortURL:      fullShortURL,
 			})
 		}
@@ -99,7 +98,7 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 }
 
 func generateURLsStatement(count int) string {
-	const stmtTmpl = `INSERT INTO urls(short_url, original_url) VALUES %s RETURNING correlation_id, short_url`
+	const stmtTmpl = `INSERT INTO urls(short_url, original_url) VALUES %s RETURNING short_url`
 
 	valuesParts := make([]string, 0, count)
 	for i := range count {
