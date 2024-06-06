@@ -1,11 +1,13 @@
 package postgresql
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -18,58 +20,92 @@ func (p *PostgreSQL) SaveBatch(items []storage.Incoming, baseHost string) ([]sto
 	}
 
 	outputs := make([]storage.Output, 0, lenItems)
-
 	tx, err := p.db.Begin()
 	if err != nil {
 		return nil, fmt.Errorf("error beginning transaction: %w", err)
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO urls (short_url, original_url) VALUES ($1, $2) RETURNING id, short_url")
-	if err != nil {
-		err = tx.Rollback()
-		if err != nil {
-			return nil, fmt.Errorf("error rolback transaction %w", err)
-		}
-		return nil, fmt.Errorf("ошибка подготовки оператора: %w", err)
-	}
 	defer func() {
-		if err := stmt.Close(); err != nil {
-			log.Printf("ошибка при закрытии stmt: %v", err)
-		}
-	}()
-
-	for _, item := range items {
-		_, err = stmt.Exec(&item.CorrelationID, &item.OriginalURL)
 		if err != nil {
 			errRollback := tx.Rollback()
 			if errRollback != nil {
-				return nil, fmt.Errorf("error rolback transaction %w", errRollback)
+				log.Printf("error rolling back transaction: %v", errRollback)
 			}
+		} else {
+			err = tx.Commit()
+			if err != nil {
+				log.Printf("error committing transaction: %v", err)
+			}
+		}
+	}()
 
-			// Проверим, является ли ошибка нарушением ограничения внешнего ключа
+	batchSize := 4
+	// Переменная до цикла, чтобы потом вызвать defer, а не в цикле
+	var rows *sql.Rows
+	for start := 0; start < lenItems; start += batchSize {
+		end := start + batchSize
+		if end > lenItems {
+			end = lenItems
+		}
+
+		// Генерация SQL-запроса для текущей партии
+		stmt := generateURLsStatement(end - start)
+
+		// Подготовка значений для вставки
+		args := make([]interface{}, 0, (end-start)*2) //nolint:gomnd // потому что 2 элемента в каждом insert
+		for _, item := range items[start:end] {
+			args = append(args, item.CorrelationID, item.OriginalURL)
+		}
+
+		rows, err = tx.Query(stmt, args...)
+		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == ErrDatabaseUniqueViolation {
 				return nil, storageErrors.ErrOriginalURLAlreadyExists
 			}
-
 			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
-		fullShortURL, err := storage.GetFullShortURL(baseHost, item.CorrelationID)
-		if err != nil {
-			return nil, fmt.Errorf("error getFullShortURL from two parts %w", err)
+		for rows.Next() {
+			var shortURL string
+			var correlationID string
+			if err := rows.Scan(&correlationID, &shortURL); err != nil {
+				return nil, fmt.Errorf("error scanning row: %w", err)
+			}
+
+			fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
+			if err != nil {
+				return nil, fmt.Errorf("error getting full short URL: %w", err)
+			}
+
+			outputs = append(outputs, storage.Output{
+				CorrelationID: correlationID,
+				ShortURL:      fullShortURL,
+			})
 		}
 
-		outputs = append(outputs, storage.Output{
-			CorrelationID: item.CorrelationID,
-			ShortURL:      fullShortURL,
-		})
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("error iterating over rows: %w", err)
+		}
 	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, fmt.Errorf("error committing transaction: %w", err)
-	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Printf("error closing rows: %v", err)
+		}
+	}(rows)
 
 	return outputs, nil
+}
+
+func generateURLsStatement(count int) string {
+	const stmtTmpl = `INSERT INTO urls(short_url, original_url) VALUES %s RETURNING correlation_id, short_url`
+
+	valuesParts := make([]string, 0, count)
+	for i := range count {
+		valuesParts = append(valuesParts,
+			fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2)) //nolint:gomnd //собираем переменые под вставку данных
+	}
+
+	return fmt.Sprintf(stmtTmpl, strings.Join(valuesParts, ","))
 }
