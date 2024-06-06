@@ -5,7 +5,6 @@ import (
 	"log"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/services/rwstorage"
-	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"strconv"
 )
@@ -84,36 +83,4 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 		log.Printf("Длина мапы: %+v\n", m.inMe.NumberOfEntries())
 	}
 	return nil
-}
-
-func (m *InFile) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
-	outputs, err := m.inMe.SaveBatch(items, baseHost)
-	if err != nil {
-		return nil, fmt.Errorf("error saving batch infile: %w", err)
-	}
-
-	producer, err := rwstorage.NewProducer(m.filePath)
-	if err != nil {
-		return nil, fmt.Errorf("save batch ошибка создания producer %w", err)
-	}
-	defer producer.Close()
-
-	number := m.inMe.NumberOfEntries() - len(items)
-	for _, item := range items {
-		number++
-		m.inMe.NumberOfEntries()
-		shData := rwstorage.ShortURLStruct{
-			UUID:        strconv.Itoa(number),
-			ShortURL:    item.CorrelationID,
-			OriginalURL: item.OriginalURL,
-		}
-
-		err = producer.WriteData(&shData)
-		if err != nil {
-			return nil, fmt.Errorf("save batch ошибка записи строки в файл %w", err)
-		}
-		log.Printf("Добавлени которкая ссылка %v", shData)
-	}
-
-	return outputs, nil
 }

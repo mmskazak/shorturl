@@ -103,3 +103,13 @@ func (c *Consumer) Close() {
 		log.Fatalf("error consumer infile close %v", err)
 	}
 }
+
+func (p *Producer) WriteBatch(batch []ShortURLStruct) error {
+	for _, data := range batch {
+		err := p.WriteData(&data)
+		if err != nil {
+			return fmt.Errorf("ошибка записи данных %w", err)
+		}
+	}
+	return nil
+}
