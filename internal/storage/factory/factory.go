@@ -26,7 +26,7 @@ func NewStorage(ctx context.Context, cfg *config.Config) (storage.Storage, error
 		}
 		return sm, nil
 	case cfg.FileStoragePath != "":
-		sf, err := infile.NewInFile(cfg)
+		sf, err := infile.NewInFile(ctx, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize an in-file store: %w", err)
 		}

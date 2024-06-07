@@ -129,7 +129,8 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					cfg := config.Config{
 						FileStoragePath: createTempFile(t, ""),
 					}
-					s, err := infile.NewInFile(&cfg)
+					ctx := context.TODO()
+					s, err := infile.NewInFile(ctx, &cfg)
 					require.NoError(t, err)
 					return s
 				}(),
@@ -151,7 +152,8 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					cfg := config.Config{
 						FileStoragePath: createTempFile(t, ""),
 					}
-					s, err := infile.NewInFile(&cfg)
+					ctx := context.TODO()
+					s, err := infile.NewInFile(ctx, &cfg)
 					require.NoError(t, err)
 					return s
 				}(),
@@ -173,10 +175,10 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					cfg := config.Config{
 						FileStoragePath: createTempFile(t, ""),
 					}
-					s, err := infile.NewInFile(&cfg)
+					ctx := context.TODO()
+					s, err := infile.NewInFile(ctx, &cfg)
 					require.NoError(t, err)
 
-					ctx := context.TODO()
 					err = s.SetShortURL(ctx, testID, "http://ya.ru")
 					require.NoError(t, err)
 					return s
@@ -189,7 +191,8 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &ShortURLService{}
-			got, err := s.GenerateShortURL(tt.args.dto, tt.args.generator, tt.args.data)
+			ctx := context.TODO()
+			got, err := s.GenerateShortURL(ctx, tt.args.dto, tt.args.generator, tt.args.data)
 			if !tt.wantErr(t, err, fmt.Sprintf("GenerateShortURL(%v, %v, %v)",
 				tt.args.dto, tt.args.generator, tt.args.data)) {
 				return

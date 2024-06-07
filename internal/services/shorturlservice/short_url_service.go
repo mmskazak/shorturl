@@ -28,6 +28,7 @@ type DTOShortURL struct {
 type ShortURLService struct{}
 
 func (s *ShortURLService) GenerateShortURL(
+	ctx context.Context,
 	dto DTOShortURL,
 	generator IGenIDForURL,
 	data storage.Storage) (string, error) {
@@ -52,7 +53,6 @@ func (s *ShortURLService) GenerateShortURL(
 			return "", fmt.Errorf("%w: %w", ErrServiceGenerateID, err)
 		}
 
-		ctx := context.TODO()
 		err = data.SetShortURL(ctx, id, dto.OriginalURL)
 		if err != nil {
 			conflictError, ok := IsConflictError(err)

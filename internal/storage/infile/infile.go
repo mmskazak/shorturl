@@ -18,7 +18,7 @@ type InFile struct {
 	filePath string
 }
 
-func NewInFile(cfg *config.Config) (*InFile, error) {
+func NewInFile(ctx context.Context, cfg *config.Config) (*InFile, error) {
 	inm, err := inmemory.NewInMemory()
 	if err != nil {
 		return nil, fmt.Errorf("error creating inmemory storage: %w", err)
@@ -28,7 +28,7 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 		inMe:     inm,
 		filePath: cfg.FileStoragePath,
 	}
-	ctx := context.TODO()
+
 	if err := readFileStorage(ctx, ms, cfg); err != nil {
 		return nil, fmt.Errorf("error read storage data: %w", err)
 	}
