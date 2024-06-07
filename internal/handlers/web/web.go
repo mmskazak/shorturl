@@ -23,7 +23,7 @@ type IGenIDForURL interface {
 }
 
 type Pinger interface {
-	Ping() error
+	Ping(ctx context.Context) error
 }
 
 const (
@@ -101,7 +101,8 @@ func MainPage(w http.ResponseWriter, _ *http.Request) {
 }
 
 func PingPostgreSQL(w http.ResponseWriter, _ *http.Request, data Pinger) {
-	err := data.Ping()
+	ctx := context.TODO()
+	err := data.Ping(ctx)
 	if err != nil {
 		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		return

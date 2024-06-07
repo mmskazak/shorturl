@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -18,7 +19,7 @@ import (
 )
 
 type Pinger interface {
-	Ping() error
+	Ping(ctx context.Context) error
 }
 
 type App struct {
