@@ -43,12 +43,12 @@ func (m *InFile) GetShortURL(ctx context.Context, id string) (string, error) {
 func (m *InFile) SetShortURL(ctx context.Context, id string, targetURL string) error {
 	err := m.inMe.SetShortURL(ctx, id, targetURL)
 	if err != nil {
-		return fmt.Errorf("error setting short url: %w", err)
+		return fmt.Errorf("error set short url: %w", err)
 	}
 
 	producer, err := rwstorage.NewProducer(m.filePath)
 	if err != nil {
-		return fmt.Errorf("ошибка создания producer %w", err)
+		return fmt.Errorf("erorr create producer %w", err)
 	}
 
 	shData := rwstorage.ShortURLStruct{
@@ -59,10 +59,10 @@ func (m *InFile) SetShortURL(ctx context.Context, id string, targetURL string) e
 
 	err = producer.WriteData(&shData)
 	if err != nil {
-		return fmt.Errorf("ошибка записи строки в файл %w", err)
+		return fmt.Errorf("error write string in file %w", err)
 	}
 	producer.Close()
-	log.Printf("Добавлени которкая ссылка %v", shData)
+	log.Printf("Add short link %v", shData)
 
 	return nil
 }
@@ -79,12 +79,12 @@ func readFileStorage(ctx context.Context, m *InFile, cfg *config.Config) error {
 			return fmt.Errorf("consumer error read line in file: %w", err)
 		}
 
-		log.Printf("Прочитанные данные: %+v\n", dataOfURL)
+		log.Printf("Readed data: %+v\n", dataOfURL)
 		err = m.inMe.SetShortURL(ctx, dataOfURL.ShortURL, dataOfURL.OriginalURL)
 		if err != nil {
 			return fmt.Errorf("error setting short url: %w", err)
 		}
-		log.Printf("Длина мапы: %+v\n", m.inMe.NumberOfEntries())
+		log.Printf("Lenght map storage: %+v\n", m.inMe.NumberOfEntries())
 	}
 	return nil
 }
