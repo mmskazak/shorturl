@@ -38,7 +38,7 @@ func NewPostgreSQL(cfg *config.Config) (*PostgreSQL, error) {
         id SERIAL PRIMARY KEY,
         short_url VARCHAR(255) NOT NULL,
         original_url TEXT NOT NULL,
-        CONSTRAINT unique_short_url UNIQUE (short_url)
+        CONSTRAINT unique_short_url UNIQUE (short_url),
         CONSTRAINT unique_original_url UNIQUE (original_url)
     );
 `)
