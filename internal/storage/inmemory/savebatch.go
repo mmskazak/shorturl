@@ -1,16 +1,17 @@
 package inmemory
 
 import (
+	"context"
 	"fmt"
 	"mmskazak/shorturl/internal/storage"
 )
 
-func (m *InMemory) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
+func (m *InMemory) SaveBatch(ctx context.Context, items []storage.Incoming, baseHost string) ([]storage.Output, error) {
 	dontChangedData := m.data
 
 	outputs := make([]storage.Output, 0, len(items))
 	for _, v := range items {
-		err := m.SetShortURL(v.CorrelationID, v.OriginalURL)
+		err := m.SetShortURL(ctx, v.CorrelationID, v.OriginalURL)
 		if err != nil {
 			m.data = dontChangedData
 			return nil, fmt.Errorf("save batch error: %w", err)

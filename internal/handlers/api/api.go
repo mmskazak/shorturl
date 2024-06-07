@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -111,8 +112,9 @@ func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage storag
 		return
 	}
 
+	ctx := context.TODO()
 	// Сохранение пакета коротких URL
-	outputs, err := storage.SaveBatch(requestData, baseHost)
+	outputs, err := storage.SaveBatch(ctx, requestData, baseHost)
 	if err != nil {
 		if errors.Is(err, storageErrors.ErrOriginalURLAlreadyExists) {
 			http.Error(w, fmt.Sprintf("conflict saving batch: %v", err), http.StatusConflict)

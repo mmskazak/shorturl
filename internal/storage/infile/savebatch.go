@@ -1,6 +1,7 @@
 package infile
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/services/rwstorage"
@@ -9,9 +10,9 @@ import (
 	"strconv"
 )
 
-func (m *InFile) SaveBatch(items []storage.Incoming, baseHost string) ([]storage.Output, error) {
+func (m *InFile) SaveBatch(ctx context.Context, items []storage.Incoming, baseHost string) ([]storage.Output, error) {
 	lenItems := len(items)
-	outputs, err := m.inMe.SaveBatch(items, baseHost)
+	outputs, err := m.inMe.SaveBatch(ctx, items, baseHost)
 	if err != nil {
 		return nil, fmt.Errorf("error saving batch infile: %w", err)
 	}

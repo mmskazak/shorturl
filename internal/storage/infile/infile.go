@@ -1,6 +1,7 @@
 package infile
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/config"
@@ -27,20 +28,20 @@ func NewInFile(cfg *config.Config) (*InFile, error) {
 		inMe:     inm,
 		filePath: cfg.FileStoragePath,
 	}
-
-	if err := readFileStorage(ms, cfg); err != nil {
+	ctx := context.TODO()
+	if err := readFileStorage(ctx, ms, cfg); err != nil {
 		return nil, fmt.Errorf("error read storage data: %w", err)
 	}
 
 	return ms, nil
 }
 
-func (m *InFile) GetShortURL(id string) (string, error) {
-	return m.inMe.GetShortURL(id) //nolint:wrapcheck //ошибка обрабатывается далее
+func (m *InFile) GetShortURL(ctx context.Context, id string) (string, error) {
+	return m.inMe.GetShortURL(ctx, id) //nolint:wrapcheck //ошибка обрабатывается далее
 }
 
-func (m *InFile) SetShortURL(id string, targetURL string) error {
-	err := m.inMe.SetShortURL(id, targetURL)
+func (m *InFile) SetShortURL(ctx context.Context, id string, targetURL string) error {
+	err := m.inMe.SetShortURL(ctx, id, targetURL)
 	if err != nil {
 		return fmt.Errorf("error setting short url: %w", err)
 	}
@@ -66,7 +67,7 @@ func (m *InFile) SetShortURL(id string, targetURL string) error {
 	return nil
 }
 
-func readFileStorage(m *InFile, cfg *config.Config) error {
+func readFileStorage(ctx context.Context, m *InFile, cfg *config.Config) error {
 	consumer, err := rwstorage.NewConsumer(cfg.FileStoragePath)
 	if err != nil {
 		return fmt.Errorf("error read file storage %w", err)
@@ -79,7 +80,7 @@ func readFileStorage(m *InFile, cfg *config.Config) error {
 		}
 
 		log.Printf("Прочитанные данные: %+v\n", dataOfURL)
-		err = m.inMe.SetShortURL(dataOfURL.ShortURL, dataOfURL.OriginalURL)
+		err = m.inMe.SetShortURL(ctx, dataOfURL.ShortURL, dataOfURL.OriginalURL)
 		if err != nil {
 			return fmt.Errorf("error setting short url: %w", err)
 		}

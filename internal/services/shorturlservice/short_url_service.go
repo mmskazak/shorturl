@@ -1,8 +1,10 @@
 package shorturlservice
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/url"
 )
@@ -16,11 +18,6 @@ type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
 
-type Storage interface {
-	GetShortURL(id string) (string, error)
-	SetShortURL(id string, targetURL string) error
-}
-
 type DTOShortURL struct {
 	OriginalURL  string
 	BaseHost     string
@@ -30,7 +27,10 @@ type DTOShortURL struct {
 
 type ShortURLService struct{}
 
-func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForURL, storage Storage) (string, error) {
+func (s *ShortURLService) GenerateShortURL(
+	dto DTOShortURL,
+	generator IGenIDForURL,
+	data storage.Storage) (string, error) {
 	if dto.OriginalURL == "" {
 		return "", ErrOriginalURLIsEmpty
 	}
@@ -52,7 +52,8 @@ func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForU
 			return "", fmt.Errorf("%w: %w", ErrServiceGenerateID, err)
 		}
 
-		err = storage.SetShortURL(id, dto.OriginalURL)
+		ctx := context.TODO()
+		err = data.SetShortURL(ctx, id, dto.OriginalURL)
 		if err != nil {
 			conflictError, ok := IsConflictError(err)
 			if ok {

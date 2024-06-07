@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"context"
 	"errors"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"sync"
@@ -25,7 +26,7 @@ func NewInMemory() (*InMemory, error) {
 	}, nil
 }
 
-func (m *InMemory) GetShortURL(id string) (string, error) {
+func (m *InMemory) GetShortURL(_ context.Context, id string) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	targetURL, ok := m.data[id]
@@ -35,7 +36,7 @@ func (m *InMemory) GetShortURL(id string) (string, error) {
 	return targetURL, nil
 }
 
-func (m *InMemory) SetShortURL(id string, targetURL string) error {
+func (m *InMemory) SetShortURL(_ context.Context, id string, targetURL string) error {
 	if id == "" {
 		return errors.New("id is empty")
 	}
