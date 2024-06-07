@@ -13,11 +13,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type Storage interface {
-	GetShortURL(id string) (string, error)
-	SetShortURL(id string, targetURL string) error
-}
-
 type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
