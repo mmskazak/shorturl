@@ -35,7 +35,8 @@ func NewApp(
 	data storageInterface.Storage,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
-	zapLog *zap.SugaredLogger) *App {
+	zapLog *zap.SugaredLogger,
+) *App {
 	router := chi.NewRouter()
 
 	// Add the custom logging middleware to the router
