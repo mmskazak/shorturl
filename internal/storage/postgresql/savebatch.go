@@ -13,7 +13,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// SaveBatch inserts a batch of short URL mappings into the database.
+const batchSize = 1000
+
 func (p *PostgreSQL) SaveBatch(
 	ctx context.Context,
 	items []storage.Incoming,
@@ -34,8 +35,8 @@ func (p *PostgreSQL) SaveBatch(
 
 	defer func() {
 		if err != nil {
-			if errRollback := tx.Rollback(ctx); errRollback != nil {
-				log.Printf("error rolling back transaction: %v", errRollback)
+			if err = tx.Rollback(ctx); err != nil {
+				log.Printf("error rolling back transaction: %v", err)
 			}
 		} else {
 			if err = tx.Commit(ctx); err != nil {
@@ -47,44 +48,46 @@ func (p *PostgreSQL) SaveBatch(
 	// Используем pgx.Batch для отправки множества команд в одном запросе
 	batch := &pgx.Batch{}
 
-	for _, item := range items {
+	for i := range lenItems {
+		item := items[i]
 		stmt := "INSERT INTO urls(short_url, original_url) VALUES ($1, $2) RETURNING short_url"
 		batch.Queue(stmt, item.CorrelationID, item.OriginalURL)
-	}
 
-	// Отправляем батчевый запрос и получаем результаты
-	batchResults := tx.SendBatch(ctx, batch)
-	defer func(batchResults pgx.BatchResults) {
-		err := batchResults.Close()
-		if err != nil {
-			log.Printf("error closing batch results: %v", err)
-		}
-	}(batchResults)
+		// Если количество запросов в батче достигло предела или это последний элемент,
+		// то отправляем батчевый запрос и обрабатываем результаты
+		if (i+1)%batchSize == 0 || i == lenItems-1 {
+			// Отправляем батчевый запрос и получаем результаты
+			batchResults := tx.SendBatch(ctx, batch)
 
-	for range lenItems {
-		var shortURL string
-		err = batchResults.QueryRow().Scan(&shortURL)
-		if err != nil {
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
-				return nil, storageErrors.ErrUniqueViolation
+			for range batch.Len() {
+				var shortURL string
+				err = batchResults.QueryRow().Scan(&shortURL)
+				if err != nil {
+					var pgErr *pgconn.PgError
+					if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
+						return nil, storageErrors.ErrUniqueViolation
+					}
+					return nil, fmt.Errorf("error inserting data: %w", err)
+				}
+
+				fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
+				if err != nil {
+					return nil, fmt.Errorf("error getting full short URL: %w", err)
+				}
+
+				outputs = append(outputs, storage.Output{
+					CorrelationID: shortURL,
+					ShortURL:      fullShortURL,
+				})
 			}
-			return nil, fmt.Errorf("error inserting data: %w", err)
+
+			if err := batchResults.Close(); err != nil {
+				return nil, fmt.Errorf("error closing batch results: %w", err)
+			}
+
+			// Очищаем батч для следующей порции запросов
+			batch = &pgx.Batch{}
 		}
-
-		fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
-		if err != nil {
-			return nil, fmt.Errorf("error getting full short URL: %w", err)
-		}
-
-		outputs = append(outputs, storage.Output{
-			CorrelationID: shortURL,
-			ShortURL:      fullShortURL,
-		})
-	}
-
-	if err := batchResults.Close(); err != nil {
-		return nil, fmt.Errorf("error closing batch results: %w", err)
 	}
 
 	return outputs, nil
