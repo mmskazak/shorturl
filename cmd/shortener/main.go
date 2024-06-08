@@ -32,6 +32,11 @@ func main() {
 	if err != nil {
 		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}
+	defer func() {
+		if err := storage.Close(); err != nil {
+			log.Printf("Error closing storage: %v\n", err)
+		}
+	}()
 
 	newApp := app.NewApp(ctx, cfg, storage, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
 

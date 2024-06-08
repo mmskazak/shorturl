@@ -4,36 +4,35 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"mmskazak/shorturl/internal/config"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const ErrDatabaseUniqueViolation = "23505"
+const (
+	ErrCodeDatabaseUniqueViolation = "23505"
+)
 
 type PostgreSQL struct {
-	conn *pgx.Conn
+	pool *pgxpool.Pool
 }
 
-// NewPostgreSQL initializes a new PostgreSQL connection using pgx.
 func NewPostgreSQL(ctx context.Context, cfg *config.Config) (*PostgreSQL, error) {
-	// Подключаемся к базе данных dbshorturl
-	conn, err := pgx.Connect(ctx, cfg.DataBaseDSN)
+	pool, err := pgxpool.New(ctx, cfg.DataBaseDSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to dbshorturl: %w", err)
 	}
 
-	// Проверяем соединение с dbshorturl
-	err = conn.Ping(ctx)
+	err = pool.Ping(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to ping dbshorturl connection: %w", err)
 	}
 
-	// Создаем таблицу shorturl, если она не существует
-	_, err = conn.Exec(ctx, `
+	_, err = pool.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
 			short_url VARCHAR(255) NOT NULL,
@@ -47,103 +46,62 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config) (*PostgreSQL, error)
 	}
 
 	return &PostgreSQL{
-		conn: conn,
+		pool: pool,
 	}, nil
 }
 
-// GetShortURL retrieves the original URL for the given short URL.
 func (p *PostgreSQL) GetShortURL(ctx context.Context, shortURL string) (string, error) {
 	var originalURL string
-	err := p.conn.QueryRow(ctx, "SELECT original_url FROM urls WHERE short_url = $1", shortURL).Scan(&originalURL)
+	err := p.pool.QueryRow(ctx, "SELECT original_url FROM urls WHERE short_url = $1", shortURL).Scan(&originalURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", fmt.Errorf("short URL not found: %w", err)
+			return "", fmt.Errorf("short URL not found: %w", storageErrors.ErrNotFound)
 		}
 		return "", fmt.Errorf("failed to get original URL: %w", err)
 	}
 	return originalURL, nil
 }
 
-// SetShortURL inserts a new short URL and its corresponding original URL.
 func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string) error {
-	_, err := p.conn.Exec(ctx, `
+	_, err := p.pool.Exec(ctx, `
 		INSERT INTO urls (short_url, original_url)
 		VALUES ($1, $2)
 	`, shortURL, targetURL)
 
 	if err != nil {
-		if err := p.handleDuplicateError(ctx, err, shortURL, targetURL); err != nil {
-			return err
-		}
-		return fmt.Errorf("failed to insert record: %w", err)
+		return p.handleDuplicateError(ctx, err, shortURL)
 	}
 	return nil
 }
 
-// Ping checks the connection to the database.
 func (p *PostgreSQL) Ping(ctx context.Context) error {
-	err := p.conn.Ping(ctx)
+	err := p.pool.Ping(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to ping PostgreSQL: %w", err)
 	}
 	return nil
 }
 
-// Close closes the connection to the database.
-func (p *PostgreSQL) Close(ctx context.Context) error {
-	if p.conn == nil {
+func (p *PostgreSQL) Close() error {
+	if p.pool == nil {
 		return nil
 	}
-	err := p.conn.Close(ctx)
-	if err != nil {
-		return fmt.Errorf("error closing database connection: %w", err)
-	}
+	p.pool.Close()
 	return nil
 }
 
-// handleDuplicateError checks and handles unique constraint violations for the short and original URLs.
-func (p *PostgreSQL) handleDuplicateError(ctx context.Context, err error, shortURL string, targetURL string) error {
+func (p *PostgreSQL) handleDuplicateError(_ context.Context, err error, shortURL string) error {
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == ErrDatabaseUniqueViolation {
-		if dupeErr := p.checkDuplicateOriginalURL(ctx, targetURL); dupeErr != nil {
-			return dupeErr
-		}
-		if dupeErr := p.checkDuplicateShortURL(ctx, shortURL); dupeErr != nil {
-			return dupeErr
-		}
-	}
-	return nil
-}
-
-// checkDuplicateOriginalURL checks if the original URL already exists and returns the corresponding short URL.
-func (p *PostgreSQL) checkDuplicateOriginalURL(ctx context.Context, targetURL string) error {
-	var shortURL string
-	err := p.conn.QueryRow(ctx, `
-		SELECT short_url FROM urls WHERE original_url = $1
-	`, targetURL).Scan(&shortURL)
-	if err != nil {
-		return fmt.Errorf("failed to get short URL for original URL: %w", err)
-	}
-	if shortURL != "" {
-		return &storageErrors.ConflictError{
-			ShortURL: shortURL,
-			Err:      fmt.Errorf("original URL already exists %w", err),
+	if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
+		switch pgErr.ConstraintName {
+		case "unique_short_url":
+			return storageErrors.ErrKeyAlreadyExists
+		case "unique_original_url":
+			return &storageErrors.ConflictError{
+				ShortURL: shortURL,
+				Err:      fmt.Errorf("original URL already exists %w", err),
+			}
 		}
 	}
-	return nil
-}
-
-// checkDuplicateShortURL checks if the short URL already exists.
-func (p *PostgreSQL) checkDuplicateShortURL(ctx context.Context, shortURL string) error {
-	var originalURL string
-	err := p.conn.QueryRow(ctx, `
-		SELECT original_url FROM urls WHERE short_url = $1
-	`, shortURL).Scan(&originalURL)
-	if err != nil {
-		return fmt.Errorf("failed to get original URL for short URL: %w", err)
-	}
-	if originalURL != "" {
-		return storageErrors.ErrKeyAlreadyExists
-	}
-	return nil
+	return fmt.Errorf("failed to insert record: %w", err)
 }

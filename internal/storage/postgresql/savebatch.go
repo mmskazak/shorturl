@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+
 	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
-	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -16,7 +17,8 @@ import (
 func (p *PostgreSQL) SaveBatch(
 	ctx context.Context,
 	items []storage.Incoming,
-	baseHost string) ([]storage.Output, error) {
+	baseHost string,
+) ([]storage.Output, error) {
 	lenItems := len(items)
 	if lenItems == 0 {
 		return nil, errors.New("batch with original URL is empty")
@@ -25,7 +27,7 @@ func (p *PostgreSQL) SaveBatch(
 	outputs := make([]storage.Output, 0, lenItems)
 
 	// Начало транзакции
-	tx, err := p.conn.Begin(ctx)
+	tx, err := p.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error beginning transaction: %w", err)
 	}
@@ -42,68 +44,48 @@ func (p *PostgreSQL) SaveBatch(
 		}
 	}()
 
-	batchSize := 4
-	for start := 0; start < lenItems; start += batchSize {
-		end := start + batchSize
-		if end > lenItems {
-			end = lenItems
+	// Используем pgx.Batch для отправки множества команд в одном запросе
+	batch := &pgx.Batch{}
+
+	for _, item := range items {
+		stmt := "INSERT INTO urls(short_url, original_url) VALUES ($1, $2) RETURNING short_url"
+		batch.Queue(stmt, item.CorrelationID, item.OriginalURL)
+	}
+
+	// Отправляем батчевый запрос и получаем результаты
+	batchResults := tx.SendBatch(ctx, batch)
+	defer func(batchResults pgx.BatchResults) {
+		err := batchResults.Close()
+		if err != nil {
+			log.Printf("error closing batch results: %v", err)
 		}
+	}(batchResults)
 
-		// Генерация SQL-запроса для текущей партии
-		stmt := generateURLsStatement(end - start)
-
-		// Подготовка значений для вставки
-		args := make([]interface{}, 0, (end-start)*2) //nolint:gomnd //на каждую запись дав значения
-		for _, item := range items[start:end] {
-			args = append(args, item.CorrelationID, item.OriginalURL)
-		}
-
-		// Выполнение запроса с возвращением коротких URL
-		rows, err := tx.Query(ctx, stmt, args...)
+	for range lenItems {
+		var shortURL string
+		err = batchResults.QueryRow().Scan(&shortURL)
 		if err != nil {
 			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) && pgErr.Code == ErrDatabaseUniqueViolation {
-				return nil, storageErrors.ErrOriginalURLAlreadyExists
+			if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
+				return nil, storageErrors.ErrUniqueViolation
 			}
 			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
-		// Обработка результатов запроса
-		for rows.Next() {
-			var shortURL string
-			if err := rows.Scan(&shortURL); err != nil {
-				return nil, fmt.Errorf("error scanning row: %w", err)
-			}
-
-			fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
-			if err != nil {
-				return nil, fmt.Errorf("error getting full short URL: %w", err)
-			}
-
-			outputs = append(outputs, storage.Output{
-				CorrelationID: shortURL,
-				ShortURL:      fullShortURL,
-			})
+		fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
+		if err != nil {
+			return nil, fmt.Errorf("error getting full short URL: %w", err)
 		}
 
-		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("error iterating over rows: %w", err)
-		}
+		outputs = append(outputs, storage.Output{
+			CorrelationID: shortURL,
+			ShortURL:      fullShortURL,
+		})
+	}
 
-		rows.Close()
+	if err := batchResults.Close(); err != nil {
+		return nil, fmt.Errorf("error closing batch results: %w", err)
 	}
 
 	return outputs, nil
-}
-
-// generateURLsStatement generates an SQL INSERT statement for the batch of URLs.
-func generateURLsStatement(count int) string {
-	const stmtTmpl = `INSERT INTO urls(short_url, original_url) VALUES %s RETURNING short_url`
-
-	valuesParts := make([]string, count)
-	for i := range count {
-		valuesParts[i] = fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2) //nolint:gomnd //$1 $2 $3 $4
-	}
-
-	return fmt.Sprintf(stmtTmpl, strings.Join(valuesParts, ","))
 }

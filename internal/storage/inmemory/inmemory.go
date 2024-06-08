@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	"errors"
+	"log"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"sync"
 )
@@ -56,5 +57,11 @@ func (m *InMemory) SetShortURL(_ context.Context, id string, targetURL string) e
 	}
 	m.data[id] = targetURL
 	m.indexForData[targetURL] = id
+	return nil
+}
+
+func (m *InMemory) Close() error {
+	// На данный момент закрывать нечего, но метод оставлен для возможных будущих изменений
+	log.Println("InMemory storage closed (nothing to close currently)")
 	return nil
 }

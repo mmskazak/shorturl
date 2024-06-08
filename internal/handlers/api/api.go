@@ -125,18 +125,18 @@ func SaveShortenURLsBatch(
 	// Сохранение пакета коротких URL
 	outputs, err := storage.SaveBatch(ctx, requestData, baseHost)
 	if err != nil {
-		if errors.Is(err, storageErrors.ErrOriginalURLAlreadyExists) {
-			http.Error(w, fmt.Sprintf("conflict saving batch: %v", err), http.StatusConflict)
+		if errors.Is(err, storageErrors.ErrUniqueViolation) {
+			http.Error(w, "", http.StatusConflict)
 			return
 		}
-		http.Error(w, fmt.Sprintf("error saving batch: %v", err), http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
 	// Преобразование результата в JSON
 	responseData, err := json.Marshal(outputs)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error encoding response body: %v", err), http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -145,7 +145,7 @@ func SaveShortenURLsBatch(
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(responseData)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error write response body: %v", err), http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 }

@@ -88,3 +88,9 @@ func readFileStorage(ctx context.Context, m *InFile, cfg *config.Config) error {
 	}
 	return nil
 }
+
+func (m *InFile) Close() error {
+	// На данный момент закрывать нечего, но метод оставлен для возможных будущих изменений
+	log.Println("InFile storage closed (nothing to close currently)")
+	return nil
+}

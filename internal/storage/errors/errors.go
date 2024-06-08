@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	ErrOriginalURLAlreadyExists = errors.New("original url already exists")
-	ErrKeyAlreadyExists         = errors.New("key already exists")
-	ErrNotFound                 = errors.New("key not found")
+	ErrOriginalURLAlreadyExists = errors.New("error original url already exists")
+	ErrKeyAlreadyExists         = errors.New("error key already exists")
+	ErrNotFound                 = errors.New("error key not found")
+	ErrUniqueViolation          = errors.New("error database unique violation")
 )
 
 type ConflictError struct {
