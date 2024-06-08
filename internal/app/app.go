@@ -74,7 +74,7 @@ func NewApp(
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
 		pinger, ok := data.(Pinger)
 		if !ok {
-			http.Error(w, ErrStartingServer, http.StatusInternalServerError)
+			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 
