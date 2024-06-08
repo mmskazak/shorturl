@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,7 +29,12 @@ const (
 	ServiceNotCanCreateShortURL = "Сервису не удалось сформировать короткий URL"
 )
 
-func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage storageInterface.Storage, baseHost string) {
+func HandleCreateShortURL(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+	storage storageInterface.Storage,
+	baseHost string) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Accept", "application/json")
@@ -59,7 +65,7 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage storag
 		LengthID:     defaultShortURLLength,
 	}
 
-	shortURL, err := shortURLService.GenerateShortURL(dto, generator, storage)
+	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, storage)
 	if errors.Is(err, shorturlservice.ErrConflict) {
 		shortURLAsJSON, err := buildJSONResponse(shortURL)
 		if err != nil {
@@ -102,7 +108,12 @@ func HandleCreateShortURL(w http.ResponseWriter, r *http.Request, storage storag
 	}
 }
 
-func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage storageInterface.Storage, baseHost string) {
+func SaveShortenURLsBatch(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+	storage storageInterface.Storage,
+	baseHost string) {
 	// Парсинг JSON из тела запроса
 	var requestData []storageInterface.Incoming
 	err := json.NewDecoder(r.Body).Decode(&requestData)
@@ -112,7 +123,7 @@ func SaveShortenURLsBatch(w http.ResponseWriter, r *http.Request, storage storag
 	}
 
 	// Сохранение пакета коротких URL
-	outputs, err := storage.SaveBatch(requestData, baseHost)
+	outputs, err := storage.SaveBatch(ctx, requestData, baseHost)
 	if err != nil {
 		if errors.Is(err, storageErrors.ErrOriginalURLAlreadyExists) {
 			http.Error(w, fmt.Sprintf("conflict saving batch: %v", err), http.StatusConflict)

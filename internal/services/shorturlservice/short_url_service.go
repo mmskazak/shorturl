@@ -1,9 +1,11 @@
 package shorturlservice
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"mmskazak/shorturl/internal/storage/postgresql"
+	"mmskazak/shorturl/internal/storage"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/url"
 )
 
@@ -16,11 +18,6 @@ type IGenIDForURL interface {
 	Generate(int) (string, error)
 }
 
-type Storage interface {
-	GetShortURL(id string) (string, error)
-	SetShortURL(id string, targetURL string) error
-}
-
 type DTOShortURL struct {
 	OriginalURL  string
 	BaseHost     string
@@ -30,7 +27,11 @@ type DTOShortURL struct {
 
 type ShortURLService struct{}
 
-func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForURL, storage Storage) (string, error) {
+func (s *ShortURLService) GenerateShortURL(
+	ctx context.Context,
+	dto DTOShortURL,
+	generator IGenIDForURL,
+	data storage.Storage) (string, error) {
 	if dto.OriginalURL == "" {
 		return "", ErrOriginalURLIsEmpty
 	}
@@ -52,7 +53,7 @@ func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForU
 			return "", fmt.Errorf("%w: %w", ErrServiceGenerateID, err)
 		}
 
-		err = storage.SetShortURL(id, dto.OriginalURL)
+		err = data.SetShortURL(ctx, id, dto.OriginalURL)
 		if err != nil {
 			conflictError, ok := IsConflictError(err)
 			if ok {
@@ -84,7 +85,7 @@ func (s *ShortURLService) GenerateShortURL(dto DTOShortURL, generator IGenIDForU
 	}
 
 	if err != nil {
-		return "", errors.New("service can not save URL")
+		return "", fmt.Errorf("service can not save URL %w", err)
 	}
 
 	idPath, err := url.Parse(id)
@@ -101,8 +102,8 @@ func NewShortURLService() *ShortURLService {
 	return &ShortURLService{}
 }
 
-func IsConflictError(err error) (*postgresql.ConflictError, bool) {
-	var conflictErr *postgresql.ConflictError
+func IsConflictError(err error) (*storageErrors.ConflictError, bool) {
+	var conflictErr *storageErrors.ConflictError
 	if errors.As(err, &conflictErr) {
 		return conflictErr, true
 	}

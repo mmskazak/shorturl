@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"context"
 	"sync"
 	"testing"
 )
@@ -89,7 +90,8 @@ func TestInMemory_SetShortURL(t *testing.T) {
 				data:         tt.fields.data,
 				indexForData: tt.fields.indexForData,
 			}
-			if err := m.SetShortURL(tt.args.id, tt.args.targetURL); (err != nil) != tt.wantErr {
+			ctx := context.TODO()
+			if err := m.SetShortURL(ctx, tt.args.id, tt.args.targetURL); (err != nil) != tt.wantErr {
 				t.Errorf("SetShortURL() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

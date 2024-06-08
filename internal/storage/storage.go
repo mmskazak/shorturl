@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 )
@@ -16,9 +17,9 @@ type Output struct {
 }
 
 type Storage interface {
-	GetShortURL(id string) (string, error)
-	SetShortURL(id string, targetURL string) error
-	SaveBatch(items []Incoming, baseHost string) ([]Output, error)
+	GetShortURL(ctx context.Context, id string) (string, error)
+	SetShortURL(ctx context.Context, id string, targetURL string) error
+	SaveBatch(ctx context.Context, items []Incoming, baseHost string) ([]Output, error)
 }
 
 func GetFullShortURL(baseHost, correlationID string) (string, error) {

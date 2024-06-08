@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"mmskazak/shorturl/internal/config"
@@ -10,10 +11,10 @@ import (
 	"mmskazak/shorturl/internal/storage/postgresql"
 )
 
-func NewStorage(cfg *config.Config) (storage.Storage, error) {
+func NewStorage(ctx context.Context, cfg *config.Config) (storage.Storage, error) {
 	switch {
 	case cfg.DataBaseDSN != "":
-		pg, err := postgresql.NewPostgreSQL(cfg)
+		pg, err := postgresql.NewPostgreSQL(ctx, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect to postgresql: %w", err)
 		}
@@ -25,7 +26,7 @@ func NewStorage(cfg *config.Config) (storage.Storage, error) {
 		}
 		return sm, nil
 	case cfg.FileStoragePath != "":
-		sf, err := infile.NewInFile(cfg)
+		sf, err := infile.NewInFile(ctx, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize an in-file store: %w", err)
 		}

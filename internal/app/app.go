@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -18,7 +19,7 @@ import (
 )
 
 type Pinger interface {
-	Ping() error
+	Ping(ctx context.Context) error
 }
 
 type App struct {
@@ -28,8 +29,10 @@ type App struct {
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
-func NewApp(cfg *config.Config,
-	storage storageInterface.Storage,
+func NewApp(
+	ctx context.Context,
+	cfg *config.Config,
+	data storageInterface.Storage,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 	zapLog *zap.SugaredLogger) *App {
@@ -51,34 +54,34 @@ func NewApp(cfg *config.Config,
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
 		zapLog.Infoln("Запрос получен handleRedirectHandler")
-		web.HandleRedirect(w, r, storage)
+		web.HandleRedirect(ctx, w, r, data)
 	}
 	router.Get("/{id}", handleRedirectHandler)
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	handleCreateShortURL := func(w http.ResponseWriter, r *http.Request) {
-		web.HandleCreateShortURL(w, r, storage, baseHost)
+		web.HandleCreateShortURL(ctx, w, r, data, baseHost)
 	}
 	router.Post("/", handleCreateShortURL)
 
 	shortURLCreateAPI := func(w http.ResponseWriter, r *http.Request) {
-		api.HandleCreateShortURL(w, r, storage, baseHost)
+		api.HandleCreateShortURL(ctx, w, r, data, baseHost)
 	}
 	router.Post("/api/shorten", shortURLCreateAPI)
 
 	handleSaveShortenURLsBatch := func(w http.ResponseWriter, r *http.Request) {
-		api.SaveShortenURLsBatch(w, r, storage, cfg.BaseHost)
+		api.SaveShortenURLsBatch(ctx, w, r, data, cfg.BaseHost)
 	}
 	router.Post("/api/shorten/batch", handleSaveShortenURLsBatch)
 
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
-		pinger, ok := storage.(Pinger)
+		pinger, ok := data.(Pinger)
 		if !ok {
 			http.Error(w, ErrStartingServer, http.StatusInternalServerError)
 			return
 		}
 
-		web.PingPostgreSQL(w, r, pinger)
+		web.PingPostgreSQL(ctx, w, r, pinger)
 	}
 	router.Get("/ping", pingPostgreSQL)
 

@@ -1,6 +1,7 @@
 package infile
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -52,7 +53,8 @@ func TestInFile_GetShortURL(t *testing.T) {
 				InMe: func() *inmemory.InMemory {
 					inm, err := inmemory.NewInMemory()
 					require.NoError(t, err)
-					err = inm.SetShortURL("test0001", "https://google.com")
+					ctx := context.TODO()
+					err = inm.SetShortURL(ctx, "test0001", "https://google.com")
 					require.NoError(t, err)
 					return inm
 				}(),
@@ -70,7 +72,8 @@ func TestInFile_GetShortURL(t *testing.T) {
 				InMe: func() *inmemory.InMemory {
 					inm, err := inmemory.NewInMemory()
 					require.NoError(t, err)
-					err = inm.SetShortURL("test0001", "https://google.com")
+					ctx := context.TODO()
+					err = inm.SetShortURL(ctx, "test0001", "https://google.com")
 					require.NoError(t, err)
 					return inm
 				}(),
@@ -88,7 +91,8 @@ func TestInFile_GetShortURL(t *testing.T) {
 				InMe: func() *inmemory.InMemory {
 					inm, err := inmemory.NewInMemory()
 					require.NoError(t, err)
-					err = inm.SetShortURL("test0001", "https://google.com")
+					ctx := context.TODO()
+					err = inm.SetShortURL(ctx, "test0001", "https://google.com")
 					require.NoError(t, err)
 					return inm
 				}(),
@@ -107,7 +111,8 @@ func TestInFile_GetShortURL(t *testing.T) {
 				inMe:     tt.fields.InMe,
 				filePath: tt.fields.FilePath,
 			}
-			got, err := m.GetShortURL(tt.args.id)
+			ctx := context.TODO()
+			got, err := m.GetShortURL(ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetShortURL() error = %v, wantErr %v", err, tt.wantErr)
 				return

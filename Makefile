@@ -4,3 +4,6 @@ lint:
 
 lint-clean:
 	sudo rm -rf ./golangci-lint
+
+test:
+	go test ./...

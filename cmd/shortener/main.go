@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"log"
 	"mmskazak/shorturl/internal/app"
@@ -26,12 +27,13 @@ func main() {
 		log.Printf("ошибка инициализации логера output: %v", err)
 	}
 
-	storage, err := factory.NewStorage(cfg)
+	ctx := context.Background()
+	storage, err := factory.NewStorage(ctx, cfg)
 	if err != nil {
 		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}
 
-	newApp := app.NewApp(cfg, storage, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
+	newApp := app.NewApp(ctx, cfg, storage, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)
