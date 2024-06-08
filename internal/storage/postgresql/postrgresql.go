@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"mmskazak/shorturl/internal/config"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
@@ -63,14 +64,33 @@ func (p *PostgreSQL) GetShortURL(ctx context.Context, shortURL string) (string, 
 }
 
 func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string) error {
-	_, err := p.pool.Exec(ctx, `
-		INSERT INTO urls (short_url, original_url)
-		VALUES ($1, $2)
-	`, shortURL, targetURL)
+	// Начало транзакции
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("error beginning transaction: %w", err)
+	}
+
+	defer func() {
+		if errRollback := tx.Rollback(ctx); errRollback != nil {
+			log.Printf("error rolling back transaction: %v", errRollback)
+		}
+	}()
+
+	// Выполняем команду INSERT в контексте транзакции
+	_, err = tx.Exec(ctx, `
+        INSERT INTO urls (short_url, original_url)
+        VALUES ($1, $2)
+    `, shortURL, targetURL)
 
 	if err != nil {
 		return p.handleError(ctx, err, targetURL)
 	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Printf("error committing transaction: %v", err)
+	}
+
+	// Если все успешно, err остается nil и транзакция будет зафиксирована
 	return nil
 }
 
