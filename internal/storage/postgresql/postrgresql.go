@@ -69,7 +69,7 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 	`, shortURL, targetURL)
 
 	if err != nil {
-		return p.handleDuplicateError(ctx, err, shortURL)
+		return p.handleError(ctx, err, targetURL)
 	}
 	return nil
 }
@@ -90,16 +90,21 @@ func (p *PostgreSQL) Close() error {
 	return nil
 }
 
-func (p *PostgreSQL) handleDuplicateError(_ context.Context, err error, shortURL string) error {
+func (p *PostgreSQL) handleError(ctx context.Context, err error, targetURL string) error {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
 		switch pgErr.ConstraintName {
 		case "unique_short_url":
 			return storageErrors.ErrKeyAlreadyExists
 		case "unique_original_url":
+			var shortURL string
+			err := p.pool.QueryRow(ctx, "SELECT short_url FROM urls WHERE soriginal_url = $1", targetURL).Scan(&shortURL)
+			if err != nil {
+				return fmt.Errorf("error recive short URL by original: %w", err)
+			}
 			return &storageErrors.ConflictError{
 				ShortURL: shortURL,
-				Err:      fmt.Errorf("original URL already exists %w", err),
+				Err:      storageErrors.ErrOriginalURLAlreadyExists,
 			}
 		}
 	}
