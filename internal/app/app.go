@@ -53,27 +53,23 @@ func NewApp(
 	baseHost := cfg.BaseHost // Получаем значение из конфига
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	handleRedirectHandler := func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		zapLog.Infoln("Запрос получен handleRedirectHandler")
 		web.HandleRedirect(ctx, w, r, data)
-	}
-	router.Get("/{id}", handleRedirectHandler)
+	})
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	handleCreateShortURL := func(w http.ResponseWriter, r *http.Request) {
+	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		web.HandleCreateShortURL(ctx, w, r, data, baseHost)
-	}
-	router.Post("/", handleCreateShortURL)
+	})
 
-	shortURLCreateAPI := func(w http.ResponseWriter, r *http.Request) {
+	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
 		api.HandleCreateShortURL(ctx, w, r, data, baseHost)
-	}
-	router.Post("/api/shorten", shortURLCreateAPI)
+	})
 
-	handleSaveShortenURLsBatch := func(w http.ResponseWriter, r *http.Request) {
+	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
 		api.SaveShortenURLsBatch(ctx, w, r, data, cfg.BaseHost)
-	}
-	router.Post("/api/shorten/batch", handleSaveShortenURLsBatch)
+	})
 
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
 		pinger, ok := data.(Pinger)
