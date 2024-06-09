@@ -80,7 +80,7 @@ func InitConfig() (*Config, error) {
 	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration")
 	flag.StringVar((*string)(&config.LogLevel), "l", string(config.LogLevel), "log level")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
-	flag.StringVar(&config.DataBaseDSN, "d", config.DataBaseDSN, "Database connection string")
+	flag.StringVar(&config.DataBaseDSN, "d", "", "Database connection string")
 
 	// делаем разбор командной строки
 	flag.Parse()
