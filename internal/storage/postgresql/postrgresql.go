@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgerrcode"
 	"log"
 
 	"mmskazak/shorturl/internal/config"
@@ -13,10 +14,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-)
-
-const (
-	ErrCodeDatabaseUniqueViolation = "23505"
 )
 
 type PostgreSQL struct {
@@ -115,7 +112,7 @@ func (p *PostgreSQL) Close() error {
 
 func (p *PostgreSQL) handleError(ctx context.Context, err error, targetURL string) error {
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
+	if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 		switch pgErr.ConstraintName {
 		case "unique_short_url":
 			return storageErrors.ErrKeyAlreadyExists

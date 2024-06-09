@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgerrcode"
 	"log"
 
 	"mmskazak/shorturl/internal/storage"
@@ -61,7 +62,7 @@ func (p *PostgreSQL) SaveBatch(
 				err = batchResults.QueryRow().Scan(&shortURL)
 				if err != nil {
 					var pgErr *pgconn.PgError
-					if errors.As(err, &pgErr) && pgErr.Code == ErrCodeDatabaseUniqueViolation {
+					if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 						return nil, storageErrors.ErrUniqueViolation
 					}
 					return nil, fmt.Errorf("error inserting data: %w", err)
