@@ -74,6 +74,7 @@ func NewApp(
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
 		pinger, ok := data.(Pinger)
 		if !ok {
+			log.Printf("The storage does not support Ping")
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}

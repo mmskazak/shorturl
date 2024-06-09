@@ -22,9 +22,8 @@ type Pinger interface {
 }
 
 const (
-	defaultShortURLLength  = 8
-	maxIteration           = 10
-	InternalServerErrorMsg = "Внутренняя ошибка сервера"
+	defaultShortURLLength = 8
+	maxIteration          = 10
 )
 
 func HandleCreateShortURL(
@@ -64,7 +63,7 @@ func HandleCreateShortURL(
 
 	if err != nil {
 		log.Printf("Ошибка saveUniqueShortURL: %v", err)
-		http.Error(w, "Сервису не удалось сформировать короткий URL", http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -72,7 +71,7 @@ func HandleCreateShortURL(
 	_, err = w.Write([]byte(shortURL))
 	if err != nil {
 		log.Printf("Ошибка ResponseWriter: %v", err)
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 }
@@ -94,15 +93,17 @@ func HandleRedirect(ctx context.Context, w http.ResponseWriter, r *http.Request,
 func MainPage(w http.ResponseWriter, _ *http.Request) {
 	_, err := w.Write([]byte("Сервис сокращения URL"))
 	if err != nil {
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
 		log.Printf("Ошибка при обращении к главной странице: %v", err)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
 	}
 }
 
 func PingPostgreSQL(ctx context.Context, w http.ResponseWriter, _ *http.Request, data Pinger) {
 	err := data.Ping(ctx)
 	if err != nil {
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
+		log.Printf("Ошибка пинга базы данных data.Ping(ctx): %v", err)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
