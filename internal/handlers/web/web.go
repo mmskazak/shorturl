@@ -55,7 +55,7 @@ func HandleCreateShortURL(
 		_, err := w.Write([]byte(shortURL))
 		if err != nil {
 			log.Printf("Ошибка записи ответа w.Write([]byte(shortURL)) при конфликте original url %v", err)
-			http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
+			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 		return

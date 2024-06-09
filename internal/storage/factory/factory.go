@@ -2,7 +2,6 @@ package factory
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage"
@@ -25,13 +24,11 @@ func NewStorage(ctx context.Context, cfg *config.Config) (storage.Storage, error
 			return nil, fmt.Errorf("failed to initialize an in-memory store: %w", err)
 		}
 		return sm, nil
-	case cfg.FileStoragePath != "":
+	default:
 		sf, err := infile.NewInFile(ctx, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize an in-file store: %w", err)
 		}
 		return sf, nil
-	default:
-		return nil, errors.New("error creating new storage")
 	}
 }
