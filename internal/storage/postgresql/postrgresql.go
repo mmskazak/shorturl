@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -72,7 +73,9 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 
 	defer func() {
 		if errRollback := tx.Rollback(ctx); errRollback != nil {
-			log.Printf("error rolling back transaction: %v", errRollback)
+			if !errors.Is(err, sql.ErrTxDone) {
+				log.Printf("error rollback transaction: %v", errRollback)
+			}
 		}
 	}()
 
