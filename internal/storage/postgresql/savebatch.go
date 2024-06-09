@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -13,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const batchSize = 1000
+const batchSize = 5000
 
 func (p *PostgreSQL) SaveBatch(
 	ctx context.Context,
@@ -34,13 +35,9 @@ func (p *PostgreSQL) SaveBatch(
 	}
 
 	defer func() {
-		if err != nil {
-			if err = tx.Rollback(ctx); err != nil {
-				log.Printf("error rolling back transaction: %v", err)
-			}
-		} else {
-			if err = tx.Commit(ctx); err != nil {
-				log.Printf("error committing transaction: %v", err)
+		if err = tx.Rollback(ctx); err != nil {
+			if !errors.Is(err, sql.ErrTxDone) {
+				log.Printf("error rollback transaction: %v", err)
 			}
 		}
 	}()
@@ -88,6 +85,10 @@ func (p *PostgreSQL) SaveBatch(
 			// Очищаем батч для следующей порции запросов
 			batch = &pgx.Batch{}
 		}
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Printf("error committing transaction: %v", err)
 	}
 
 	return outputs, nil
