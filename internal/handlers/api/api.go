@@ -32,7 +32,8 @@ func HandleCreateShortURL(
 	w http.ResponseWriter,
 	r *http.Request,
 	storage storageInterface.Storage,
-	baseHost string) {
+	baseHost string,
+) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Accept", "application/json")
@@ -111,7 +112,8 @@ func SaveShortenURLsBatch(
 	w http.ResponseWriter,
 	r *http.Request,
 	storage storageInterface.Storage,
-	baseHost string) {
+	baseHost string,
+) {
 	// Парсинг JSON из тела запроса
 	var requestData []storageInterface.Incoming
 	err := json.NewDecoder(r.Body).Decode(&requestData)
