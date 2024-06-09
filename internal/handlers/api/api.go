@@ -23,10 +23,8 @@ type JSONResponse struct {
 }
 
 const (
-	defaultShortURLLength       = 8
-	maxIteration                = 10
-	InternalServerErrorMsg      = "Внутренняя ошибка сервера"
-	ServiceNotCanCreateShortURL = "Сервису не удалось сформировать короткий URL"
+	defaultShortURLLength = 8
+	maxIteration          = 10
 )
 
 func HandleCreateShortURL(
@@ -52,7 +50,7 @@ func HandleCreateShortURL(
 	err = json.Unmarshal(body, &jsonReq)
 	if err != nil {
 		log.Printf("Ошибка json.Unmarshal: %v", err)
-		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -70,7 +68,7 @@ func HandleCreateShortURL(
 		shortURLAsJSON, err := buildJSONResponse(shortURL)
 		if err != nil {
 			log.Printf("Ошибка buildJSONResponse: %v", err)
-			http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 
@@ -78,7 +76,7 @@ func HandleCreateShortURL(
 		_, err = w.Write([]byte(shortURLAsJSON))
 		if err != nil {
 			log.Printf("Ошибка write, err := w.Write([]byte(shortURLAsJson)): %v", err)
-			http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 		return
@@ -86,7 +84,7 @@ func HandleCreateShortURL(
 
 	if err != nil {
 		log.Printf("Ошибка saveUniqueShortURL: %v", err)
-		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 	jsonResp := JSONResponse{
@@ -95,7 +93,7 @@ func HandleCreateShortURL(
 	shortURLAsJSON, err := json.Marshal(jsonResp)
 	if err != nil {
 		log.Printf("Ошибка json.Marshal: %v", err)
-		http.Error(w, ServiceNotCanCreateShortURL, http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
@@ -103,7 +101,7 @@ func HandleCreateShortURL(
 	_, err = w.Write(shortURLAsJSON)
 	if err != nil {
 		log.Printf("Ошибка ResponseWriter: %v", err)
-		http.Error(w, InternalServerErrorMsg, http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 }
