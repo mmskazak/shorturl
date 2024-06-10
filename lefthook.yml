@@ -4,8 +4,12 @@ pre-commit:
       run: golangci-lint run -c .golangci.yml --fix
     check go mod tidy:
       run: |
-        go mod tidy
+        export GO111MODULE=on
+        go mod tidy || exit 1
         git diff --exit-code go.mod go.sum
+      fail_on_non_zero_exit: true
+      error_message: "go.mod or go.sum differs, please re-add it to your commit"
+
 
 
 
