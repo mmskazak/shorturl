@@ -24,7 +24,6 @@ type Storage interface {
 }
 
 func GetFullShortURL(baseHost, correlationID string) (string, error) {
-
 	u, err := url.Parse(baseHost)
 	if err != nil {
 		return "", fmt.Errorf("error parsing baseHost: %w", err)
