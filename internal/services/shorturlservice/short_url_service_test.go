@@ -10,6 +10,8 @@ import (
 	"os"
 	"testing"
 
+	"go.uber.org/zap"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -47,6 +49,18 @@ func createTempFile(t *testing.T, content string) string {
 }
 
 func TestShortURLService_GenerateShortURL(t *testing.T) {
+	// Логгер
+	logger, err := zap.NewProduction()
+	require.NoError(t, err)
+
+	// Не забываем освобождать ресурсы после завершения теста
+	defer func(logger *zap.Logger) {
+		err := logger.Sync()
+		if err != nil {
+			logger.Warn("Failed to sync logger", zap.Error(err))
+		}
+	}(logger)
+
 	type args struct {
 		dto       DTOShortURL
 		generator IGenIDForURL
@@ -69,7 +83,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 				},
 				generator: &GenerateIDDummy{},
 				data: func() *inmemory.InMemory {
-					s, err := inmemory.NewInMemory()
+					s, err := inmemory.NewInMemory(logger.Sugar())
 					require.NoError(t, err)
 					return s
 				}(),
@@ -88,7 +102,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 				},
 				generator: &GenerateIDDummy{},
 				data: func() *inmemory.InMemory {
-					s, err := inmemory.NewInMemory()
+					s, err := inmemory.NewInMemory(logger.Sugar())
 					require.NoError(t, err)
 					return s
 				}(),
@@ -107,7 +121,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 				},
 				generator: &GenerateIDDummy{},
 				data: func() *inmemory.InMemory {
-					s, err := inmemory.NewInMemory()
+					s, err := inmemory.NewInMemory(logger.Sugar())
 					require.NoError(t, err)
 					return s
 				}(),
@@ -130,7 +144,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 						FileStoragePath: createTempFile(t, ""),
 					}
 					ctx := context.TODO()
-					s, err := infile.NewInFile(ctx, &cfg)
+					s, err := infile.NewInFile(ctx, &cfg, logger.Sugar())
 					require.NoError(t, err)
 					return s
 				}(),
@@ -153,7 +167,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 						FileStoragePath: createTempFile(t, ""),
 					}
 					ctx := context.TODO()
-					s, err := infile.NewInFile(ctx, &cfg)
+					s, err := infile.NewInFile(ctx, &cfg, logger.Sugar())
 					require.NoError(t, err)
 					return s
 				}(),
@@ -176,7 +190,7 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 						FileStoragePath: createTempFile(t, ""),
 					}
 					ctx := context.TODO()
-					s, err := infile.NewInFile(ctx, &cfg)
+					s, err := infile.NewInFile(ctx, &cfg, logger.Sugar())
 					require.NoError(t, err)
 
 					err = s.SetShortURL(ctx, testID, "http://ya.ru")

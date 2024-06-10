@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/jackc/pgerrcode"
+	"go.uber.org/zap"
 
 	"mmskazak/shorturl/internal/config"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
@@ -18,10 +18,11 @@ import (
 )
 
 type PostgreSQL struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	zapLog *zap.SugaredLogger
 }
 
-func NewPostgreSQL(ctx context.Context, cfg *config.Config) (*PostgreSQL, error) {
+func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*PostgreSQL, error) {
 	pool, err := pgxpool.New(ctx, cfg.DataBaseDSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to dbshorturl: %w", err)
@@ -46,7 +47,8 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config) (*PostgreSQL, error)
 	}
 
 	return &PostgreSQL{
-		pool: pool,
+		pool:   pool,
+		zapLog: zapLog,
 	}, nil
 }
 
@@ -72,7 +74,7 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 	defer func() {
 		if errRollback := tx.Rollback(ctx); errRollback != nil {
 			if !errors.Is(err, sql.ErrTxDone) {
-				log.Printf("error rollback transaction: %v", errRollback)
+				p.zapLog.Infof("error rollback transaction: %v", errRollback)
 			}
 		}
 	}()
@@ -88,7 +90,7 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		log.Printf("error committing transaction: %v", err)
+		p.zapLog.Infof("error committing transaction: %v", err)
 	}
 
 	// Если все успешно, err остается nil и транзакция будет зафиксирована

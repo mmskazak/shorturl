@@ -9,7 +9,7 @@ import (
 	"log"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	storageInterface "mmskazak/shorturl/internal/storage"
+	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
 )
@@ -31,7 +31,7 @@ func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	storage storageInterface.Storage,
+	store storage.Storage,
 	baseHost string,
 ) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
@@ -64,7 +64,7 @@ func HandleCreateShortURL(
 		LengthID:     defaultShortURLLength,
 	}
 
-	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, storage)
+	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, store)
 	if errors.Is(err, shorturlservice.ErrConflict) {
 		shortURLAsJSON, err := buildJSONResponse(shortURL)
 		if err != nil {
@@ -111,11 +111,11 @@ func SaveShortenURLsBatch(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	storage storageInterface.Storage,
+	store storage.Storage,
 	baseHost string,
 ) {
 	// Парсинг JSON из тела запроса
-	var requestData []storageInterface.Incoming
+	var requestData []storage.Incoming
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
@@ -123,7 +123,7 @@ func SaveShortenURLsBatch(
 	}
 
 	// Сохранение пакета коротких URL
-	outputs, err := storage.SaveBatch(ctx, requestData, baseHost)
+	outputs, err := store.SaveBatch(ctx, requestData, baseHost)
 	if err != nil {
 		if errors.Is(err, storageErrors.ErrUniqueViolation) {
 			http.Error(w, "", http.StatusConflict)

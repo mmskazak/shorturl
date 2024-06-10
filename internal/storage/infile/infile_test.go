@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"go.uber.org/zap"
+
 	"github.com/stretchr/testify/require"
 
 	"mmskazak/shorturl/internal/storage/inmemory"
@@ -33,13 +35,27 @@ func createTempFile(t *testing.T, content string) string {
 }
 
 func TestInFile_GetShortURL(t *testing.T) {
+	// Логгер
+	logger, err := zap.NewProduction()
+	require.NoError(t, err)
+
+	// Не забываем освобождать ресурсы после завершения теста
+	defer func(logger *zap.Logger) {
+		err := logger.Sync()
+		if err != nil {
+			logger.Warn("Failed to sync logger", zap.Error(err))
+		}
+	}(logger)
+
 	type fields struct {
 		InMe     *inmemory.InMemory
 		FilePath string
 	}
+
 	type args struct {
 		id string
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -51,7 +67,7 @@ func TestInFile_GetShortURL(t *testing.T) {
 			name: "success has data",
 			fields: fields{
 				InMe: func() *inmemory.InMemory {
-					inm, err := inmemory.NewInMemory()
+					inm, err := inmemory.NewInMemory(logger.Sugar())
 					require.NoError(t, err)
 					ctx := context.TODO()
 					err = inm.SetShortURL(ctx, "test0001", "https://google.com")
@@ -70,7 +86,7 @@ func TestInFile_GetShortURL(t *testing.T) {
 			name: "error not found",
 			fields: fields{
 				InMe: func() *inmemory.InMemory {
-					inm, err := inmemory.NewInMemory()
+					inm, err := inmemory.NewInMemory(logger.Sugar())
 					require.NoError(t, err)
 					ctx := context.TODO()
 					err = inm.SetShortURL(ctx, "test0001", "https://google.com")
@@ -89,7 +105,7 @@ func TestInFile_GetShortURL(t *testing.T) {
 			name: "error not found",
 			fields: fields{
 				InMe: func() *inmemory.InMemory {
-					inm, err := inmemory.NewInMemory()
+					inm, err := inmemory.NewInMemory(logger.Sugar())
 					require.NoError(t, err)
 					ctx := context.TODO()
 					err = inm.SetShortURL(ctx, "test0001", "https://google.com")
@@ -110,6 +126,7 @@ func TestInFile_GetShortURL(t *testing.T) {
 			m := &InFile{
 				inMe:     tt.fields.InMe,
 				filePath: tt.fields.FilePath,
+				zapLog:   logger.Sugar(),
 			}
 			ctx := context.TODO()
 			got, err := m.GetShortURL(ctx, tt.args.id)

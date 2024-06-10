@@ -3,11 +3,12 @@ package infile
 import (
 	"context"
 	"fmt"
-	"log"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/services/rwstorage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 // Определяем константу для сообщения об ошибке.
@@ -15,11 +16,12 @@ const errMsgSaveBatchAndRemove = "error save batch and removing temp file %w"
 
 type InFile struct {
 	inMe     *inmemory.InMemory
+	zapLog   *zap.SugaredLogger
 	filePath string
 }
 
-func NewInFile(ctx context.Context, cfg *config.Config) (*InFile, error) {
-	inm, err := inmemory.NewInMemory()
+func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*InFile, error) {
+	inm, err := inmemory.NewInMemory(zapLog)
 	if err != nil {
 		return nil, fmt.Errorf("error creating inmemory storage: %w", err)
 	}
@@ -27,6 +29,7 @@ func NewInFile(ctx context.Context, cfg *config.Config) (*InFile, error) {
 	ms := &InFile{
 		inMe:     inm,
 		filePath: cfg.FileStoragePath,
+		zapLog:   zapLog,
 	}
 
 	if err := readFileStorage(ctx, ms, cfg); err != nil {
@@ -62,7 +65,7 @@ func (m *InFile) SetShortURL(ctx context.Context, id string, targetURL string) e
 		return fmt.Errorf("error write string in file %w", err)
 	}
 	producer.Close()
-	log.Printf("Add short link %v", shData)
+	m.zapLog.Infof("Add short link %v", shData)
 
 	return nil
 }
@@ -79,18 +82,18 @@ func readFileStorage(ctx context.Context, m *InFile, cfg *config.Config) error {
 			return fmt.Errorf("consumer error read line in file: %w", err)
 		}
 
-		log.Printf("Readed data: %+v\n", dataOfURL)
+		m.zapLog.Infof("Readed data: %+v\n", dataOfURL)
 		err = m.inMe.SetShortURL(ctx, dataOfURL.ShortURL, dataOfURL.OriginalURL)
 		if err != nil {
 			return fmt.Errorf("error setting short url: %w", err)
 		}
-		log.Printf("Lenght map storage: %+v\n", m.inMe.NumberOfEntries())
+		m.zapLog.Infof("Lenght map storage: %+v\n", m.inMe.NumberOfEntries())
 	}
 	return nil
 }
 
 func (m *InFile) Close() error {
 	// На данный момент закрывать нечего, но метод оставлен для возможных будущих изменений
-	log.Println("InFile storage closed (nothing to close currently)")
+	m.zapLog.Debugln("InFile storage closed (nothing to close currently)")
 	return nil
 }

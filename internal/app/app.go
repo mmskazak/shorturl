@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
-	storageInterface "mmskazak/shorturl/internal/storage"
+	"mmskazak/shorturl/internal/storage"
 	"net/http"
 	"time"
 
@@ -24,6 +23,7 @@ type Pinger interface {
 
 type App struct {
 	server *http.Server
+	zapLog *zap.SugaredLogger
 }
 
 const ErrStartingServer = "error starting server"
@@ -32,7 +32,7 @@ const ErrStartingServer = "error starting server"
 func NewApp(
 	ctx context.Context,
 	cfg *config.Config,
-	data storageInterface.Storage,
+	store storage.Storage,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 	zapLog *zap.SugaredLogger,
@@ -55,27 +55,26 @@ func NewApp(
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		zapLog.Infoln("Запрос получен handleRedirectHandler")
-		web.HandleRedirect(ctx, w, r, data)
+		web.HandleRedirect(ctx, w, r, store)
 	})
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		web.HandleCreateShortURL(ctx, w, r, data, baseHost)
+		web.HandleCreateShortURL(ctx, w, r, store, baseHost)
 	})
 
 	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		api.HandleCreateShortURL(ctx, w, r, data, baseHost)
+		api.HandleCreateShortURL(ctx, w, r, store, baseHost)
 	})
 
 	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
-		api.SaveShortenURLsBatch(ctx, w, r, data, cfg.BaseHost)
+		api.SaveShortenURLsBatch(ctx, w, r, store, cfg.BaseHost)
 	})
 
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
-		pinger, ok := data.(Pinger)
+		pinger, ok := store.(Pinger)
 		if !ok {
-			log.Printf("The storage does not support Ping")
-			http.Error(w, "", http.StatusInternalServerError)
+			zapLog.Infoln("The storage does not support Ping")
 			return
 		}
 
@@ -90,16 +89,17 @@ func NewApp(
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,
 		},
+		zapLog: zapLog,
 	}
 }
 
 // Start запускает сервер приложения.
 func (a *App) Start() error {
-	log.Printf("Server is running on %v\n", a.server.Addr)
+	a.zapLog.Infof("Server is running on %v\n", a.server.Addr)
 
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Printf("%v: %v", ErrStartingServer, err)
+		a.zapLog.Infof("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
 	return nil

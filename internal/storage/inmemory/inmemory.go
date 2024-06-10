@@ -3,15 +3,17 @@ package inmemory
 import (
 	"context"
 	"errors"
-	"log"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 type InMemory struct {
 	mu           *sync.Mutex
 	data         map[string]string
 	indexForData map[string]string
+	zapLog       *zap.SugaredLogger
 }
 
 // NumberOfEntries - количество записей.
@@ -19,11 +21,12 @@ func (m *InMemory) NumberOfEntries() int {
 	return len(m.data)
 }
 
-func NewInMemory() (*InMemory, error) {
+func NewInMemory(zapLog *zap.SugaredLogger) (*InMemory, error) {
 	return &InMemory{
 		mu:           &sync.Mutex{},
 		data:         make(map[string]string),
 		indexForData: make(map[string]string),
+		zapLog:       zapLog,
 	}, nil
 }
 
@@ -62,6 +65,6 @@ func (m *InMemory) SetShortURL(_ context.Context, id string, targetURL string) e
 
 func (m *InMemory) Close() error {
 	// На данный момент закрывать нечего, но метод оставлен для возможных будущих изменений
-	log.Println("InMemory storage closed (nothing to close currently)")
+	m.zapLog.Debugln("InMemory storage closed (nothing to close currently)")
 	return nil
 }

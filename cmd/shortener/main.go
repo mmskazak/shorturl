@@ -28,13 +28,13 @@ func main() {
 	}
 
 	ctx := context.Background()
-	storage, err := factory.NewStorage(ctx, cfg)
+	storage, err := factory.NewStorage(ctx, cfg, zapLog)
 	if err != nil {
 		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
 	}
 	defer func() {
 		if err := storage.Close(); err != nil {
-			log.Printf("Error closing storage: %v\n", err)
+			zapLog.Infof("Error closing storage: %v\n", err)
 		}
 	}()
 
