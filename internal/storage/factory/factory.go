@@ -15,19 +15,22 @@ import (
 func NewStorage(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (storage.Storage, error) {
 	switch {
 	case cfg.DataBaseDSN != "":
-		pg, err := postgresql.NewPostgreSQL(ctx, cfg, zapLog)
+		PostgreSQL := zapLog.With(zap.String("storage", "PostgreSQL"))
+		pg, err := postgresql.NewPostgreSQL(ctx, cfg, PostgreSQL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect to postgresql: %w", err)
 		}
 		return pg, nil
 	case cfg.FileStoragePath == "":
-		sm, err := inmemory.NewInMemory(zapLog)
+		inMemoryLog := zapLog.With(zap.String("storage", "InMemory"))
+		sm, err := inmemory.NewInMemory(inMemoryLog)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize an in-memory store: %w", err)
 		}
 		return sm, nil
 	default:
-		sf, err := infile.NewInFile(ctx, cfg, zapLog)
+		InFile := zapLog.With(zap.String("storage", "InFile"))
+		sf, err := infile.NewInFile(ctx, cfg, InFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize an in-file store: %w", err)
 		}
