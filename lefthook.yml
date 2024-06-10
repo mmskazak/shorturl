@@ -2,8 +2,11 @@ pre-commit:
   commands:
     lint:
       run: golangci-lint run -c .golangci.yml --fix
-    go mod tidy:
-      run: go mod tidy
+    check go mod tidy:
+      run: |
+        go mod tidy
+        git diff --exit-code go.mod go.sum
+
 
 
 
