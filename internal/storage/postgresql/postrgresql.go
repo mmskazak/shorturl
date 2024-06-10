@@ -51,6 +51,7 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config) (*PostgreSQL, error)
 }
 
 func (p *PostgreSQL) GetShortURL(ctx context.Context, shortURL string) (string, error) {
+
 	var originalURL string
 	err := p.pool.QueryRow(ctx, "SELECT original_url FROM urls WHERE short_url = $1", shortURL).Scan(&originalURL)
 	if err != nil {
