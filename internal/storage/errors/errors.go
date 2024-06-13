@@ -18,5 +18,5 @@ type ConflictError struct {
 }
 
 func (e ConflictError) Error() string {
-	return fmt.Sprintf("conflict: short URL already exists: %v", e.ShortURL)
+	return fmt.Sprintf("%v: %v", ErrOriginalURLAlreadyExists, e.ShortURL)
 }

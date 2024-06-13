@@ -192,13 +192,12 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 					ctx := context.TODO()
 					s, err := infile.NewInFile(ctx, &cfg, logger.Sugar())
 					require.NoError(t, err)
-
 					err = s.SetShortURL(ctx, testID, "http://ya.ru")
 					require.NoError(t, err)
 					return s
 				}(),
 			},
-			want:    "",
+			want:    "http://localhost.com/TeSt0001",
 			wantErr: assert.Error,
 		},
 	}
