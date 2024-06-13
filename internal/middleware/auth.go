@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"net/url"
 
 	"net/http"
 	"strings"
@@ -22,21 +23,25 @@ const (
 func generateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
 	h.Write([]byte(data))
-	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(h.Sum(nil))
 }
 
-func verifyHMAC(data, signature, key string) bool {
-	expectedSignature := generateHMAC(data, key)
+func verifyHMAC(value, signature, key string) bool {
+	expectedSignature := generateHMAC(value, key)
+	log.Println("Value for HMAC generation:", value)
+	log.Println("Expected Signature:", expectedSignature)
+	log.Println("Provided Signature:", signature)
 	return hmac.Equal([]byte(expectedSignature), []byte(signature))
 }
 
 // setSignedCookie sets a cookie with HMAC signature.
 func setSignedCookie(w http.ResponseWriter, name, value, key string) {
 	signature := generateHMAC(value, key)
-	cookieValue := fmt.Sprintf("%s.%s", value, signature)
+	cookieValue := fmt.Sprintf("%s@%s", value, signature)
+	encodedValue := url.QueryEscape(cookieValue)
 	cookie := &http.Cookie{
 		Name:     name,
-		Value:    cookieValue,
+		Value:    encodedValue,
 		Path:     "/",
 		HttpOnly: true,
 		Expires:  time.Now().Add(24 * time.Hour), //nolint:gomnd //24 часа
@@ -50,15 +55,25 @@ func getSignedCookie(r *http.Request, name, key string) (string, bool) {
 		return "", false
 	}
 
-	parts := strings.Split(cookie.Value, ".")
-	if len(parts) != 2 { //nolint:gomnd //cookie состоит из двух частей разделенных запятой
+	decodedCookie, err := url.QueryUnescape(cookie.Value)
+	if err != nil {
+		log.Printf("Error decoding cookie value: %v", err)
 		return "", false
 	}
 
-	value, signature := parts[0], parts[1]
-	if verifyHMAC(value, signature, key) {
-		return value, true
+	parts := strings.Split(decodedCookie, "@")
+	if len(parts) != 2 {
+		log.Println("Invalid cookie format")
+		return "", false
 	}
+
+	decodedValue := parts[0]
+	decodedSignature := parts[1]
+
+	if verifyHMAC(decodedValue, decodedSignature, key) {
+		return decodedValue, true
+	}
+
 	return "", false
 }
 
