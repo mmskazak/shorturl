@@ -12,7 +12,7 @@ import (
 var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
 var ErrBaseHostIsEmpty = errors.New("base host is empty")
 var ErrServiceGenerateID = errors.New("generateID failed")
-var ErrConflict = errors.New("status 409 conflict")
+var ErrConflict = errors.New("error original url already exists")
 
 type IGenIDForURL interface {
 	Generate(int) (string, error)

@@ -45,6 +45,7 @@ func NewApp(
 	}
 
 	// Добавление middleware
+	router.Use(middleware.AuthMiddleware)
 	router.Use(LoggingMiddlewareRich)
 	router.Use(middleware.GzipMiddleware)
 
