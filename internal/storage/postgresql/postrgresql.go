@@ -5,12 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/config"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"github.com/jackc/pgerrcode"
 	"go.uber.org/zap"
-
-	"mmskazak/shorturl/internal/config"
-	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -125,7 +124,7 @@ func (p *PostgreSQL) handleError(ctx context.Context, err error, targetURL strin
 			if err != nil {
 				return fmt.Errorf("error recive short URL by original: %w", err)
 			}
-			return &storageErrors.ConflictError{
+			return storageErrors.ConflictError{
 				ShortURL: shortURL,
 				Err:      storageErrors.ErrOriginalURLAlreadyExists,
 			}

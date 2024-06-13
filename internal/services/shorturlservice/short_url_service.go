@@ -12,7 +12,7 @@ import (
 var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
 var ErrBaseHostIsEmpty = errors.New("base host is empty")
 var ErrServiceGenerateID = errors.New("generateID failed")
-var ErrConflict = errors.New("error original url already exists")
+var ErrConflict = errors.New("error original url already exist")
 
 type IGenIDForURL interface {
 	Generate(int) (string, error)
@@ -55,7 +55,7 @@ func (s *ShortURLService) GenerateShortURL(
 
 		err = data.SetShortURL(ctx, id, dto.OriginalURL)
 		if err != nil {
-			conflictError, ok := IsConflictError(err)
+			conflictError, ok := isConflictError(err)
 			if ok {
 				// Парсинг базового хоста
 				baseURL, err := url.Parse(dto.BaseHost)
@@ -102,10 +102,10 @@ func NewShortURLService() *ShortURLService {
 	return &ShortURLService{}
 }
 
-func IsConflictError(err error) (*storageErrors.ConflictError, bool) {
-	var conflictErr *storageErrors.ConflictError
+func isConflictError(err error) (storageErrors.ConflictError, bool) {
+	var conflictErr storageErrors.ConflictError
 	if errors.As(err, &conflictErr) {
 		return conflictErr, true
 	}
-	return nil, false
+	return conflictErr, false
 }

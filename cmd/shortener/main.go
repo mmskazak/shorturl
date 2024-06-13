@@ -34,7 +34,7 @@ func main() {
 	}
 	defer func() {
 		if err := storage.Close(); err != nil {
-			zapLog.Infof("Error closing storage: %v\n", err)
+			zapLog.Warn("Error closing storage: %v\n", err)
 		}
 	}()
 

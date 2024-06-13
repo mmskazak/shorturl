@@ -39,7 +39,7 @@ func setSignedCookie(w http.ResponseWriter, name, value, key string) {
 		Value:    cookieValue,
 		Path:     "/",
 		HttpOnly: true,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(24 * time.Hour), //nolint:gomnd //24 часа
 	}
 	http.SetCookie(w, cookie)
 }
@@ -51,7 +51,7 @@ func getSignedCookie(r *http.Request, name, key string) (string, bool) {
 	}
 
 	parts := strings.Split(cookie.Value, ".")
-	if len(parts) != 2 {
+	if len(parts) != 2 { //nolint:gomnd //cookie состоит из двух частей разделенных запятой
 		return "", false
 	}
 
