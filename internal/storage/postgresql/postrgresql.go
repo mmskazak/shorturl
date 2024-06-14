@@ -37,6 +37,7 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredL
 			id SERIAL PRIMARY KEY,
 			short_url VARCHAR(255) NOT NULL,
 			original_url TEXT NOT NULL,
+		    user_id VARCHAR(255),
 			CONSTRAINT unique_short_url UNIQUE (short_url),
 			CONSTRAINT unique_original_url UNIQUE (original_url)
 		);
@@ -63,7 +64,7 @@ func (p *PostgreSQL) GetShortURL(ctx context.Context, shortURL string) (string, 
 	return originalURL, nil
 }
 
-func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string) error {
+func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string, userId string) error {
 	// Начало транзакции
 	tx, err := p.pool.Begin(ctx)
 	if err != nil {
@@ -80,9 +81,9 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 
 	// Выполняем команду INSERT в контексте транзакции
 	_, err = tx.Exec(ctx, `
-        INSERT INTO urls (short_url, original_url)
-        VALUES ($1, $2)
-    `, shortURL, targetURL)
+        INSERT INTO urls (short_url, original_url, user_id)
+        VALUES ($1, $2, $3)
+    `, shortURL, targetURL, userId)
 
 	if err != nil {
 		return p.handleError(ctx, err, targetURL)

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -18,6 +19,7 @@ import (
 const (
 	cookieName = "user_id"
 	secretKey  = "supersecretkey"
+	userIDKey  = "userID"
 )
 
 func generateHMAC(data, key string) string {
@@ -81,10 +83,20 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID, valid := getSignedCookie(r, cookieName, secretKey)
 		log.Printf("User ID: %s Valid: %t", userID, valid)
+
+		// Если кука недействительна или отсутствует, возвращаем 401 Unauthorized
 		if !valid {
 			userID = uuid.New().String()
 			setSignedCookie(w, cookieName, userID, secretKey)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
 		}
+
+		// Добавляем userID в контекст запроса
+		ctx := context.WithValue(r.Context(), userIDKey, userID)
+		r = r.WithContext(ctx)
+
+		// Если кука действительна, продолжаем выполнение следующего обработчика
 		next.ServeHTTP(w, r)
 	})
 }

@@ -24,6 +24,7 @@ type Pinger interface {
 const (
 	defaultShortURLLength = 8
 	maxIteration          = 10
+	userIDKey             = "userID"
 )
 
 func HandleCreateShortURL(
@@ -39,10 +40,19 @@ func HandleCreateShortURL(
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
+	// Получаем userID из контекста
+	userID, ok := r.Context().Value(userIDKey).(string)
+	if !ok {
+		// Если userID не найден или неверного типа, возвращаем ошибку
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
 	originalURL := string(body)
 	generator := genidurl.NewGenIDService()
 	shortURLService := shorturlservice.NewShortURLService()
 	dto := shorturlservice.DTOShortURL{
+		UserId:       userID,
 		OriginalURL:  originalURL,
 		BaseHost:     baseHost,
 		MaxIteration: maxIteration,

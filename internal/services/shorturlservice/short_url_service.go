@@ -20,6 +20,7 @@ type IGenIDForURL interface {
 
 type DTOShortURL struct {
 	OriginalURL  string
+	UserId       string
 	BaseHost     string
 	MaxIteration int
 	LengthID     int
@@ -53,7 +54,7 @@ func (s *ShortURLService) GenerateShortURL(
 			return "", fmt.Errorf("%w: %w", ErrServiceGenerateID, err)
 		}
 
-		err = data.SetShortURL(ctx, id, dto.OriginalURL)
+		err = data.SetShortURL(ctx, id, dto.OriginalURL, dto.UserId)
 		if err != nil {
 			conflictError, ok := isConflictError(err)
 			if ok {

@@ -19,7 +19,7 @@ type Output struct {
 type Storage interface {
 	Close() error
 	GetShortURL(ctx context.Context, id string) (string, error)
-	SetShortURL(ctx context.Context, id string, targetURL string) error
+	SetShortURL(ctx context.Context, id string, targetURL string, userId string) error
 	SaveBatch(ctx context.Context, items []Incoming, baseHost string) ([]Output, error)
 }
 
