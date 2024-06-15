@@ -4,31 +4,54 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
-func (m *InMemory) SaveBatch(ctx context.Context, items []storage.Incoming, baseHost string) ([]storage.Output, error) {
+type IGenIDForURL interface {
+	Generate() (string, error)
+}
+
+// SaveBatch error:
+// different error
+// ErrKeyAlreadyExists
+// ConflictError (ErrOriginalURLAlreadyExists)
+func (m *InMemory) SaveBatch(
+	ctx context.Context,
+	items []storage.Incoming,
+	baseHost string,
+	userID string,
+	generator storage.IGenIDForURL,
+) ([]storage.Output, error) {
 	dontChangedData := m.data
 
 	outputs := make([]storage.Output, 0, len(items))
 	for _, v := range items {
-		err := m.SetShortURL(ctx, v.CorrelationID, v.OriginalURL)
-		errUniqueViolation := errors.Is(err, storageErrors.ErrKeyAlreadyExists) ||
-			errors.Is(err, storageErrors.ErrOriginalURLAlreadyExists)
-		if err != nil && errUniqueViolation {
-			m.data = dontChangedData
-			return nil, storageErrors.ErrUniqueViolation
+		dto := shorturlservice.DTOShortURL{
+			OriginalURL: v.OriginalURL,
+			UserID:      userID,
+			BaseHost:    baseHost,
 		}
-		if err != nil {
-			m.data = dontChangedData
-			return nil, fmt.Errorf("save batch error: %w", err)
-		}
+		service := shorturlservice.NewShortURLService()
+		fullShortURL, err := service.GenerateShortURL(
+			ctx,
+			dto,
+			generator,
+			m,
+		)
 
-		fullShortURL, err := storage.GetFullShortURL(baseHost, v.CorrelationID)
-		if err != nil {
+		var conflictErr storageErrors.ConflictError
+		if errors.As(err, &conflictErr) {
 			m.data = dontChangedData
-			return nil, fmt.Errorf("error getFullShortURL from two parts %w", err)
+			return nil, conflictErr
+		}
+		if errors.Is(err, storageErrors.ErrKeyAlreadyExists) {
+			m.data = dontChangedData
+			return nil, storageErrors.ErrKeyAlreadyExists
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
 		outputs = append(outputs, storage.Output{

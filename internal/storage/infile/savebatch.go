@@ -10,11 +10,17 @@ import (
 	"strconv"
 )
 
-func (m *InFile) SaveBatch(ctx context.Context, items []storage.Incoming, baseHost string) ([]storage.Output, error) {
+func (m *InFile) SaveBatch(
+	ctx context.Context,
+	items []storage.Incoming,
+	baseHost string,
+	userID string,
+	generator storage.IGenIDForURL,
+) ([]storage.Output, error) {
 	lenItems := len(items)
-	outputs, err := m.inMe.SaveBatch(ctx, items, baseHost)
+	outputs, err := m.inMe.SaveBatch(ctx, items, baseHost, userID, generator)
 	if err != nil {
-		return nil, fmt.Errorf("error saving batch infile: %w", err)
+		return nil, err // прокидываем оригинальную ошибку
 	}
 
 	tempFilePath := m.filePath + ".tmp"
@@ -24,19 +30,21 @@ func (m *InFile) SaveBatch(ctx context.Context, items []storage.Incoming, baseHo
 	}
 	defer producer.Close()
 
-	batchSize := 4
+	batchSize := 1000
 	number := m.inMe.NumberOfEntries() - lenItems
 	batch := make([]rwstorage.ShortURLStruct, 0, batchSize)
 
 	for _, item := range items {
 		number++
-		shData := rwstorage.ShortURLStruct{
-			UUID:        strconv.Itoa(number),
+		shortURLStruct := rwstorage.ShortURLStruct{
+			ID:          strconv.Itoa(number),
 			ShortURL:    item.CorrelationID,
 			OriginalURL: item.OriginalURL,
+			UserID:      userID,
+			Deleted:     false,
 		}
 
-		batch = append(batch, shData)
+		batch = append(batch, shortURLStruct)
 		if len(batch) == batchSize {
 			err = producer.WriteBatch(batch)
 			if err != nil {
@@ -58,20 +66,9 @@ func (m *InFile) SaveBatch(ctx context.Context, items []storage.Incoming, baseHo
 			if err != nil {
 				return nil, fmt.Errorf(errMsgSaveBatchAndRemove, err)
 			}
-			return nil, fmt.Errorf("save batch ошибка записи строки в файл %w", err)
+			return nil, fmt.Errorf("save batch error write lint in file: %w", err)
 		}
 	}
-
-	// Переносим логику дописывания данных в основной файл в Producer
-	producerForCopy, err := rwstorage.NewProducer(m.filePath)
-	if err != nil {
-		err := os.Remove(tempFilePath)
-		if err != nil {
-			return nil, fmt.Errorf(errMsgSaveBatchAndRemove, err)
-		}
-		return nil, fmt.Errorf("save batch ошибка создания producer для основного файла %w", err)
-	}
-	defer producerForCopy.Close()
 
 	err = producer.AppendToFile(tempFilePath, m.filePath)
 	if err != nil {
@@ -79,7 +76,7 @@ func (m *InFile) SaveBatch(ctx context.Context, items []storage.Incoming, baseHo
 		if err != nil {
 			return nil, fmt.Errorf(errMsgSaveBatchAndRemove, err)
 		}
-		return nil, fmt.Errorf("save batch ошибка копирования данных из временного файла %w", err)
+		return nil, fmt.Errorf("save batch error copy from temp to main file: %w", err)
 	}
 
 	err = os.Remove(tempFilePath)

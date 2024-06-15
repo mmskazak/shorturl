@@ -3,16 +3,22 @@ package infile
 import (
 	"context"
 	"fmt"
+	"io"
+
+	"go.uber.org/zap"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/services/rwstorage"
 	"mmskazak/shorturl/internal/storage/inmemory"
-	"strconv"
-
-	"go.uber.org/zap"
 )
 
-// Определяем константу для сообщения об ошибке.
 const errMsgSaveBatchAndRemove = "error save batch and removing temp file %w"
+
+// FileRecord - структура для сериализации и десериализации данных в файл.
+type FileRecord struct {
+	ID   string             `json:"id"`   // Короткий идентификатор URL
+	Data inmemory.URLRecord `json:"data"` // Связанная информация о URL
+}
 
 type InFile struct {
 	inMe     *inmemory.InMemory
@@ -20,6 +26,7 @@ type InFile struct {
 	filePath string
 }
 
+// NewInFile - конструктор для создания нового хранилища с поддержкой работы с файлом.
 func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*InFile, error) {
 	inm, err := inmemory.NewInMemory(zapLog)
 	if err != nil {
@@ -32,68 +39,58 @@ func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogge
 		zapLog:   zapLog,
 	}
 
-	if err := readFileStorage(ctx, ms, cfg); err != nil {
+	if err := ms.readFileStorage(ctx); err != nil {
 		return nil, fmt.Errorf("error read storage data: %w", err)
 	}
 
 	return ms, nil
 }
 
-func (m *InFile) GetShortURL(ctx context.Context, id string) (string, error) {
-	return m.inMe.GetShortURL(ctx, id) //nolint:wrapcheck //ошибка обрабатывается далее
-}
-
-func (m *InFile) SetShortURL(ctx context.Context, id string, targetURL string) error {
-	err := m.inMe.SetShortURL(ctx, id, targetURL)
-	if err != nil {
-		return fmt.Errorf("error set short url: %w", err)
-	}
-
+// appendToFile - добавление новой записи в файл.
+func (m *InFile) appendToFile(record rwstorage.ShortURLStruct) error {
 	producer, err := rwstorage.NewProducer(m.filePath)
 	if err != nil {
-		return fmt.Errorf("erorr create producer %w", err)
+		return fmt.Errorf("error creating producer: %w", err)
 	}
+	defer producer.Close()
 
-	shData := rwstorage.ShortURLStruct{
-		UUID:        strconv.Itoa(m.inMe.NumberOfEntries()),
-		ShortURL:    id,
-		OriginalURL: targetURL,
-	}
-
-	err = producer.WriteData(&shData)
+	err = producer.WriteData(&record)
 	if err != nil {
-		return fmt.Errorf("error write string in file %w", err)
+		return fmt.Errorf("error writing data to file: %w", err)
 	}
-	producer.Close()
-	m.zapLog.Infof("Add short link %v", shData)
+
+	m.zapLog.Infof("Added short URL: %v", record)
 
 	return nil
 }
 
-func readFileStorage(ctx context.Context, m *InFile, cfg *config.Config) error {
-	consumer, err := rwstorage.NewConsumer(cfg.FileStoragePath)
+// readFileStorage читает данные из файла и загружает их в память.
+func (m *InFile) readFileStorage(ctx context.Context) error {
+	consumer, err := rwstorage.NewConsumer(m.filePath)
 	if err != nil {
-		return fmt.Errorf("error read file storage %w", err)
+		return fmt.Errorf("error initializing consumer: %w", err)
 	}
+	defer consumer.Close()
 
-	for consumer.Reader.Scan() {
-		dataOfURL, err := consumer.ReadLineInFile()
+	for {
+		record, err := consumer.ReadLineInFile()
+		if err == io.EOF {
+			break // Конец файла достигнут
+		}
 		if err != nil {
-			return fmt.Errorf("consumer error read line in file: %w", err)
+			return fmt.Errorf("error reading line from file: %w", err)
 		}
 
-		m.zapLog.Infof("Readed data: %+v\n", dataOfURL)
-		err = m.inMe.SetShortURL(ctx, dataOfURL.ShortURL, dataOfURL.OriginalURL)
-		if err != nil {
-			return fmt.Errorf("error setting short url: %w", err)
+		if err := m.inMe.SetShortURL(ctx, record.ShortURL, record.OriginalURL, record.UserID); err != nil {
+			return fmt.Errorf("error setting short URL in memory: %w", err)
 		}
-		m.zapLog.Infof("Lenght map storage: %+v\n", m.inMe.NumberOfEntries())
 	}
+
 	return nil
 }
 
+// Close - закрытие хранилища (заглушка для будущих изменений).
 func (m *InFile) Close() error {
-	// На данный момент закрывать нечего, но метод оставлен для возможных будущих изменений
 	m.zapLog.Debugln("InFile storage closed (nothing to close currently)")
 	return nil
 }

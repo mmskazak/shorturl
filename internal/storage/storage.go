@@ -16,11 +16,27 @@ type Output struct {
 	ShortURL      string `json:"short_url"`      // короткий URL
 }
 
+type URL struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}
+
+type IGenIDForURL interface {
+	Generate() (string, error)
+}
+
 type Storage interface {
 	Close() error
 	GetShortURL(ctx context.Context, id string) (string, error)
-	SetShortURL(ctx context.Context, id string, targetURL string, userId string) error
-	SaveBatch(ctx context.Context, items []Incoming, baseHost string) ([]Output, error)
+	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string) error
+	SaveBatch(
+		ctx context.Context,
+		items []Incoming,
+		baseHost string,
+		userID string,
+		generator IGenIDForURL,
+	) ([]Output, error)
+	GetUserURLs(ctx context.Context, userID string) ([]URL, error)
 }
 
 func GetFullShortURL(baseHost, correlationID string) (string, error) {

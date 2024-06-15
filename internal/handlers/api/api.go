@@ -66,11 +66,9 @@ func HandleCreateShortURL(
 	generator := genidurl.NewGenIDService()
 	shortURLService := shorturlservice.NewShortURLService()
 	dto := shorturlservice.DTOShortURL{
-		UserId:       userID,
-		OriginalURL:  jsonReq.URL,
-		BaseHost:     baseHost,
-		MaxIteration: maxIteration,
-		LengthID:     defaultShortURLLength,
+		UserID:      userID,
+		OriginalURL: jsonReq.URL,
+		BaseHost:    baseHost,
 	}
 
 	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, store)
@@ -131,8 +129,17 @@ func SaveShortenURLsBatch(
 		return
 	}
 
+	// Получаем userID из контекста
+	userID, ok := r.Context().Value(userIDKey).(string)
+	if !ok {
+		// Если userID не найден или неверного типа, возвращаем ошибку
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	generator := genidurl.NewGenIDService()
 	// Сохранение пакета коротких URL
-	outputs, err := store.SaveBatch(ctx, requestData, baseHost)
+	outputs, err := store.SaveBatch(ctx, requestData, baseHost, userID, generator)
 	if err != nil {
 		if errors.Is(err, storageErrors.ErrUniqueViolation) {
 			http.Error(w, "", http.StatusConflict)

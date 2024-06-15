@@ -14,9 +14,11 @@ const (
 )
 
 type ShortURLStruct struct {
-	UUID        string `json:"uuid"`
+	ID          string `json:"id"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
+	UserID      string `json:"user_id"`
+	Deleted     bool   `json:"deleted"`
 }
 
 type Producer struct {

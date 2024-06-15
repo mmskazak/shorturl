@@ -21,6 +21,11 @@ type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
+type URL struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}
+
 type App struct {
 	server *http.Server
 	zapLog *zap.SugaredLogger
@@ -82,6 +87,10 @@ func NewApp(
 		web.PingPostgreSQL(ctx, w, r, pinger)
 	}
 	router.Get("/ping", pingPostgreSQL)
+
+	router.Get("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
+		api.FindUserURLs(ctx, w, r, store, cfg.BaseHost)
+	})
 
 	return &App{
 		server: &http.Server{

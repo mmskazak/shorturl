@@ -14,7 +14,7 @@ import (
 )
 
 type IGenIDForURL interface {
-	Generate(int) (string, error)
+	Generate() (string, error)
 }
 
 type Pinger interface {
@@ -52,11 +52,9 @@ func HandleCreateShortURL(
 	generator := genidurl.NewGenIDService()
 	shortURLService := shorturlservice.NewShortURLService()
 	dto := shorturlservice.DTOShortURL{
-		UserId:       userID,
-		OriginalURL:  originalURL,
-		BaseHost:     baseHost,
-		MaxIteration: maxIteration,
-		LengthID:     defaultShortURLLength,
+		UserID:      userID,
+		OriginalURL: originalURL,
+		BaseHost:    baseHost,
 	}
 
 	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, data)

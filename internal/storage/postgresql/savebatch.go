@@ -18,10 +18,16 @@ import (
 
 const batchSize = 5000
 
+// SaveBatch error:
+// different error
+// ErrKeyAlreadyExists
+// ConflictError (ErrOriginalURLAlreadyExists)
 func (p *PostgreSQL) SaveBatch(
 	ctx context.Context,
 	items []storage.Incoming,
 	baseHost string,
+	userID string,
+	generator storage.IGenIDForURL,
 ) ([]storage.Output, error) {
 	lenItems := len(items)
 	if lenItems == 0 {
@@ -49,8 +55,12 @@ func (p *PostgreSQL) SaveBatch(
 
 	for i := range lenItems {
 		item := items[i]
-		stmt := "INSERT INTO urls(short_url, original_url) VALUES ($1, $2) RETURNING short_url"
-		batch.Queue(stmt, item.CorrelationID, item.OriginalURL)
+		idShortURL, err := generator.Generate()
+		if err != nil {
+			return nil, fmt.Errorf("error generating ID for URL: %w", err)
+		}
+		stmt := "INSERT INTO urls(short_url, original_url, user_id) VALUES ($1, $2, $3) RETURNING short_url"
+		batch.Queue(stmt, idShortURL, item.OriginalURL, userID)
 
 		// Если количество запросов в батче достигло предела или это последний элемент,
 		// то отправляем батчевый запрос и обрабатываем результаты
@@ -61,11 +71,16 @@ func (p *PostgreSQL) SaveBatch(
 			for range batch.Len() {
 				var shortURL string
 				err = batchResults.QueryRow().Scan(&shortURL)
-				if err != nil {
-					var pgErr *pgconn.PgError
-					if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+					switch pgErr.ConstraintName {
+					case "unique_short_url":
+						return nil, storageErrors.ErrKeyAlreadyExists
+					case "unique_original_url":
 						return nil, storageErrors.ErrUniqueViolation
 					}
+				}
+				if err != nil {
 					return nil, fmt.Errorf("error inserting data: %w", err)
 				}
 

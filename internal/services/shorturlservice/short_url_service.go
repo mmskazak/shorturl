@@ -9,38 +9,29 @@ import (
 	"net/url"
 )
 
-var ErrOriginalURLIsEmpty = errors.New("originalURL is empty")
-var ErrBaseHostIsEmpty = errors.New("base host is empty")
 var ErrServiceGenerateID = errors.New("generateID failed")
 var ErrConflict = errors.New("error original url already exist")
 
 type IGenIDForURL interface {
-	Generate(int) (string, error)
+	Generate() (string, error)
 }
 
 type DTOShortURL struct {
-	OriginalURL  string
-	UserId       string
-	BaseHost     string
-	MaxIteration int
-	LengthID     int
+	OriginalURL string
+	UserID      string
+	BaseHost    string
 }
 
-type ShortURLService struct{}
+type ShortURLService struct {
+	maxIteration int
+}
 
 func (s *ShortURLService) GenerateShortURL(
 	ctx context.Context,
 	dto DTOShortURL,
 	generator IGenIDForURL,
-	data storage.Storage) (string, error) {
-	if dto.OriginalURL == "" {
-		return "", ErrOriginalURLIsEmpty
-	}
-
-	if dto.BaseHost == "" {
-		return "", ErrBaseHostIsEmpty
-	}
-
+	data storage.Storage,
+) (string, error) {
 	var err error
 	base, err := url.Parse(dto.BaseHost)
 	if err != nil {
@@ -48,13 +39,13 @@ func (s *ShortURLService) GenerateShortURL(
 	}
 
 	var id string
-	for range dto.MaxIteration {
-		id, err = generator.Generate(dto.LengthID)
+	for range s.maxIteration {
+		id, err = generator.Generate()
 		if err != nil {
 			return "", fmt.Errorf("%w: %w", ErrServiceGenerateID, err)
 		}
 
-		err = data.SetShortURL(ctx, id, dto.OriginalURL, dto.UserId)
+		err = data.SetShortURL(ctx, id, dto.OriginalURL, dto.UserID)
 		if err != nil {
 			conflictError, ok := isConflictError(err)
 			if ok {
@@ -91,7 +82,7 @@ func (s *ShortURLService) GenerateShortURL(
 
 	idPath, err := url.Parse(id)
 	if err != nil {
-		return "", fmt.Errorf("ошибка при разборе пути ID: %w", err)
+		return "", fmt.Errorf("ошибка при разборе пути id: %w", err)
 	}
 
 	shortURL := base.ResolveReference(idPath)
@@ -100,7 +91,9 @@ func (s *ShortURLService) GenerateShortURL(
 }
 
 func NewShortURLService() *ShortURLService {
-	return &ShortURLService{}
+	return &ShortURLService{
+		maxIteration: 10,
+	}
 }
 
 func isConflictError(err error) (storageErrors.ConflictError, bool) {
