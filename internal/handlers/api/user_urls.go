@@ -36,7 +36,7 @@ func FindUserURLs(
 	// Получаем URL-адреса пользователя из базы данных
 	urls, err := store.GetUserURLs(ctx, userID, baseHost)
 	if errors.Is(err, storageErrors.ShortURLsForUserNotFound) {
-		http.Error(w, err.Error(), http.StatusNoContent)
+		http.Error(w, "", http.StatusNoContent)
 	}
 	if err != nil {
 		// Обработка ошибок, связанных с получением данных
