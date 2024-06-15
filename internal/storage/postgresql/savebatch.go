@@ -53,13 +53,16 @@ func (p *PostgreSQL) SaveBatch(
 	// Используем pgx.Batch для отправки множества команд в одном запросе
 	batch := &pgx.Batch{}
 
+	incomingMap := make(map[string]string)
 	for i := range lenItems {
 		item := items[i]
+		incomingMap[item.OriginalURL] = item.CorrelationID
+
 		idShortURL, err := generator.Generate()
 		if err != nil {
 			return nil, fmt.Errorf("error generating ID for URL: %w", err)
 		}
-		stmt := "INSERT INTO urls(short_url, original_url, user_id) VALUES ($1, $2, $3) RETURNING short_url"
+		stmt := "INSERT INTO urls(short_url, original_url, user_id) VALUES ($1, $2, $3) RETURNING short_url, original_url"
 		batch.Queue(stmt, idShortURL, item.OriginalURL, userID)
 
 		// Если количество запросов в батче достигло предела или это последний элемент,
@@ -70,7 +73,8 @@ func (p *PostgreSQL) SaveBatch(
 
 			for range batch.Len() {
 				var shortURL string
-				err = batchResults.QueryRow().Scan(&shortURL)
+				var originalURL string
+				err = batchResults.QueryRow().Scan(&shortURL, &originalURL)
 				var pgErr *pgconn.PgError
 				if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 					switch pgErr.ConstraintName {
@@ -90,7 +94,7 @@ func (p *PostgreSQL) SaveBatch(
 				}
 
 				outputs = append(outputs, storage.Output{
-					CorrelationID: shortURL,
+					CorrelationID: incomingMap[originalURL],
 					ShortURL:      fullShortURL,
 				})
 			}
@@ -101,6 +105,8 @@ func (p *PostgreSQL) SaveBatch(
 
 			// Очищаем батч для следующей порции запросов
 			batch = &pgx.Batch{}
+			// Очищаем вспомогательную структуру
+			incomingMap = make(map[string]string)
 		}
 	}
 
