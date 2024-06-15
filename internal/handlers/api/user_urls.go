@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"mmskazak/shorturl/internal/storage"
 	"net/http"
 )
@@ -31,7 +32,7 @@ func FindUserURLs(
 	}
 
 	// Получаем URL-адреса пользователя из базы данных
-	urls, err := store.GetUserURLs(ctx, userID)
+	urls, err := store.GetUserURLs(ctx, userID, baseHost)
 	if err != nil {
 		// Обработка ошибок, связанных с получением данных
 		http.Error(w, "Ошибка при получении данных", http.StatusInternalServerError)
@@ -48,5 +49,8 @@ func FindUserURLs(
 
 	// Записываем JSON-ответ в ResponseWriter
 	w.WriteHeader(http.StatusOK)
-	w.Write(response)
+	_, err = w.Write(response)
+	if err != nil {
+		log.Printf("error writing response: %v", err)
+	}
 }

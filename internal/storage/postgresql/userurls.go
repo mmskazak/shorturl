@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/storage"
+	"net/url"
 
 	"github.com/jackc/pgx/v5"
 )
 
-func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string) ([]storage.URL, error) {
+func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
 	// Определяем SQL-запрос для получения URL-адресов пользователя
 	query := `
 		SELECT short_url, original_url
@@ -41,11 +42,30 @@ func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string) ([]storage.
 
 	// Обрабатываем результаты запроса
 	for rows.Next() {
-		var url storage.URL
-		if err := rows.Scan(&url.ShortURL, &url.OriginalURL); err != nil {
+		var storageURL storage.URL
+		if err := rows.Scan(&storageURL.ShortURL, &storageURL.OriginalURL); err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)
 		}
-		urls = append(urls, url)
+
+		// Парсим базовый хост
+		baseURL, err := url.Parse(baseHost)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing baseHost: %w", err)
+		}
+
+		// Парсим короткий URL
+		shortURL, err := url.Parse(storageURL.ShortURL)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing short URL: %w", err)
+		}
+
+		// Объединяем baseURL и shortURL
+		fullURL := baseURL.ResolveReference(shortURL).String()
+
+		// Сохраняем полный URL в структуру
+		storageURL.ShortURL = fullURL
+
+		urls = append(urls, storageURL)
 	}
 
 	// Проверяем на наличие ошибок после завершения обработки строк

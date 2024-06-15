@@ -19,8 +19,13 @@ import (
 const (
 	cookieName = "user_id"
 	secretKey  = "supersecretkey"
-	userIDKey  = "userID"
 )
+
+// Определяем тип ключа для userID
+type userIDKeyType string
+
+// Создаем константу для ключа
+const keyUserID userIDKeyType = "userID"
 
 func generateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
@@ -84,16 +89,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		userID, valid := getSignedCookie(r, cookieName, secretKey)
 		log.Printf("User ID: %s Valid: %t", userID, valid)
 
-		// Если кука недействительна или отсутствует, возвращаем 401 Unauthorized
+		// Если кука недействительна или отсутствует
 		if !valid {
 			userID = uuid.New().String()
 			setSignedCookie(w, cookieName, userID, secretKey)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		// Добавляем userID в контекст запроса
-		ctx := context.WithValue(r.Context(), userIDKey, userID)
+		ctx := context.WithValue(r.Context(), keyUserID, userID)
 		r = r.WithContext(ctx)
 
 		// Если кука действительна, продолжаем выполнение следующего обработчика
