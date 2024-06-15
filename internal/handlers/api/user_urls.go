@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"mmskazak/shorturl/internal/storage"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
 )
 
@@ -27,12 +29,15 @@ func FindUserURLs(
 	userID, ok := r.Context().Value(userIDKey).(string)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
-		http.Error(w, "Не удалось получить id пользователя", http.StatusInternalServerError)
+		http.Error(w, "Не удалось получить id пользователя", http.StatusUnauthorized)
 		return
 	}
 
 	// Получаем URL-адреса пользователя из базы данных
 	urls, err := store.GetUserURLs(ctx, userID, baseHost)
+	if errors.Is(err, storageErrors.ShortURLsForUserNotFound) {
+		http.Error(w, err.Error(), http.StatusNoContent)
+	}
 	if err != nil {
 		// Обработка ошибок, связанных с получением данных
 		http.Error(w, "Ошибка при получении данных", http.StatusInternalServerError)

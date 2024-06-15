@@ -17,15 +17,10 @@ import (
 )
 
 const (
-	cookieName = "user_id"
-	secretKey  = "supersecretkey"
+	cookieName        = "user_id"
+	secretKey         = "supersecretkey"
+	userIDKey  string = "userID"
 )
-
-// Определяем тип ключа для userID
-type userIDKeyType string
-
-// Создаем константу для ключа
-const keyUserID userIDKeyType = "userID"
 
 func generateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
@@ -93,11 +88,18 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if !valid {
 			userID = uuid.New().String()
 			setSignedCookie(w, cookieName, userID, secretKey)
-			return
+			// Получаем URI текущего запроса
+			uri := r.URL.Path
+			log.Printf("Request URI: %s", uri)
+			//lint:ignore SA9003 Ignore empty branch warning for explanation purposes
+			if uri == "/api/user/urls" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
 		}
 
 		// Добавляем userID в контекст запроса
-		ctx := context.WithValue(r.Context(), keyUserID, userID)
+		ctx := context.WithValue(r.Context(), userIDKey, userID)
 		r = r.WithContext(ctx)
 
 		// Если кука действительна, продолжаем выполнение следующего обработчика

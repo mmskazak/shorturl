@@ -24,7 +24,7 @@ type JSONResponse struct {
 
 const (
 	userIDKey = "userID"
-	appJson   = "application/json"
+	appJSON   = "application/json"
 )
 
 func HandleCreateShortURL(
@@ -35,8 +35,8 @@ func HandleCreateShortURL(
 	baseHost string,
 ) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
-	w.Header().Set("Content-Type", appJson)
-	w.Header().Set("Accept", appJson)
+	w.Header().Set("Content-Type", appJSON)
+	w.Header().Set("Accept", appJSON)
 
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
@@ -156,7 +156,7 @@ func SaveShortenURLsBatch(
 	}
 
 	// Отправка успешного ответа
-	w.Header().Set("Content-Type", appJson)
+	w.Header().Set("Content-Type", appJSON)
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(responseData)
 	if err != nil {

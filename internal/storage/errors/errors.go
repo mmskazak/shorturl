@@ -10,6 +10,7 @@ var (
 	ErrKeyAlreadyExists         = errors.New("error key already exists")
 	ErrNotFound                 = errors.New("error key not found")
 	ErrUniqueViolation          = errors.New("error database unique violation")
+	ShortURLsForUserNotFound    = errors.New("short urls for user not found")
 )
 
 type ConflictError struct {

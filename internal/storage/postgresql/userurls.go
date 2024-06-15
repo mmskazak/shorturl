@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"mmskazak/shorturl/internal/storage"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/url"
 
 	"github.com/jackc/pgx/v5"
@@ -14,10 +15,10 @@ import (
 func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
 	// Определяем SQL-запрос для получения URL-адресов пользователя
 	query := `
-		SELECT short_url, original_url
-		FROM urls
-		WHERE user_id = $1
-	`
+        SELECT short_url, original_url
+        FROM urls
+        WHERE user_id = $1
+    `
 
 	// Начало транзакции
 	tx, err := p.pool.Begin(ctx)
@@ -40,8 +41,10 @@ func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 	// Создаем слайс для хранения результатов
 	var urls []storage.URL
 
-	// Обрабатываем результаты запроса
+	// Проверяем наличие строк в результате запроса
+	hasRows := false
 	for rows.Next() {
+		hasRows = true
 		var storageURL storage.URL
 		if err := rows.Scan(&storageURL.ShortURL, &storageURL.OriginalURL); err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)
@@ -76,6 +79,11 @@ func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 	// Фиксируем транзакцию
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("error committing transaction: %w", err)
+	}
+
+	// Если нет строк, возвращаем HTTP статус 204 No Content
+	if !hasRows {
+		return nil, storageErrors.ShortURLsForUserNotFound
 	}
 
 	// Возвращаем список URL-адресов
