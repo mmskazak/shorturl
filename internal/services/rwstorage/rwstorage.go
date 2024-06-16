@@ -3,6 +3,7 @@ package rwstorage
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,7 @@ import (
 
 const (
 	PermFile0644 = 0o644
+	ErrEmptyFile = "file is empty"
 )
 
 type ShortURLStruct struct {
@@ -83,11 +85,15 @@ func (c *Consumer) ReadLineInFile() (*ShortURLStruct, error) {
 	// читаем данные до символа переноса строки
 	data := c.Reader.Text()
 
+	if data == "" {
+		return nil, errors.New(ErrEmptyFile)
+	}
+
 	// преобразуем данные из JSON-представления в структуру
 	shortURL := ShortURLStruct{}
 	err := json.Unmarshal([]byte(data), &shortURL)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshal shor url %w", err)
+		return nil, fmt.Errorf("error unmarshal shor url: %w", err)
 	}
 
 	return &shortURL, nil

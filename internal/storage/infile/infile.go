@@ -75,10 +75,10 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 
 	for {
 		record, err := consumer.ReadLineInFile()
-		if errors.Is(err, io.EOF) {
-			break // Конец файла достигнут
-		}
 		if err != nil {
+			if errors.Is(err, io.EOF) || err.Error() == rwstorage.ErrEmptyFile {
+				break // Конец файла достигнут
+			}
 			return fmt.Errorf("error reading line from file: %w", err)
 		}
 
