@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"mmskazak/shorturl/internal/storage"
@@ -21,12 +22,6 @@ type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
-// Определяем тип для ключа контекста.
-type contextKey string
-
-// Постоянный ключ для идентификатора пользователя.
-const keyUserID contextKey = "userID"
-
 func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
@@ -41,8 +36,9 @@ func HandleCreateShortURL(
 		return
 	}
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(keyUserID).(string)
+	userID, ok := r.Context().Value(ctxkeys.KeyUserID).(string)
 	if !ok {
+		log.Println("Тут ошибка")
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusInternalServerError)
 		return

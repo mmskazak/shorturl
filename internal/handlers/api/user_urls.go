@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
@@ -26,7 +27,7 @@ func FindUserURLs(
 	w.Header().Set("Content-Type", "application/json")
 
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(keyUserID).(string)
+	userID, ok := r.Context().Value(ctxkeys.KeyUserID).(string)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "Не удалось получить id пользователя", http.StatusUnauthorized)

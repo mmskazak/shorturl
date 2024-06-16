@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"mmskazak/shorturl/internal/storage"
@@ -22,13 +23,8 @@ type JSONResponse struct {
 	ShortURL string `json:"result"`
 }
 
-// Определяем тип для ключа контекста.
-type contextKey string
-
 const (
 	appJSON = "application/json"
-	// Постоянный ключ для идентификатора пользователя.
-	keyUserID contextKey = "userID"
 )
 
 func HandleCreateShortURL(
@@ -50,7 +46,7 @@ func HandleCreateShortURL(
 		return
 	}
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(keyUserID).(string)
+	userID, ok := r.Context().Value(ctxkeys.KeyUserID).(string)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusInternalServerError)
@@ -133,7 +129,7 @@ func SaveShortenURLsBatch(
 	}
 
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(keyUserID).(string)
+	userID, ok := r.Context().Value(ctxkeys.KeyUserID).(string)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusInternalServerError)

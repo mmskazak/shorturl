@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"mmskazak/shorturl/internal/ctxkeys"
 	"net/url"
 
 	"net/http"
@@ -20,12 +21,6 @@ const (
 	cookieName = "user_id"
 	secretKey  = "supersecretkey"
 )
-
-// Определяем тип для ключа контекста.
-type contextKey string
-
-// Постоянный ключ для идентификатора пользователя.
-const keyUserID contextKey = "userID"
 
 func generateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
@@ -102,7 +97,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		ctx := context.WithValue(r.Context(), keyUserID, userID)
+		ctx := context.WithValue(r.Context(), ctxkeys.KeyUserID, userID)
 		r = r.WithContext(ctx)
 
 		// Если кука действительна, продолжаем выполнение следующего обработчика
