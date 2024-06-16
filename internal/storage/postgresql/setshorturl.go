@@ -6,15 +6,16 @@ import (
 	"errors"
 	"fmt"
 
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
 // SetShortURL error:
 // different error
 // ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists)
+// ConflictError (ErrOriginalURLAlreadyExists).
 func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string, userID string) error {
 	// Начало транзакции
 	tx, err := p.pool.Begin(ctx)

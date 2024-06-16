@@ -2,6 +2,7 @@ package infile
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -21,7 +22,7 @@ type FileRecord struct {
 }
 
 type InFile struct {
-	inMe     *inmemory.InMemory
+	InMe     *inmemory.InMemory
 	zapLog   *zap.SugaredLogger
 	filePath string
 }
@@ -34,7 +35,7 @@ func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogge
 	}
 
 	ms := &InFile{
-		inMe:     inm,
+		InMe:     inm,
 		filePath: cfg.FileStoragePath,
 		zapLog:   zapLog,
 	}
@@ -74,14 +75,14 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 
 	for {
 		record, err := consumer.ReadLineInFile()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break // Конец файла достигнут
 		}
 		if err != nil {
 			return fmt.Errorf("error reading line from file: %w", err)
 		}
 
-		if err := m.inMe.SetShortURL(ctx, record.ShortURL, record.OriginalURL, record.UserID); err != nil {
+		if err := m.InMe.SetShortURL(ctx, record.ShortURL, record.OriginalURL, record.UserID); err != nil {
 			return fmt.Errorf("error setting short URL in memory: %w", err)
 		}
 	}

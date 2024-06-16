@@ -92,7 +92,7 @@ func (s *ShortURLService) GenerateShortURL(
 
 func NewShortURLService() *ShortURLService {
 	return &ShortURLService{
-		maxIteration: 10,
+		maxIteration: 10, //nolint:gomnd //количество попыток генерирования short url
 	}
 }
 

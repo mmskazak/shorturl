@@ -26,7 +26,7 @@ func FindUserURLs(
 	w.Header().Set("Content-Type", "application/json")
 
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(userIDKey).(string)
+	userID, ok := r.Context().Value(keyUserID).(string)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "Не удалось получить id пользователя", http.StatusUnauthorized)
@@ -35,8 +35,9 @@ func FindUserURLs(
 
 	// Получаем URL-адреса пользователя из базы данных
 	urls, err := store.GetUserURLs(ctx, userID, baseHost)
-	if errors.Is(err, storageErrors.ShortURLsForUserNotFound) {
+	if errors.Is(err, storageErrors.ErrShortURLsForUserNotFound) {
 		http.Error(w, "", http.StatusNoContent)
+		return
 	}
 	if err != nil {
 		// Обработка ошибок, связанных с получением данных

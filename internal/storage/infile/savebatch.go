@@ -18,9 +18,9 @@ func (m *InFile) SaveBatch(
 	generator storage.IGenIDForURL,
 ) ([]storage.Output, error) {
 	lenItems := len(items)
-	outputs, err := m.inMe.SaveBatch(ctx, items, baseHost, userID, generator)
+	outputs, err := m.InMe.SaveBatch(ctx, items, baseHost, userID, generator)
 	if err != nil {
-		return nil, err // прокидываем оригинальную ошибку
+		return nil, err //nolint:wrapcheck // прокидываем оригинальную ошибку
 	}
 
 	tempFilePath := m.filePath + ".tmp"
@@ -31,7 +31,7 @@ func (m *InFile) SaveBatch(
 	defer producer.Close()
 
 	batchSize := 1000
-	number := m.inMe.NumberOfEntries() - lenItems
+	number := m.InMe.NumberOfEntries() - lenItems
 	batch := make([]rwstorage.ShortURLStruct, 0, batchSize)
 
 	for _, item := range items {

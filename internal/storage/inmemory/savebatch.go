@@ -16,7 +16,7 @@ type IGenIDForURL interface {
 // SaveBatch error:
 // different error
 // ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists)
+// ConflictError (ErrOriginalURLAlreadyExists).
 func (m *InMemory) SaveBatch(
 	ctx context.Context,
 	items []storage.Incoming,

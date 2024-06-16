@@ -21,7 +21,7 @@ const batchSize = 5000
 // SaveBatch error:
 // different error
 // ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists)
+// ConflictError (ErrOriginalURLAlreadyExists).
 func (p *PostgreSQL) SaveBatch(
 	ctx context.Context,
 	items []storage.Incoming,

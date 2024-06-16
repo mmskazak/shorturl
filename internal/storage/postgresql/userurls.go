@@ -83,7 +83,7 @@ func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 
 	// Если нет строк, возвращаем HTTP статус 204 No Content
 	if !hasRows {
-		return nil, storageErrors.ShortURLsForUserNotFound
+		return nil, storageErrors.ErrShortURLsForUserNotFound
 	}
 
 	// Возвращаем список URL-адресов

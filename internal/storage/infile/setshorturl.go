@@ -10,16 +10,15 @@ import (
 // SetShortURL error:
 // different error
 // ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists)
+// ConflictError (ErrOriginalURLAlreadyExists).
 func (m *InFile) SetShortURL(ctx context.Context, idShortPath string, originalURL string, userID string) error {
-
-	err := m.inMe.SetShortURL(ctx, idShortPath, originalURL, userID)
+	err := m.InMe.SetShortURL(ctx, idShortPath, originalURL, userID)
 	if err != nil {
 		return err //nolint:wrapcheck // пробрасываем дальше оригиральную ошибку
 	}
 
 	record := rwstorage.ShortURLStruct{
-		ID:          strconv.Itoa(m.inMe.NumberOfEntries()),
+		ID:          strconv.Itoa(m.InMe.NumberOfEntries()),
 		ShortURL:    idShortPath,
 		OriginalURL: originalURL,
 		UserID:      userID,

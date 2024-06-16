@@ -8,7 +8,7 @@ import (
 // SetShortURL error:
 // different error
 // ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists)
+// ConflictError (ErrOriginalURLAlreadyExists).
 func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string, userID string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

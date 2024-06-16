@@ -21,11 +21,11 @@ type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
-const (
-	defaultShortURLLength = 8
-	maxIteration          = 10
-	userIDKey             = "userID"
-)
+// Определяем тип для ключа контекста.
+type contextKey string
+
+// Постоянный ключ для идентификатора пользователя.
+const keyUserID contextKey = "userID"
 
 func HandleCreateShortURL(
 	ctx context.Context,
@@ -41,7 +41,7 @@ func HandleCreateShortURL(
 		return
 	}
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(userIDKey).(string)
+	userID, ok := r.Context().Value(keyUserID).(string)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusInternalServerError)
