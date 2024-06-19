@@ -32,6 +32,7 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredL
 			short_url VARCHAR(255) NOT NULL,
 			original_url TEXT NOT NULL,
 		    user_id VARCHAR(255),
+		    deleted BOOLEAN NOT NULL,
 			CONSTRAINT unique_short_url UNIQUE (short_url),
 			CONSTRAINT unique_original_url UNIQUE (original_url)
 		);
@@ -46,18 +47,18 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredL
 	}, nil
 }
 
-func (p *PostgreSQL) Ping(ctx context.Context) error {
-	err := p.pool.Ping(ctx)
+func (s *PostgreSQL) Ping(ctx context.Context) error {
+	err := s.pool.Ping(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to ping PostgreSQL: %w", err)
 	}
 	return nil
 }
 
-func (p *PostgreSQL) Close() error {
-	if p.pool == nil {
+func (s *PostgreSQL) Close() error {
+	if s.pool == nil {
 		return nil
 	}
-	p.pool.Close()
+	s.pool.Close()
 	return nil
 }

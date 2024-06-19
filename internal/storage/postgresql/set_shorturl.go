@@ -16,9 +16,9 @@ import (
 // different error
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
-func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string, userID string) error {
+func (s *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string, userID string) error {
 	// Начало транзакции
-	tx, err := p.pool.Begin(ctx)
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("error beginning transaction: %w", err)
 	}
@@ -26,7 +26,7 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 	defer func() {
 		if errRollback := tx.Rollback(ctx); errRollback != nil {
 			if !errors.Is(err, sql.ErrTxDone) {
-				p.zapLog.Infof("error rollback transaction: %v", errRollback)
+				s.zapLog.Infof("error rollback transaction: %v", errRollback)
 			}
 		}
 	}()
@@ -38,18 +38,18 @@ func (p *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
     `, shortURL, targetURL, userID)
 
 	if err != nil {
-		return p.handleError(ctx, err, targetURL)
+		return s.handleError(ctx, err, targetURL)
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		p.zapLog.Infof("error committing transaction: %v", err)
+		s.zapLog.Infof("error committing transaction: %v", err)
 	}
 
 	// Если все успешно, err остается nil и транзакция будет зафиксирована
 	return nil
 }
 
-func (p *PostgreSQL) handleError(ctx context.Context, err error, targetURL string) error {
+func (s *PostgreSQL) handleError(ctx context.Context, err error, targetURL string) error {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 		switch pgErr.ConstraintName {
@@ -57,7 +57,7 @@ func (p *PostgreSQL) handleError(ctx context.Context, err error, targetURL strin
 			return storageErrors.ErrKeyAlreadyExists
 		case "unique_original_url":
 			var shortURL string
-			err := p.pool.QueryRow(ctx, "SELECT short_url FROM urls WHERE original_url = $1", targetURL).Scan(&shortURL)
+			err := s.pool.QueryRow(ctx, "SELECT short_url FROM urls WHERE original_url = $1", targetURL).Scan(&shortURL)
 			if err != nil {
 				return fmt.Errorf("error recive short URL by original: %w", err)
 			}

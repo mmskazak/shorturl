@@ -92,6 +92,10 @@ func NewApp(
 		api.FindUserURLs(ctx, w, r, store, cfg.BaseHost)
 	})
 
+	router.Delete("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
+
+	})
+
 	return &App{
 		server: &http.Server{
 			Addr:         cfg.Address,

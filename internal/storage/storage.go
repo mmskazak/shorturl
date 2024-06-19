@@ -37,6 +37,7 @@ type Storage interface {
 		generator IGenIDForURL,
 	) ([]Output, error)
 	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]URL, error)
+	DeleteURLs(ctx context.Context, urlIDs []string) error
 }
 
 func GetFullShortURL(baseHost, correlationID string) (string, error) {

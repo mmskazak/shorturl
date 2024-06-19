@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
+func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
 	// Определяем SQL-запрос для получения URL-адресов пользователя
 	query := `
         SELECT short_url, original_url
@@ -21,7 +21,7 @@ func (p *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
     `
 
 	// Начало транзакции
-	tx, err := p.pool.Begin(ctx)
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error beginning transaction: %w", err)
 	}
