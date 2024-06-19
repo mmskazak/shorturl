@@ -28,7 +28,7 @@ type IGenIDForURL interface {
 type Storage interface {
 	Close() error
 	GetShortURL(ctx context.Context, id string) (string, error)
-	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string) error
+	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
 	SaveBatch(
 		ctx context.Context,
 		items []Incoming,

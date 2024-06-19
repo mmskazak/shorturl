@@ -2,7 +2,6 @@ package infile
 
 import (
 	"encoding/json"
-	"mmskazak/shorturl/internal/services/rwstorage"
 	"os"
 	"strconv"
 )
@@ -14,10 +13,10 @@ func (m *InFile) saveToFile() {
 
 		// Захватываем мьютекс для чтения данных
 		m.InMe.Mu.Lock()
-		records := make([]rwstorage.ShortURLStruct, 0, len(m.InMe.Data))
+		records := make([]shortURLStruct, 0, len(m.InMe.Data))
 		numberItem := 1
 		for k, v := range m.InMe.Data {
-			records = append(records, rwstorage.ShortURLStruct{
+			records = append(records, shortURLStruct{
 				ID:          strconv.Itoa(numberItem),
 				ShortURL:    k,
 				OriginalURL: v.OriginalURL,

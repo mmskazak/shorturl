@@ -9,7 +9,7 @@ import (
 )
 
 // DeleteUserURLs - хендлер для асинхронного удаления сокращённых URL по их идентификаторам.
-func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request, storage storage.Storage) {
+func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request, store storage.Storage) {
 	var urlIDs []string
 	err := json.NewDecoder(r.Body).Decode(&urlIDs)
 	if err != nil {
@@ -29,7 +29,7 @@ func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 			// Если размер батча достиг максимального, выполняем обновление
 			if len(batch) >= batchSize {
-				if err := storage.DeleteURLs(ctx, batch); err != nil {
+				if err := store.DeleteURLs(ctx, batch); err != nil {
 					log.Printf("Error deleting batch: %v", err)
 				}
 				batch = batch[:0] // Очистка батча
@@ -38,7 +38,7 @@ func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 		// Обрабатываем оставшиеся записи, если есть
 		if len(batch) > 0 {
-			if err := storage.DeleteURLs(ctx, batch); err != nil {
+			if err := store.DeleteURLs(ctx, batch); err != nil {
 				log.Printf("Error deleting remaining batch: %v", err)
 			}
 		}

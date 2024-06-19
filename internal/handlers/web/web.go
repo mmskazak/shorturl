@@ -51,6 +51,7 @@ func HandleCreateShortURL(
 		UserID:      userID,
 		OriginalURL: originalURL,
 		BaseHost:    baseHost,
+		Deleted:     false,
 	}
 
 	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, data)

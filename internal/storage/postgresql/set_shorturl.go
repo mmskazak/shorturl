@@ -16,7 +16,13 @@ import (
 // different error
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
-func (s *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL string, userID string) error {
+func (s *PostgreSQL) SetShortURL(
+	ctx context.Context,
+	shortURL string,
+	targetURL string,
+	userID string,
+	deleted bool,
+) error {
 	// Начало транзакции
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -33,9 +39,9 @@ func (s *PostgreSQL) SetShortURL(ctx context.Context, shortURL string, targetURL
 
 	// Выполняем команду INSERT в контексте транзакции
 	_, err = tx.Exec(ctx, `
-        INSERT INTO urls (short_url, original_url, user_id)
-        VALUES ($1, $2, $3)
-    `, shortURL, targetURL, userID)
+        INSERT INTO urls (short_url, original_url, user_id, deleted)
+        VALUES ($1, $2, $3, $4)
+    `, shortURL, targetURL, userID, deleted)
 
 	if err != nil {
 		return s.handleError(ctx, err, targetURL)

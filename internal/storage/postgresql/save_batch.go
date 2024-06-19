@@ -16,10 +16,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const batchSize = 5000
-
-// SaveBatch error:
-// different error
+// SaveBatch error:.
+// Different error
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
 func (s *PostgreSQL) SaveBatch(
@@ -47,7 +45,7 @@ func (s *PostgreSQL) SaveBatch(
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil {
 			if !errors.Is(err, sql.ErrTxDone) {
-				log.Printf("error rolling back transaction: %v", err)
+				s.zapLog.Warnf("error rolling back transaction: %v", err)
 			}
 		}
 	}()
@@ -58,7 +56,7 @@ func (s *PostgreSQL) SaveBatch(
 		incomingMap[item.OriginalURL] = item.CorrelationID
 
 		// Повторные попытки вставки с разной короткой URL
-		for retry := 0; retry < maxRetries; retry++ {
+		for retry := range maxRetries {
 			idShortURL, err := generator.Generate()
 			if err != nil {
 				return nil, fmt.Errorf("error generating ID for URL: %w", err)
@@ -77,7 +75,7 @@ func (s *PostgreSQL) SaveBatch(
 			var pgErr *pgconn.PgError
 			if err != nil {
 				if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-					log.Printf("Unique constraint violation on retry %d for URL %s: %v", retry+1, item.OriginalURL, err)
+					log.Printf("Unique constraint violation on retry %d for URL %s: %v", retry, item.OriginalURL, err)
 					// Если ошибка уникальности, продолжаем попытки
 					if pgErr.ConstraintName == "unique_short_url" {
 						// Конфликт по уникальному короткому URL, генерируем заново и пробуем ещё раз

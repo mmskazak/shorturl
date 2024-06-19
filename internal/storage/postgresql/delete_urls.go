@@ -2,12 +2,14 @@ package postgresql
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5"
+	"fmt"
 	"log"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // DeleteURLs выполняет batch update записей, устанавливая флаг удаления.
-func (s *PostgreSQL) DeleteURLs(urlIDs []string) error {
+func (s *PostgreSQL) DeleteURLs(_ context.Context, urlIDs []string) error {
 	if len(urlIDs) == 0 {
 		return nil // Если список пуст, ничего не делаем
 	}
@@ -25,7 +27,7 @@ func (s *PostgreSQL) DeleteURLs(urlIDs []string) error {
 	err := br.Close()
 	if err != nil {
 		log.Printf("Failed to delete URLs in batch: %v", err)
-		return err
+		return fmt.Errorf("falied to delete URLs in batch %w", err)
 	}
 
 	log.Printf("Successfully deleted URLs: %v", urlIDs)

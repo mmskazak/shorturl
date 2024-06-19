@@ -9,7 +9,7 @@ import (
 // different error
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
-func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string, userID string) error {
+func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string, userID string, deleted bool) error {
 	m.Mu.Lock()
 	defer m.Mu.Unlock()
 
@@ -32,7 +32,7 @@ func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string,
 	m.Data[id] = URLRecord{
 		OriginalURL: originalURL,
 		UserID:      userID,
-		Deleted:     false,
+		Deleted:     deleted,
 	}
 	m.userIndex[userID] = append(m.userIndex[userID], id)
 

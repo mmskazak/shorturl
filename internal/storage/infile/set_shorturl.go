@@ -8,8 +8,14 @@ import (
 // different error
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
-func (m *InFile) SetShortURL(ctx context.Context, idShortPath string, originalURL string, userID string) error {
-	err := m.InMe.SetShortURL(ctx, idShortPath, originalURL, userID)
+func (m *InFile) SetShortURL(
+	ctx context.Context,
+	idShortPath string,
+	originalURL string,
+	userID string,
+	deleted bool,
+) error {
+	err := m.InMe.SetShortURL(ctx, idShortPath, originalURL, userID, deleted)
 	if err != nil {
 		return err //nolint:wrapcheck // пробрасываем дальше оригиральную ошибку
 	}

@@ -32,6 +32,7 @@ func (m *InMemory) SaveBatch(
 			OriginalURL: v.OriginalURL,
 			UserID:      userID,
 			BaseHost:    baseHost,
+			Deleted:     false,
 		}
 		service := shorturlservice.NewShortURLService()
 		fullShortURL, err := service.GenerateShortURL(

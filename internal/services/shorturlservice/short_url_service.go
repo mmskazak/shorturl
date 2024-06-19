@@ -20,6 +20,7 @@ type DTOShortURL struct {
 	OriginalURL string
 	UserID      string
 	BaseHost    string
+	Deleted     bool
 }
 
 type ShortURLService struct {
@@ -45,7 +46,7 @@ func (s *ShortURLService) GenerateShortURL(
 			return "", fmt.Errorf("%w: %w", ErrServiceGenerateID, err)
 		}
 
-		err = data.SetShortURL(ctx, id, dto.OriginalURL, dto.UserID)
+		err = data.SetShortURL(ctx, id, dto.OriginalURL, dto.UserID, dto.Deleted)
 		if err != nil {
 			conflictError, ok := isConflictError(err)
 			if ok {

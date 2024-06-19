@@ -67,6 +67,7 @@ func HandleCreateShortURL(
 		UserID:      userID,
 		OriginalURL: jsonReq.URL,
 		BaseHost:    baseHost,
+		Deleted:     false,
 	}
 
 	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, store)
