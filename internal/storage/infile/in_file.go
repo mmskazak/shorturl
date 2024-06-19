@@ -13,14 +13,6 @@ import (
 	"mmskazak/shorturl/internal/storage/inmemory"
 )
 
-const errMsgSaveBatchAndRemove = "error save batch and removing temp file %w"
-
-// FileRecord - структура для сериализации и десериализации данных в файл.
-type FileRecord struct {
-	ID   string             `json:"id"`   // Короткий идентификатор URL
-	Data inmemory.URLRecord `json:"data"` // Связанная информация о URL
-}
-
 type InFile struct {
 	InMe     *inmemory.InMemory
 	zapLog   *zap.SugaredLogger

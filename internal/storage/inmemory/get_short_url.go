@@ -7,9 +7,9 @@ import (
 
 // GetShortURL - получение оригинального URL по короткому идентификатору.
 func (m *InMemory) GetShortURL(_ context.Context, id string) (string, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	record, ok := m.data[id]
+	m.Mu.Lock()
+	defer m.Mu.Unlock()
+	record, ok := m.Data[id]
 	if !ok || record.Deleted {
 		return "", storageErrors.ErrNotFound
 	}

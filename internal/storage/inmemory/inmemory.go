@@ -16,8 +16,8 @@ type URLRecord struct {
 
 // InMemory - структура для работы с хранилищем в памяти.
 type InMemory struct {
-	mu        *sync.Mutex
-	data      map[string]URLRecord
+	Mu        *sync.Mutex
+	Data      map[string]URLRecord
 	userIndex map[string][]string // для быстрого поиска URL по userID
 	zapLog    *zap.SugaredLogger
 }
@@ -25,8 +25,8 @@ type InMemory struct {
 // NewInMemory - конструктор для создания нового хранилища в памяти.
 func NewInMemory(zapLog *zap.SugaredLogger) (*InMemory, error) {
 	return &InMemory{
-		mu:        &sync.Mutex{},
-		data:      make(map[string]URLRecord),
+		Mu:        &sync.Mutex{},
+		Data:      make(map[string]URLRecord),
 		userIndex: make(map[string][]string),
 		zapLog:    zapLog,
 	}, nil
@@ -40,5 +40,5 @@ func (m *InMemory) Close() error {
 
 // NumberOfEntries - количество записей.
 func (m *InMemory) NumberOfEntries() int {
-	return len(m.data)
+	return len(m.Data)
 }

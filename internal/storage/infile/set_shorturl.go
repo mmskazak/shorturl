@@ -2,9 +2,6 @@ package infile
 
 import (
 	"context"
-	"fmt"
-	"mmskazak/shorturl/internal/services/rwstorage"
-	"strconv"
 )
 
 // SetShortURL error:
@@ -16,19 +13,7 @@ func (m *InFile) SetShortURL(ctx context.Context, idShortPath string, originalUR
 	if err != nil {
 		return err //nolint:wrapcheck // пробрасываем дальше оригиральную ошибку
 	}
-
-	record := rwstorage.ShortURLStruct{
-		ID:          strconv.Itoa(m.InMe.NumberOfEntries()),
-		ShortURL:    idShortPath,
-		OriginalURL: originalURL,
-		UserID:      userID,
-		Deleted:     false,
-	}
-
-	if err := m.appendToFile(record); err != nil {
-		return fmt.Errorf("error appending to file: %w", err)
-	}
-
+	m.saveToFile()
 	m.zapLog.Infof("Added short link id: %s, URL: %s, for UserID %s", idShortPath, originalURL, userID)
 	return nil
 }
