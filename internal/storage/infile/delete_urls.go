@@ -12,5 +12,7 @@ func (m *InFile) DeleteURLs(ctx context.Context, urlIDs []string) error {
 		m.zapLog.Errorf("failed to delete urls: %v", err)
 		return fmt.Errorf("delete urls: %w", err)
 	}
+	m.saveToFile()
+	m.zapLog.Infof("deleted %d urls", len(urlIDs))
 	return nil
 }

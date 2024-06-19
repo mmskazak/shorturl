@@ -39,25 +39,6 @@ func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogge
 	return ms, nil
 }
 
-// appendToFile - добавление новой записи в файл.
-func (m *InFile) appendToFile(record rwstorage.ShortURLStruct) error {
-	producer, err := rwstorage.NewProducer(m.filePath)
-	if err != nil {
-		return fmt.Errorf("error creating producer: %w", err)
-	}
-	defer producer.Close()
-
-	err = producer.WriteData(&record)
-	if err != nil {
-		return fmt.Errorf("error writing data to file: %w", err)
-	}
-
-	m.zapLog.Infof("Added short URL: %v", record)
-
-	return nil
-}
-
-// readFileStorage читает данные из файла и загружает их в память.
 func (m *InFile) readFileStorage(ctx context.Context) error {
 	consumer, err := rwstorage.NewConsumer(m.filePath)
 	if err != nil {
@@ -82,7 +63,6 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 	return nil
 }
 
-// Close - закрытие хранилища (заглушка для будущих изменений).
 func (m *InFile) Close() error {
 	m.zapLog.Debugln("InFile storage closed (nothing to close currently)")
 	return nil
