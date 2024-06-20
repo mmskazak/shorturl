@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -15,8 +16,10 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// SaveBatch error:.
-// Different error
+const batchSize = 5000
+
+// SaveBatch error:
+// different error
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
 func (s *PostgreSQL) SaveBatch(
@@ -26,58 +29,55 @@ func (s *PostgreSQL) SaveBatch(
 	userID string,
 	generator storage.IGenIDForURL,
 ) ([]storage.Output, error) {
-	if len(items) == 0 {
-		return nil, errors.New("batch with original URLs is empty")
+	lenItems := len(items)
+	if lenItems == 0 {
+		return nil, errors.New("batch with original URL is empty")
 	}
 
-	outputs := make([]storage.Output, 0, len(items))
-	incomingMap := make(map[string]string)
+	outputs := make([]storage.Output, 0, lenItems)
 
+	// Начало транзакции
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error beginning transaction: %w", err)
 	}
+
 	defer func() {
-		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-			s.zapLog.Warnf("error rolling back transaction: %v", err)
+		if err = tx.Rollback(ctx); err != nil {
+			if !errors.Is(err, sql.ErrTxDone) {
+				log.Printf("error rollback transaction: %v", err)
+			}
 		}
 	}()
 
-	stmt := "INSERT INTO urls(short_url, original_url, user_id, deleted) " +
-		"VALUES ($1, $2, $3, $4) RETURNING short_url, original_url"
+	// Используем pgx.Batch для отправки множества команд в одном запросе
 	batch := &pgx.Batch{}
 
-	for _, item := range items {
+	incomingMap := make(map[string]string)
+	for i := range lenItems {
+		item := items[i]
 		incomingMap[item.OriginalURL] = item.CorrelationID
 
-		// Generate short URL
 		idShortURL, err := generator.Generate()
 		if err != nil {
 			return nil, fmt.Errorf("error generating ID for URL: %w", err)
 		}
-
-		// Add to batch
+		stmt := "INSERT INTO urls(short_url, original_url, user_id, deleted) " +
+			"VALUES ($1, $2, $3, $4) RETURNING short_url, original_url"
 		batch.Queue(stmt, idShortURL, item.OriginalURL, userID, false)
-	}
 
-	// Execute the batch
-	batchResults := tx.SendBatch(ctx, batch)
-	defer func() {
-		if err := batchResults.Close(); err != nil {
-			log.Printf("error closing batch results: %v", err)
-		}
-	}()
+		// Если количество запросов в батче достигло предела или это последний элемент,
+		// то отправляем батчевый запрос и обрабатываем результаты
+		if (i+1)%batchSize == 0 || i == lenItems-1 {
+			// Отправляем батчевый запрос и получаем результаты
+			batchResults := tx.SendBatch(ctx, batch)
 
-	for range items {
-		var shortURL string
-		var originalURL string
-
-		// Get the result of the batch execution
-		err := batchResults.QueryRow().Scan(&shortURL, &originalURL)
-		if err != nil {
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) {
-				if pgErr.Code == pgerrcode.UniqueViolation {
+			for range batch.Len() {
+				var shortURL string
+				var originalURL string
+				err = batchResults.QueryRow().Scan(&shortURL, &originalURL)
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 					switch pgErr.ConstraintName {
 					case "unique_short_url":
 						return nil, storageErrors.ErrKeyAlreadyExists
@@ -85,24 +85,34 @@ func (s *PostgreSQL) SaveBatch(
 						return nil, storageErrors.ErrUniqueViolation
 					}
 				}
+				if err != nil {
+					return nil, fmt.Errorf("error inserting data: %w", err)
+				}
+
+				fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
+				if err != nil {
+					return nil, fmt.Errorf("error getting full short URL: %w", err)
+				}
+
+				outputs = append(outputs, storage.Output{
+					CorrelationID: incomingMap[originalURL],
+					ShortURL:      fullShortURL,
+				})
 			}
-			return nil, fmt.Errorf("error inserting data: %w", err)
-		}
 
-		fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
-		if err != nil {
-			return nil, fmt.Errorf("error getting full short URL: %w", err)
-		}
+			if err := batchResults.Close(); err != nil {
+				return nil, fmt.Errorf("error closing batch results: %w", err)
+			}
 
-		outputs = append(outputs, storage.Output{
-			CorrelationID: incomingMap[originalURL],
-			ShortURL:      fullShortURL,
-		})
+			// Очищаем батч для следующей порции запросов
+			batch = &pgx.Batch{}
+			// Очищаем вспомогательную структуру
+			incomingMap = make(map[string]string)
+		}
 	}
 
 	if err = tx.Commit(ctx); err != nil {
 		log.Printf("error committing transaction: %v", err)
-		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
 	return outputs, nil
