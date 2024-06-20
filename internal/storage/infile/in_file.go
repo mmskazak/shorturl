@@ -13,6 +13,8 @@ import (
 	"mmskazak/shorturl/internal/storage/inmemory"
 )
 
+const filePermissions = 0o644 // Константа для прав доступа к файлу
+
 type InFile struct {
 	InMe     *inmemory.InMemory
 	zapLog   *zap.SugaredLogger
@@ -58,15 +60,15 @@ func parseShortURLStruct(line string) (shortURLStruct, error) {
 }
 
 func (m *InFile) readFileStorage(ctx context.Context) error {
-	// Открываем файл
-	file, err := os.Open(m.filePath)
+	// Открываем файл с флагами для создания, если он не существует
+	file, err := os.OpenFile(m.filePath, os.O_RDONLY|os.O_CREATE, filePermissions)
 	if err != nil {
-		return fmt.Errorf("error opening file: %w", err)
+		return fmt.Errorf("error opening or creating file: %w", err)
 	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			m.zapLog.Warnf("error close file %w", err)
+			m.zapLog.Warnf("error closing file: %w", err)
 		}
 	}(file)
 
@@ -75,7 +77,7 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// Парсим строку JSON в структуру shortURLStruct
+		// Парсим строку JSON в структуру ShortURLStruct
 		record, err := parseShortURLStruct(line)
 		if err != nil {
 			return fmt.Errorf("error parsing line from file: %w", err)
