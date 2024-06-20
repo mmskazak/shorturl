@@ -20,7 +20,7 @@ func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 	log.Printf("Received request to delete URLs: %v", urlIDs)
 
 	// Асинхронное удаление с batch update
-	go func() {
+	func() {
 		batchSize := 10 // Максимальный размер батча
 		var batch []string
 
