@@ -13,7 +13,7 @@ import (
 func (s *PostgreSQL) GetShortURL(ctx context.Context, shortURL string) (string, error) {
 	var originalURL string
 	var deleted bool
-	err := s.pool.QueryRow(ctx, "SELECT original_url FROM urls "+
+	err := s.pool.QueryRow(ctx, "SELECT original_url, deleted FROM urls "+
 		"WHERE short_url = $1", shortURL).Scan(&originalURL, &deleted)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
