@@ -18,8 +18,8 @@ func (s *PostgreSQL) DeleteURLs(_ context.Context, urlIDs []string) error {
 	batch := &pgx.Batch{}
 
 	// Добавляем команды в batch
-	for _, id := range urlIDs {
-		batch.Queue("UPDATE urls SET deleted = TRUE WHERE id = $1", id)
+	for _, shortURL := range urlIDs {
+		batch.Queue("UPDATE urls SET deleted = TRUE WHERE short_url = $1", shortURL)
 	}
 
 	// Выполняем batch
