@@ -93,7 +93,7 @@ func NewApp(
 	})
 
 	router.Delete("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
-
+		api.DeleteUserURLs(ctx, w, r, store)
 	})
 
 	return &App{
