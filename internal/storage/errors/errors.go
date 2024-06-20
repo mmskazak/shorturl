@@ -11,6 +11,7 @@ var (
 	ErrNotFound                 = errors.New("error key not found")
 	ErrUniqueViolation          = errors.New("error database unique violation")
 	ErrShortURLsForUserNotFound = errors.New("short urls for user not found")
+	ErrDeletedShortURL          = errors.New("deleted short url")
 )
 
 type ConflictError struct {

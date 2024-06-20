@@ -9,6 +9,7 @@ import (
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"mmskazak/shorturl/internal/storage"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -86,6 +87,10 @@ func HandleRedirect(ctx context.Context, w http.ResponseWriter, r *http.Request,
 	id := chi.URLParam(r, "id")
 
 	originalURL, err := data.GetShortURL(ctx, id)
+	if errors.Is(err, storageErrors.ErrDeletedShortURL) {
+		http.Error(w, "", http.StatusGone)
+		return
+	}
 
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
