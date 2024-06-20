@@ -43,7 +43,8 @@ func (s *PostgreSQL) SaveBatch(
 		}
 	}()
 
-	stmt := "INSERT INTO urls(short_url, original_url, user_id) VALUES ($1, $2, $3) RETURNING short_url, original_url"
+	stmt := "INSERT INTO urls(short_url, original_url, user_id, deleted) " +
+		"VALUES ($1, $2, $3, $4) RETURNING short_url, original_url"
 	batch := &pgx.Batch{}
 
 	for _, item := range items {
@@ -56,7 +57,7 @@ func (s *PostgreSQL) SaveBatch(
 		}
 
 		// Add to batch
-		batch.Queue(stmt, idShortURL, item.OriginalURL, userID)
+		batch.Queue(stmt, idShortURL, item.OriginalURL, userID, false)
 	}
 
 	// Execute the batch
