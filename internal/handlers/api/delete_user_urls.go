@@ -19,34 +19,12 @@ func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 	log.Printf("Received request to delete URLs: %v", urlIDs)
 
-	// Асинхронное удаление с batch update
-	func() {
-		batchSize := 10 // Максимальный размер батча
-		var batch []string
+	err = store.DeleteURLs(ctx, urlIDs)
+	if err != nil {
+		log.Printf("Error deleting URLs: %v", err)
+	}
 
-		for _, id := range urlIDs {
-			batch = append(batch, id)
-
-			// Если размер батча достиг максимального, выполняем обновление
-			if len(batch) >= batchSize {
-				log.Printf("batch1: %v", batch)
-				if err := store.DeleteURLs(ctx, batch); err != nil {
-					log.Printf("Error deleting batch: %v", err)
-				}
-				batch = batch[:0] // Очистка батча
-			}
-		}
-
-		// Обрабатываем оставшиеся записи, если есть
-		if len(batch) > 0 {
-			log.Printf("batch2: %v", batch)
-			if err := store.DeleteURLs(ctx, batch); err != nil {
-				log.Printf("Error deleting remaining batch: %v", err)
-			}
-		}
-
-		log.Println("All URLs deletion tasks completed")
-	}()
+	log.Println("All URLs deletion tasks completed")
 
 	w.WriteHeader(http.StatusAccepted)
 }
