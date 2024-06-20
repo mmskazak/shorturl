@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -27,93 +26,77 @@ func (s *PostgreSQL) SaveBatch(
 	userID string,
 	generator storage.IGenIDForURL,
 ) ([]storage.Output, error) {
-	const maxRetries = 10 // Максимальное количество попыток для каждой записи
-
-	lenItems := len(items)
-	if lenItems == 0 {
-		return nil, errors.New("batch with original URL is empty")
+	if len(items) == 0 {
+		return nil, errors.New("batch with original URLs is empty")
 	}
 
-	outputs := make([]storage.Output, 0, lenItems)
+	outputs := make([]storage.Output, 0, len(items))
+	incomingMap := make(map[string]string)
 
-	// Начало транзакции
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error beginning transaction: %w", err)
 	}
-
 	defer func() {
-		if err = tx.Rollback(ctx); err != nil {
-			if !errors.Is(err, sql.ErrTxDone) {
-				s.zapLog.Warnf("error rolling back transaction: %v", err)
-			}
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			s.zapLog.Warnf("error rolling back transaction: %v", err)
 		}
 	}()
 
-	incomingMap := make(map[string]string)
-	for i := range lenItems {
-		item := items[i]
+	stmt := "INSERT INTO urls(short_url, original_url, user_id) VALUES ($1, $2, $3) RETURNING short_url, original_url"
+	batch := &pgx.Batch{}
+
+	for _, item := range items {
 		incomingMap[item.OriginalURL] = item.CorrelationID
 
-		retryAttempt := false
-		// Повторные попытки вставки с разной короткой URL
-		for retry := range maxRetries {
-			idShortURL, err := generator.Generate()
-			if err != nil {
-				return nil, fmt.Errorf("error generating ID for URL: %w", err)
-			}
+		// Generate short URL
+		idShortURL, err := generator.Generate()
+		if err != nil {
+			return nil, fmt.Errorf("error generating ID for URL: %w", err)
+		}
 
-			stmt := "INSERT INTO urls(short_url, original_url, user_id) VALUES ($1, $2, $3) RETURNING short_url, original_url"
-			batch := &pgx.Batch{}
-			batch.Queue(stmt, idShortURL, item.OriginalURL, userID)
+		// Add to batch
+		batch.Queue(stmt, idShortURL, item.OriginalURL, userID)
+	}
 
-			// Отправляем батчевый запрос и получаем результаты
-			batchResults := tx.SendBatch(ctx, batch)
-			var shortURL string
-			var originalURL string
-			err = batchResults.QueryRow().Scan(&shortURL, &originalURL)
+	// Execute the batch
+	batchResults := tx.SendBatch(ctx, batch)
+	defer func() {
+		if err := batchResults.Close(); err != nil {
+			log.Printf("error closing batch results: %v", err)
+		}
+	}()
 
+	for range items {
+		var shortURL string
+		var originalURL string
+
+		// Get the result of the batch execution
+		err := batchResults.QueryRow().Scan(&shortURL, &originalURL)
+		if err != nil {
 			var pgErr *pgconn.PgError
-			if err != nil {
-				if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-					log.Printf("Unique constraint violation on retry %d for URL %s: %v", retry, item.OriginalURL, err)
-					// Если ошибка уникальности, продолжаем попытки
-					if pgErr.ConstraintName == "unique_short_url" {
-						// Конфликт по уникальному короткому URL, генерируем заново и пробуем ещё раз
-						continue
-					}
-					if pgErr.ConstraintName == "unique_original_url" {
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrcode.UniqueViolation {
+					switch pgErr.ConstraintName {
+					case "unique_short_url":
+						return nil, storageErrors.ErrKeyAlreadyExists
+					case "unique_original_url":
 						return nil, storageErrors.ErrUniqueViolation
 					}
-				} else {
-					return nil, fmt.Errorf("error inserting data: %w", err)
 				}
 			}
-
-			// Если вставка успешна, завершаем цикл повторных попыток
-			fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
-			if err != nil {
-				return nil, fmt.Errorf("error getting full short URL: %w", err)
-			}
-
-			outputs = append(outputs, storage.Output{
-				CorrelationID: incomingMap[originalURL],
-				ShortURL:      fullShortURL,
-			})
-
-			if err := batchResults.Close(); err != nil {
-				return nil, fmt.Errorf("error closing batch results: %w", err)
-			}
-
-			// Успешная вставка, выходим из цикла повторных попыток
-			retryAttempt = true
-			break
+			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
-		// Если все попытки завершились неудачей, возвращаем ошибку
-		if !retryAttempt {
-			return nil, fmt.Errorf("failed to insert URL %s after %d retries", item.OriginalURL, maxRetries)
+		fullShortURL, err := storage.GetFullShortURL(baseHost, shortURL)
+		if err != nil {
+			return nil, fmt.Errorf("error getting full short URL: %w", err)
 		}
+
+		outputs = append(outputs, storage.Output{
+			CorrelationID: incomingMap[originalURL],
+			ShortURL:      fullShortURL,
+		})
 	}
 
 	if err = tx.Commit(ctx); err != nil {
