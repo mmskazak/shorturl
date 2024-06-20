@@ -29,6 +29,7 @@ func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 			// Если размер батча достиг максимального, выполняем обновление
 			if len(batch) >= batchSize {
+				log.Printf("batch1: %v", batch)
 				if err := store.DeleteURLs(ctx, batch); err != nil {
 					log.Printf("Error deleting batch: %v", err)
 				}
@@ -38,6 +39,7 @@ func DeleteUserURLs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 		// Обрабатываем оставшиеся записи, если есть
 		if len(batch) > 0 {
+			log.Printf("batch2: %v", batch)
 			if err := store.DeleteURLs(ctx, batch); err != nil {
 				log.Printf("Error deleting remaining batch: %v", err)
 			}
