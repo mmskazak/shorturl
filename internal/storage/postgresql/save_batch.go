@@ -55,6 +55,7 @@ func (s *PostgreSQL) SaveBatch(
 		item := items[i]
 		incomingMap[item.OriginalURL] = item.CorrelationID
 
+		retryAttempt := false
 		// Повторные попытки вставки с разной короткой URL
 		for retry := range maxRetries {
 			idShortURL, err := generator.Generate()
@@ -105,11 +106,12 @@ func (s *PostgreSQL) SaveBatch(
 			}
 
 			// Успешная вставка, выходим из цикла повторных попыток
+			retryAttempt = true
 			break
 		}
 
 		// Если все попытки завершились неудачей, возвращаем ошибку
-		if i == lenItems-1 {
+		if !retryAttempt {
 			return nil, fmt.Errorf("failed to insert URL %s after %d retries", item.OriginalURL, maxRetries)
 		}
 	}
