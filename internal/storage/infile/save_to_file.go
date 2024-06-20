@@ -47,11 +47,6 @@ func (m *InFile) saveToFile() {
 				m.zapLog.Errorf("error encoding data: %v", err)
 				return
 			}
-			_, err = file.WriteString("\n")
-			if err != nil {
-				m.zapLog.Errorf("error writing newline: %v", err)
-				return
-			}
 		}
 
 		m.zapLog.Info("Successfully saved storage data to file")
