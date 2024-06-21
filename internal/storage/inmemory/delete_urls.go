@@ -1,6 +1,9 @@
 package inmemory
 
-import "context"
+import (
+	"context"
+	"sync"
+)
 
 // DeleteURLs устанавливает флаг удаления для множества записей.
 func (m *InMemory) DeleteURLs(_ context.Context, urlIDs []string) error {
@@ -11,15 +14,24 @@ func (m *InMemory) DeleteURLs(_ context.Context, urlIDs []string) error {
 	m.Mu.Lock() // Блокируем доступ к хранилищу
 	defer m.Mu.Unlock()
 
+	var wg sync.WaitGroup
 	for _, id := range urlIDs {
-		if record, exists := m.Data[id]; exists {
-			record.Deleted = true
-			m.Data[id] = record // Обновляем запись в хранилище
-			m.zapLog.Infof("URL with ID %m marked as deleted", id)
-		} else {
-			m.zapLog.Warnf("URL with ID %m not found", id)
-		}
+		id := id
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			m.Mu.Lock()
+			defer m.Mu.Unlock()
+			record, exists := m.Data[id]
+			if exists {
+				record.Deleted = true
+				m.Data[id] = record // Обновляем запись в хранилище
+				m.zapLog.Infof("URL with ID %m marked as deleted", id)
+			} else {
+				m.zapLog.Warnf("URL with ID %m not found", id)
+			}
+		}()
 	}
-
+	wg.Wait()
 	return nil
 }
