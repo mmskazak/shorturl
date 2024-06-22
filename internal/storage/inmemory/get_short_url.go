@@ -10,8 +10,12 @@ func (m *InMemory) GetShortURL(_ context.Context, id string) (string, error) {
 	m.Mu.Lock()
 	defer m.Mu.Unlock()
 	record, ok := m.Data[id]
-	if !ok || record.Deleted {
+	if !ok {
 		return "", storageErrors.ErrNotFound
 	}
+	if record.Deleted {
+		return "", storageErrors.ErrDeletedShortURL
+	}
+
 	return record.OriginalURL, nil
 }
