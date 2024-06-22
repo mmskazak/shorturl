@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/jackc/pgerrcode"
 
@@ -45,7 +44,7 @@ func (s *PostgreSQL) SaveBatch(
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil {
 			if !errors.Is(err, sql.ErrTxDone) {
-				log.Printf("error rollback transaction: %v", err)
+				s.zapLog.Errorf("error rollback transaction: %v", err)
 			}
 		}
 	}()
@@ -112,7 +111,7 @@ func (s *PostgreSQL) SaveBatch(
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		log.Printf("error committing transaction: %v", err)
+		s.zapLog.Warnf("error committing batch transaction: %v", err)
 	}
 
 	return outputs, nil
