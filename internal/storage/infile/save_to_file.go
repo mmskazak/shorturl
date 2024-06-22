@@ -11,11 +11,13 @@ func (m *InFile) saveToFile() {
 	go func() {
 		m.zapLog.Info("Starting to save storage data to file")
 
-		// Захватываем мьютекс для чтения данных
-		m.InMe.Mu.Lock()
-		records := make([]shortURLStruct, 0, len(m.InMe.Data))
+		// Получение копии данных из памяти
+		data := m.InMe.GetCopyData()
+
+		// Формирование списка записей для сериализации
+		records := make([]shortURLStruct, 0, len(data))
 		numberItem := 1
-		for k, v := range m.InMe.Data {
+		for k, v := range data {
 			records = append(records, shortURLStruct{
 				ID:          strconv.Itoa(numberItem),
 				ShortURL:    k,
@@ -23,8 +25,8 @@ func (m *InFile) saveToFile() {
 				UserID:      v.UserID,
 				Deleted:     v.Deleted,
 			})
+			numberItem++
 		}
-		m.InMe.Mu.Unlock()
 
 		// Открываем файл для перезаписи
 		file, err := os.Create(m.filePath)

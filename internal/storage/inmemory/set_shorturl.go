@@ -10,11 +10,11 @@ import (
 // ErrKeyAlreadyExists
 // ConflictError (ErrOriginalURLAlreadyExists).
 func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string, userID string, deleted bool) error {
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	// Проверка на существование URL.
-	for _, record := range m.Data {
+	for _, record := range m.data {
 		if record.OriginalURL == originalURL && !record.Deleted {
 			return storageErrors.ConflictError{
 				ShortURL: id,
@@ -24,12 +24,12 @@ func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string,
 	}
 
 	// Проверка на существование id.
-	if _, ok := m.Data[id]; ok {
+	if _, ok := m.data[id]; ok {
 		return storageErrors.ErrKeyAlreadyExists
 	}
 
 	// Добавление записи.
-	m.Data[id] = URLRecord{
+	m.data[id] = URLRecord{
 		OriginalURL: originalURL,
 		UserID:      userID,
 		Deleted:     deleted,

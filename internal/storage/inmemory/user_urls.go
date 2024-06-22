@@ -9,8 +9,8 @@ import (
 
 // GetUserURLs - получение всех URL для конкретного пользователя.
 func (m *InMemory) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	var urls []storage.URL
 	ids, ok := m.userIndex[userID]
@@ -25,7 +25,7 @@ func (m *InMemory) GetUserURLs(ctx context.Context, userID string, baseHost stri
 	}
 
 	for _, id := range ids {
-		record, ok := m.Data[id]
+		record, ok := m.data[id]
 		if ok && !record.Deleted {
 			// Парсим относительный путь (id)
 			relativeURL, err := url.Parse(id)

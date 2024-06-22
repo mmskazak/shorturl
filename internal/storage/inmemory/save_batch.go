@@ -24,7 +24,7 @@ func (m *InMemory) SaveBatch(
 	userID string,
 	generator storage.IGenIDForURL,
 ) ([]storage.Output, error) {
-	dontChangedData := m.Data
+	dontChangedData := m.data
 
 	outputs := make([]storage.Output, 0, len(items))
 	for _, v := range items {
@@ -44,15 +44,15 @@ func (m *InMemory) SaveBatch(
 
 		var conflictErr storageErrors.ConflictError
 		if errors.As(err, &conflictErr) {
-			m.Data = dontChangedData
+			m.data = dontChangedData
 			return nil, conflictErr
 		}
 		if errors.Is(err, storageErrors.ErrKeyAlreadyExists) {
-			m.Data = dontChangedData
+			m.data = dontChangedData
 			return nil, storageErrors.ErrKeyAlreadyExists
 		}
 		if err != nil {
-			return nil, fmt.Errorf("error inserting Data: %w", err)
+			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
 		outputs = append(outputs, storage.Output{

@@ -7,16 +7,16 @@ import (
 
 // MarkURLAsDeleted - помечает URL как удаленный.
 func (m *InMemory) MarkURLAsDeleted(_ context.Context, id string) error {
-	m.Mu.Lock()
-	defer m.Mu.Unlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
-	record, ok := m.Data[id]
+	record, ok := m.data[id]
 	if !ok {
 		return storageErrors.ErrNotFound
 	}
 
 	record.Deleted = true
-	m.Data[id] = record // Обновляем запись
+	m.data[id] = record // Обновляем запись
 
 	return nil
 }
