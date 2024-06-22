@@ -2,6 +2,8 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -20,36 +22,64 @@ func (s *PostgreSQL) DeleteURLs(ctx context.Context, urlIDs []string) error {
 		log.Printf("Failed to begin transaction: %v", err)
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil {
+			if !errors.Is(err, sql.ErrTxDone) {
+				s.zapLog.Errorf("Error rollback transaction: %v", err)
+			}
+		}
+	}()
 
 	// Создаем batch для группового обновления
 	batch := &pgx.Batch{}
 
+	batchSize := 5000
+	batchSizeCounter := 0
 	// Добавляем команды в batch
 	for _, shortURL := range urlIDs {
 		// Если используется поле `id` в тестах, измените запрос на "WHERE id = $1"
 		batch.Queue("UPDATE urls SET deleted = TRUE WHERE short_url = $1", shortURL)
-	}
 
-	// Выполняем batch в контексте транзакции
-	br := tx.SendBatch(ctx, batch)
-	err = br.Close()
-	if err != nil {
-		log.Printf("Failed to delete URLs in batch: %v", err)
-		// Откатываем транзакцию в случае ошибки
-		rollbackErr := tx.Rollback(ctx)
-		if rollbackErr != nil {
-			log.Printf("Failed to rollback transaction: %v", rollbackErr)
+		if batchSizeCounter >= batchSize {
+			// Выполняем batch
+			br := tx.SendBatch(ctx, batch)
+			err = br.Close()
+			if err != nil {
+				s.zapLog.Errorf("Failed to delete URLs in batch: %v", err)
+				// Откатываем транзакцию в случае ошибки
+				rollbackErr := tx.Rollback(ctx)
+				if rollbackErr != nil {
+					s.zapLog.Errorf("Failed to rollback transaction: %v", rollbackErr)
+				}
+				return fmt.Errorf("failed to delete URLs in batch: %w", err)
+			}
+			batch = &pgx.Batch{}
+			batchSizeCounter = 0
 		}
-		return fmt.Errorf("failed to delete URLs in batch: %w", err)
+		batchSizeCounter++
 	}
 
+	// Сохрвняем оставшиеся данные
+	if batchSizeCounter != 0 {
+		// Выполняем batch
+		br := tx.SendBatch(ctx, batch)
+		if err := br.Close(); err != nil {
+			s.zapLog.Errorf("Failed to delete URLs in batch: %v", err)
+			// Откатываем транзакцию в случае ошибки
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				s.zapLog.Errorf("Failed to rollback transaction: %v", rollbackErr)
+			}
+			return fmt.Errorf("failed to delete URLs in batch: %w", err)
+		}
+	}
 	// Фиксируем транзакцию
 	err = tx.Commit(ctx)
 	if err != nil {
-		log.Printf("Failed to commit transaction: %v", err)
+		s.zapLog.Errorf("Failed to commit transaction: %v", err)
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	log.Printf("Successfully deleted URLs: %v", urlIDs)
+	s.zapLog.Infof("Successfully deleted URLs: %v", urlIDs)
 	return nil
 }
