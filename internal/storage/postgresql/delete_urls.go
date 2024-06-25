@@ -2,10 +2,7 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
-	"log"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -19,14 +16,11 @@ func (s *PostgreSQL) DeleteURLs(ctx context.Context, urlIDs []string) error {
 	// Начинаем транзакцию
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		log.Printf("Failed to begin transaction: %v", err)
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer func() {
 		if err := tx.Rollback(ctx); err != nil {
-			if !errors.Is(err, sql.ErrTxDone) {
-				s.zapLog.Errorf("Error rollback transaction: %v", err)
-			}
+			s.zapLog.Errorf("Error rollback transaction: %v", err)
 		}
 	}()
 

@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"mmskazak/shorturl/internal/storage"
@@ -27,9 +26,7 @@ func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 	}
 	defer func() {
 		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-			if !errors.Is(err, sql.ErrTxDone) {
-				s.zapLog.Errorf("Error rollback transaction: %v", err)
-			}
+			s.zapLog.Errorf("Error rollback transaction: %v", err)
 		}
 	}()
 

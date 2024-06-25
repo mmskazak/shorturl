@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -43,9 +42,7 @@ func (s *PostgreSQL) SaveBatch(
 
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil {
-			if !errors.Is(err, sql.ErrTxDone) {
-				s.zapLog.Errorf("error rollback transaction: %v", err)
-			}
+			s.zapLog.Errorf("error rollback transaction: %v", err)
 		}
 	}()
 
