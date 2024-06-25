@@ -29,6 +29,8 @@ func DeleteUserURLs(
 	err = store.DeleteURLs(ctx, urlIDs)
 	if err != nil {
 		zapLog.Errorf("Error deleting URLs: %v", err)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
 	}
 
 	zapLog.Info("All URLs deletion tasks completed")
