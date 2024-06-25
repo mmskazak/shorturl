@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"go.uber.org/zap"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +18,10 @@ func TestMainPage(t *testing.T) {
 
 	// Define the route and bind the handler
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		MainPage(w, r)
+		logger, err := zap.NewDevelopment()
+		require.NoError(t, err)
+		zapLog := logger.Sugar()
+		MainPage(w, r, zapLog)
 	})
 
 	// Создаем фейковый HTTP запрос

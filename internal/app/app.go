@@ -54,27 +54,29 @@ func NewApp(
 	router.Use(LoggingMiddlewareRich)
 	router.Use(middleware.GzipMiddleware)
 
-	router.Get("/", web.MainPage)
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		web.MainPage(w, r, zapLog)
+	})
 
 	baseHost := cfg.BaseHost // Получаем значение из конфига
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		zapLog.Infoln("Запрос получен handleRedirectHandler")
-		web.HandleRedirect(ctx, w, r, store)
+		web.HandleRedirect(ctx, w, r, store, zapLog)
 	})
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		web.HandleCreateShortURL(ctx, w, r, store, baseHost)
+		web.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog)
 	})
 
 	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		api.HandleCreateShortURL(ctx, w, r, store, baseHost)
+		api.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog)
 	})
 
 	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
-		api.SaveShortenURLsBatch(ctx, w, r, store, cfg.BaseHost)
+		api.SaveShortenURLsBatch(ctx, w, r, store, cfg.BaseHost, zapLog)
 	})
 
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
@@ -84,16 +86,16 @@ func NewApp(
 			return
 		}
 
-		web.PingPostgreSQL(ctx, w, r, pinger)
+		web.PingPostgreSQL(ctx, w, r, pinger, zapLog)
 	}
 	router.Get("/ping", pingPostgreSQL)
 
 	router.Get("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
-		api.FindUserURLs(ctx, w, r, store, cfg.BaseHost)
+		api.FindUserURLs(ctx, w, r, store, cfg.BaseHost, zapLog)
 	})
 
 	router.Delete("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
-		api.DeleteUserURLs(ctx, w, r, store)
+		api.DeleteUserURLs(ctx, w, r, store, zapLog)
 	})
 
 	return &App{

@@ -6,12 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"mmskazak/shorturl/internal/storage"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type JSONRequest struct {
@@ -32,6 +33,7 @@ func HandleCreateShortURL(
 	r *http.Request,
 	store storage.Storage,
 	baseHost string,
+	zapLog *zap.SugaredLogger,
 ) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
 	w.Header().Set("Content-Type", appJSON)
@@ -40,7 +42,7 @@ func HandleCreateShortURL(
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("Не удалось прочитать тело запроса %v", err)
+		zapLog.Errorf("Не удалось прочитать тело запроса %v", err)
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
@@ -56,7 +58,7 @@ func HandleCreateShortURL(
 
 	err = json.Unmarshal(body, &jsonReq)
 	if err != nil {
-		log.Printf("Ошибка json.Unmarshal: %v", err)
+		zapLog.Errorf("Ошибка json.Unmarshal: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -74,7 +76,7 @@ func HandleCreateShortURL(
 	if errors.Is(err, shorturlservice.ErrConflict) {
 		shortURLAsJSON, err := buildJSONResponse(shortURL)
 		if err != nil {
-			log.Printf("Ошибка buildJSONResponse: %v", err)
+			zapLog.Errorf("Ошибка buildJSONResponse: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
@@ -82,7 +84,7 @@ func HandleCreateShortURL(
 		w.WriteHeader(http.StatusConflict)
 		_, err = w.Write([]byte(shortURLAsJSON))
 		if err != nil {
-			log.Printf("Ошибка write, err := w.Write([]byte(shortURLAsJson)): %v", err)
+			zapLog.Errorf("Ошибка write, err := w.Write([]byte(shortURLAsJson)): %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
@@ -90,7 +92,7 @@ func HandleCreateShortURL(
 	}
 
 	if err != nil {
-		log.Printf("Ошибка saveUniqueShortURL: %v", err)
+		zapLog.Errorf("Ошибка saveUniqueShortURL: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -99,7 +101,7 @@ func HandleCreateShortURL(
 	}
 	shortURLAsJSON, err := json.Marshal(jsonResp)
 	if err != nil {
-		log.Printf("Ошибка json.Marshal: %v", err)
+		zapLog.Errorf("Ошибка json.Marshal: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -107,7 +109,7 @@ func HandleCreateShortURL(
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(shortURLAsJSON)
 	if err != nil {
-		log.Printf("Ошибка ResponseWriter: %v", err)
+		zapLog.Errorf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
