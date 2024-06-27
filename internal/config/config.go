@@ -83,7 +83,7 @@ func InitConfig() (*Config, error) {
 	flag.StringVar((*string)(&config.LogLevel), "l", string(config.LogLevel), "log level")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
 	flag.StringVar(&config.DataBaseDSN, "d", "", "Database connection string")
-	flag.StringVar(&config.DataBaseDSN, "secret", config.SecretKey, "Secret key for authorization JWT token")
+	flag.StringVar(&config.SecretKey, "secret", config.SecretKey, "Secret key for authorization JWT token")
 
 	// делаем разбор командной строки
 	flag.Parse()
