@@ -8,6 +8,7 @@ import (
 	"io"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"mmskazak/shorturl/internal/storage"
 	"net/http"
@@ -47,7 +48,8 @@ func HandleCreateShortURL(
 		return
 	}
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(ctxkeys.KeyUserID).(string)
+	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
+	userID := payload.UserID
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusInternalServerError)

@@ -44,16 +44,14 @@ func NewApp(
 ) *App {
 	router := chi.NewRouter()
 
-	// Add the custom logging middleware to the router
+	// Блок middleware
 	LoggingMiddlewareRich := func(next http.Handler) http.Handler {
-		return middleware.LoggingMiddleware(next, zapLog)
+		return middleware.LoggingRequestMiddleware(next, zapLog)
 	}
-
-	// Добавление middleware
-
 	router.Use(func(next http.Handler) http.Handler {
-		return middleware.AuthMiddleware(next, cfg)
+		return middleware.AuthMiddleware(next, cfg, zapLog)
 	})
+	router.Use(middleware.CheckUserID)
 	router.Use(LoggingMiddlewareRich)
 	router.Use(middleware.GzipMiddleware)
 

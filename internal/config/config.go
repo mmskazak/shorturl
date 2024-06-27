@@ -20,10 +20,10 @@ type Config struct {
 	BaseHost        string        `validate:"required"`
 	FileStoragePath string        `validate:"omitempty"`
 	DataBaseDSN     string        `validate:"omitempty"`
+	SecretKey       string        `validate:"omitempty"`
 	LogLevel        LogLevel      `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
-	SecretKey       string        `validate:"omitempty"`
 }
 
 func (c *Config) validate() error {

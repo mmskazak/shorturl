@@ -43,8 +43,8 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode // захватываем код статуса
 }
 
-// LoggingMiddleware для логирования запросов.
-func LoggingMiddleware(next http.Handler, zapLog *zap.SugaredLogger) http.Handler {
+// LoggingRequestMiddleware для логирования запросов.
+func LoggingRequestMiddleware(next http.Handler, zapLog *zap.SugaredLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
@@ -32,7 +33,8 @@ func SaveShortenURLsBatch(
 	}
 
 	// Получаем userID из контекста
-	userID, ok := r.Context().Value(ctxkeys.KeyUserID).(string)
+	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
+	userID := payload.UserID
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		zapLog.Error("error getting user id from context")
