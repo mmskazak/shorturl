@@ -55,7 +55,6 @@ func HandleCreateShortURL(
 	}
 
 	jsonReq := JSONRequest{}
-
 	err = json.Unmarshal(body, &jsonReq)
 	if err != nil {
 		zapLog.Errorf("Ошибка json.Unmarshal: %v", err)

@@ -23,6 +23,7 @@ type Config struct {
 	LogLevel        LogLevel      `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
+	SecretKey       string        `validate:"omitempty"`
 }
 
 func (c *Config) validate() error {
@@ -71,6 +72,7 @@ func InitConfig() (*Config, error) {
 		ReadTimeout:     baseDurationReadTimeout,
 		WriteTimeout:    baseDurationWriteTimeout,
 		FileStoragePath: "/tmp/short-url-db.json",
+		SecretKey:       "secret",
 	}
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
@@ -81,6 +83,7 @@ func InitConfig() (*Config, error) {
 	flag.StringVar((*string)(&config.LogLevel), "l", string(config.LogLevel), "log level")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
 	flag.StringVar(&config.DataBaseDSN, "d", "", "Database connection string")
+	flag.StringVar(&config.DataBaseDSN, "secret", config.SecretKey, "Secret key for authorization JWT token")
 
 	// делаем разбор командной строки
 	flag.Parse()
@@ -121,6 +124,10 @@ func InitConfig() (*Config, error) {
 
 	if dataBaseDSN, ok := os.LookupEnv("DATABASE_DSN"); ok {
 		config.DataBaseDSN = dataBaseDSN
+	}
+
+	if secretKey, ok := os.LookupEnv("SECRET_KEY"); ok {
+		config.DataBaseDSN = secretKey
 	}
 
 	if err := config.validate(); err != nil {

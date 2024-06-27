@@ -5,8 +5,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"log"
+	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"net/url"
 
@@ -18,9 +21,12 @@ import (
 )
 
 const (
-	cookieName = "user_id"
-	secretKey  = "supersecretkey"
+	authorizationCookie = "Authorization"
 )
+
+type playLoadStruct struct {
+	UserID string `json:"user_id"`
+}
 
 func generateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
@@ -30,9 +36,6 @@ func generateHMAC(data, key string) string {
 
 func verifyHMAC(value, signature, key string) bool {
 	expectedSignature := generateHMAC(value, key)
-	log.Println("Value for HMAC generation:", value)
-	log.Println("Expected Signature:", expectedSignature)
-	log.Println("Provided Signature:", signature)
 	return hmac.Equal([]byte(expectedSignature), []byte(signature))
 }
 
@@ -51,43 +54,53 @@ func setSignedCookie(w http.ResponseWriter, name, value, key string) {
 	http.SetCookie(w, cookie)
 }
 
-func getSignedCookie(r *http.Request, name, key string) (string, bool) {
+func getSignedPlayLoadJWT(r *http.Request, name, secretKey string) (string, error) {
 	cookie, err := r.Cookie(name)
 	if err != nil {
-		return "", false
+		return "", fmt.Errorf("error get signed cookie jwt: %w", err)
 	}
 
-	decodedCookie, err := url.QueryUnescape(cookie.Value)
-	if err != nil {
-		log.Printf("Error decoding cookie value: %v", err)
-		return "", false
+	parts := strings.Split(cookie.Value, ".")
+	if len(parts) != 3 {
+		return "", fmt.Errorf("invalid sruct jwt")
+	}
+	headerStr := parts[0]
+	playLoadStr := parts[1]
+	signatureStr := parts[2]
+
+	if verifyHMAC(headerStr+"."+playLoadStr, signatureStr, secretKey) {
+		playLoadStrDecoded, err := base64.RawURLEncoding.DecodeString(playLoadStr)
+		if err != nil {
+			return "", fmt.Errorf("error decode playLoadStr: %w", err)
+		}
+		return string(playLoadStrDecoded), nil
 	}
 
-	parts := strings.Split(decodedCookie, "@")
-	if len(parts) != 2 { //nolint:gomnd // uuid и подпись
-		log.Println("Invalid cookie format")
-		return "", false
-	}
-
-	decodedValue := parts[0]
-	decodedSignature := parts[1]
-
-	if verifyHMAC(decodedValue, decodedSignature, key) {
-		return decodedValue, true
-	}
-
-	return "", false
+	return "", fmt.Errorf("invalid verify hmac signature")
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog zap.SugaredLogger) http.Handler {
+	secretKey := cfg.SecretKey
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID, valid := getSignedCookie(r, cookieName, secretKey)
-		log.Printf("User ID: %s Valid: %t", userID, valid)
+		playLoad, err := getSignedPlayLoadJWT(r, authorizationCookie, secretKey)
+		if err != nil {
+			// Если у нас ошибка тогда мы должны выдать JWT токен
+		}
 
-		// Если кука недействительна или отсутствует
-		if !valid {
+		// Если мы получили структуру то в ней долджен быть userID
+		// в том стлуче если его нет то у нас тогда не стработает json.Unmarshal или что?
+		pl := playLoadStruct{}
+		err = json.Unmarshal([]byte(playLoad), &pl)
+		if err != nil {
+			zapLog.Errorf("error unmarshal playLoad struct: %v", err)
+			http.Error(w, "", http.StatusUnauthorized)
+			return
+		}
+		userID := pl.UserID
+
+		if err != nil {
 			userID = uuid.New().String()
-			setSignedCookie(w, cookieName, userID, secretKey)
+			setSignedCookie(w, authorizationCookie, userID, secretKey)
 			// Получаем URI текущего запроса
 			uri := r.URL.Path
 			log.Printf("Request URI: %s", uri)
