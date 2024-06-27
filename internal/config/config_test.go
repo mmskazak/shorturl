@@ -17,10 +17,11 @@ func TestInitConfig(t *testing.T) {
 			want: &Config{
 				Address:         ":8080",
 				BaseHost:        "http://localhost:8080",
-				ReadTimeout:     10 * time.Second,
-				WriteTimeout:    10 * time.Second,
+				SecretKey:       "secret",
 				LogLevel:        "info",
 				FileStoragePath: "/tmp/short-url-db.json",
+				ReadTimeout:     10 * time.Second,
+				WriteTimeout:    10 * time.Second,
 			},
 		},
 	}
