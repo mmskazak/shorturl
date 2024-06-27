@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -20,18 +19,26 @@ import (
 )
 
 const (
-	authorizationCookieName = "Authorization"
+	authorizationCookieName = "authorization"
 )
 
-func generateHMAC(data, key string) string {
-	h := hmac.New(sha256.New, []byte(key))
-	h.Write([]byte(data))
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(h.Sum(nil))
+func compareHMAC(sig1, sig2 string) bool {
+	decodedSig1, err := base64.RawURLEncoding.DecodeString(sig1)
+	if err != nil {
+		return false
+	}
+
+	decodedSig2, err := base64.RawURLEncoding.DecodeString(sig2)
+	if err != nil {
+		return false
+	}
+
+	return hmac.Equal(decodedSig1, decodedSig2)
 }
 
 func verifyHMAC(value, signature, key string) bool {
-	expectedSignature := generateHMAC(value, key)
-	return hmac.Equal([]byte(expectedSignature), []byte(signature))
+	expectedSignature := jwtbuilder.GenerateHMAC(value, key)
+	return compareHMAC(expectedSignature, signature)
 }
 
 func setSignedCookie(w http.ResponseWriter, name string, token string) {

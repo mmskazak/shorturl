@@ -40,14 +40,14 @@ func (j *JWTBuilder) Create(header HeaderJWT, payload PayloadJWT, secret string)
 	encodedPayload := base64.RawURLEncoding.EncodeToString(payloadJSON)
 
 	// Создание подписи HMAC
-	signature := generateHMAC(fmt.Sprintf("%s.%s", encodedHeader, encodedPayload), secret)
+	signature := GenerateHMAC(fmt.Sprintf("%s.%s", encodedHeader, encodedPayload), secret)
 
 	// Формирование окончательного токена
 	token := fmt.Sprintf("%s.%s.%s", encodedHeader, encodedPayload, signature)
 	return token, nil
 }
 
-func generateHMAC(data, key string) string {
+func GenerateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
 	h.Write([]byte(data))
 	return base64.RawURLEncoding.EncodeToString(h.Sum(nil))
