@@ -8,12 +8,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 
 	"go.uber.org/zap"
 )
