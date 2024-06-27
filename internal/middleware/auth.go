@@ -5,15 +5,16 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"net/http"
 	"strings"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -70,10 +71,11 @@ func getSignedPayloadJWT(r *http.Request, name, secretKey string) (string, error
 func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLogger) http.Handler {
 	secretKey := cfg.SecretKey
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		payload, err := getSignedPayloadJWT(r, authorizationCookieName, secretKey)
+		var payloadStruct jwtbuilder.PayloadJWT
+		payloadString, err := getSignedPayloadJWT(r, authorizationCookieName, secretKey)
 		if err != nil {
 			// Логируем ошибку
-			zapLog.Warnf("Failed to get signed payload JWT: %v", err)
+			zapLog.Warnf("Failed to get signed payloadString of JWT: %v", err)
 
 			// Создаем новый JWT токен
 			userID := uuid.New().String()
@@ -84,7 +86,7 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 				Alg: "HS256", // Укажите используемый вами алгоритм
 				Typ: "JWT",
 			}
-			payloadStruct := jwtbuilder.PayloadJWT{
+			payloadStruct = jwtbuilder.PayloadJWT{
 				UserID: userID,
 			}
 
@@ -99,10 +101,19 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 			setSignedCookie(w, authorizationCookieName, token)
 
 			zapLog.Infof("Issued new JWT for user: %s", userID)
+		} else {
+			payloadStruct = jwtbuilder.PayloadJWT{}
+			err = json.Unmarshal([]byte(payloadString), &payloadStruct)
+			if err != nil {
+				zapLog.Errorf("error unmarshalling payloadString: %v", err)
+				http.Error(w, "", http.StatusInternalServerError)
+				return
+			}
 		}
 
-		// Добавляем payload в контекст
-		ctx := context.WithValue(r.Context(), ctxkeys.PayLoad, payload)
+		zapLog.Infof("Payload to context: %s", payloadStruct)
+		// Добавляем payloadString в контекст
+		ctx := context.WithValue(r.Context(), ctxkeys.PayLoad, payloadStruct)
 		r = r.WithContext(ctx)
 
 		// Передаем запрос следующему обработчику
