@@ -1,3 +1,5 @@
 BEGIN TRANSACTION;
-DROP TABLE short_urls;
+
+DROP TABLE urls;
+
 COMMIT;
