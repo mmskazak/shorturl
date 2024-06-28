@@ -38,9 +38,12 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredL
 		return nil, fmt.Errorf("failed to ping dbshorturl connection: %w", err)
 	}
 	zapLog.Infof("run migrations")
-	if err := runMigrations(cfg.DataBaseDSN, zapLog); err != nil {
+	if err := runMigrations(cfg.
+		DataBaseDSN, zapLog); err != nil {
 		return nil, fmt.Errorf("failed to run DB migrations: %w", err)
 	}
+
+	go hardDeleteSoftDeletedURLs(ctx, pool, zapLog)
 
 	return &PostgreSQL{
 		pool:   pool,
