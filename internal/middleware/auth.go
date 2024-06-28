@@ -108,7 +108,6 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 
 			zapLog.Infof("Payload new: %s", payloadStruct)
 		} else {
-
 			payloadStruct = jwtbuilder.PayloadJWT{}
 			err = json.Unmarshal([]byte(payloadString), &payloadStruct)
 			if err != nil {
