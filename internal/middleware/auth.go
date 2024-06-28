@@ -55,7 +55,6 @@ func getSignedPayloadJWT(r *http.Request, name, secretKey string) (string, error
 	if err != nil {
 		return "", fmt.Errorf("error get signed cookie jwt: %w", err)
 	}
-
 	parts := strings.Split(cookie.Value, ".")
 	if len(parts) != 3 { //nolint:gomnd //3 части jwt токена
 		return "", errors.New("invalid structure jwt")
@@ -105,11 +104,11 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 				return
 			}
 
-			// Устанавливаем JWT токен в куки
 			setSignedCookie(w, authorizationCookieName, token)
 
-			zapLog.Infof("Issued new JWT for user: %s", userID)
+			zapLog.Infof("Payload new: %s", payloadStruct)
 		} else {
+
 			payloadStruct = jwtbuilder.PayloadJWT{}
 			err = json.Unmarshal([]byte(payloadString), &payloadStruct)
 			if err != nil {
@@ -117,9 +116,10 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 				http.Error(w, "", http.StatusInternalServerError)
 				return
 			}
+			zapLog.Infof("Payload isset: %s", payloadStruct)
 		}
 
-		zapLog.Infof("Payload to context: %s", payloadStruct)
+		zapLog.Infof("Payload to context before install: %s", payloadStruct)
 		// Добавляем payloadString в контекст
 		ctx := context.WithValue(r.Context(), ctxkeys.PayLoad, payloadStruct)
 		r = r.WithContext(ctx)

@@ -45,14 +45,16 @@ func NewApp(
 	router := chi.NewRouter()
 
 	// Блок middleware
-	LoggingMiddlewareRich := func(next http.Handler) http.Handler {
-		return middleware.LoggingRequestMiddleware(next, zapLog)
-	}
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.GetUserURLsForAuth(next, cfg)
+	})
 	router.Use(func(next http.Handler) http.Handler {
 		return middleware.AuthMiddleware(next, cfg, zapLog)
 	})
 	router.Use(middleware.CheckUserID)
-	router.Use(LoggingMiddlewareRich)
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.LoggingRequestMiddleware(next, zapLog)
+	})
 	router.Use(middleware.GzipMiddleware)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
