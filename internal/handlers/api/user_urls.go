@@ -32,7 +32,7 @@ func FindUserURLs(
 	// Получаем userID из контекста
 	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
 	userID := payload.UserID
-	zapLog.Infof("FindUserURLs - userID: %s", userID)
+	zapLog.Infof("FindUserURLs - UserID: %v", userID)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		zapLog.Error("Не удалось получить id пользователя")
