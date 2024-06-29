@@ -52,7 +52,7 @@ func HandleCreateShortURL(
 	userID := payload.UserID
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
-		http.Error(w, "", http.StatusInternalServerError)
+		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 

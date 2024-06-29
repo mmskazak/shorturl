@@ -38,7 +38,7 @@ func SaveShortenURLsBatch(
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		zapLog.Error("error getting user id from context")
-		http.Error(w, "", http.StatusInternalServerError)
+		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 

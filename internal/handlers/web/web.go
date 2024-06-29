@@ -46,7 +46,7 @@ func HandleCreateShortURL(
 	if !ok {
 		zapLog.Infof("userID не найден или неверного типа, возвращаем http ошибку")
 		// Если userID не найден или неверного типа, возвращаем ошибку
-		http.Error(w, "", http.StatusInternalServerError)
+		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
