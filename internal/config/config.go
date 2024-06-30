@@ -19,6 +19,8 @@ type Config struct {
 	Address         string        `validate:"required"`
 	BaseHost        string        `validate:"required"`
 	FileStoragePath string        `validate:"omitempty"`
+	DataBaseDSN     string        `validate:"omitempty"`
+	SecretKey       string        `validate:"omitempty"`
 	LogLevel        LogLevel      `validate:"required"`
 	ReadTimeout     time.Duration `validate:"required"`
 	WriteTimeout    time.Duration `validate:"required"`
@@ -70,6 +72,7 @@ func InitConfig() (*Config, error) {
 		ReadTimeout:     baseDurationReadTimeout,
 		WriteTimeout:    baseDurationWriteTimeout,
 		FileStoragePath: "/tmp/short-url-db.json",
+		SecretKey:       "secret",
 	}
 
 	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
@@ -79,6 +82,8 @@ func InitConfig() (*Config, error) {
 	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration")
 	flag.StringVar((*string)(&config.LogLevel), "l", string(config.LogLevel), "log level")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
+	flag.StringVar(&config.DataBaseDSN, "d", "", "Database connection string")
+	flag.StringVar(&config.SecretKey, "secret", config.SecretKey, "Secret key for authorization JWT token")
 
 	// делаем разбор командной строки
 	flag.Parse()
@@ -117,8 +122,17 @@ func InitConfig() (*Config, error) {
 		config.FileStoragePath = fileStoragePath
 	}
 
+	if dataBaseDSN, ok := os.LookupEnv("DATABASE_DSN"); ok {
+		config.DataBaseDSN = dataBaseDSN
+	}
+
+	if secretKey, ok := os.LookupEnv("SECRET_KEY"); ok {
+		config.DataBaseDSN = secretKey
+	}
+
 	if err := config.validate(); err != nil {
-		return &Config{}, fmt.Errorf("ошибка валидации конфигурации: %w", err)
+		return &Config{},
+			fmt.Errorf("ошибка валидации конфигурации: %w", err)
 	}
 
 	return config, nil

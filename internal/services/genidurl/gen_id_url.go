@@ -2,20 +2,14 @@ package genidurl
 
 import (
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"math/big"
 )
 
-type GenID struct {
-}
+type GenID struct{}
 
-func (s *GenID) Generate(length int) (string, error) {
-	const minLengthShortURL = 4
-	if length < minLengthShortURL {
-		return "", errors.New("length short URl too small")
-	}
-
+func (s *GenID) Generate() (string, error) {
+	length := 8
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, length)
 

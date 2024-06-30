@@ -1,8 +1,24 @@
 package errors
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
-	ErrKeyAlreadyExists = errors.New("key already exists")
-	ErrNotFound         = errors.New("key not found")
+	ErrOriginalURLAlreadyExists = errors.New("error original url already exists")
+	ErrKeyAlreadyExists         = errors.New("error key already exists")
+	ErrNotFound                 = errors.New("error key not found")
+	ErrUniqueViolation          = errors.New("error database unique violation")
+	ErrShortURLsForUserNotFound = errors.New("short urls for user not found")
+	ErrDeletedShortURL          = errors.New("deleted short url")
 )
+
+type ConflictError struct {
+	Err      error
+	ShortURL string
+}
+
+func (e ConflictError) Error() string {
+	return fmt.Sprintf("%v: %v", ErrOriginalURLAlreadyExists, e.ShortURL)
+}
