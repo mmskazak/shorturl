@@ -9,9 +9,14 @@ import (
 	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/storage/factory"
 	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	cfg, err := config.InitConfig()
 	if err != nil {
 		log.Fatalf("Ошибка инициализации конфигурации: %v", err)
