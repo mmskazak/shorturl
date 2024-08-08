@@ -3,8 +3,9 @@ package inmemory
 import (
 	"context"
 	"fmt"
-	"mmskazak/shorturl/internal/storage"
 	"net/url"
+
+	"mmskazak/shorturl/internal/storage"
 )
 
 // GetUserURLs - получение всех URL для конкретного пользователя.

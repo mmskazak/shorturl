@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
+
 	"mmskazak/shorturl/internal/app"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/logger"
 	"mmskazak/shorturl/internal/storage/factory"
-	"net/http"
-	_ "net/http/pprof"
 )
 
 func main() {
