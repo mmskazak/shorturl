@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"mmskazak/shorturl/internal/config"
 	"net/http"
+
+	"mmskazak/shorturl/internal/config"
 )
 
 func GetUserURLsForAuth(next http.Handler, cfg *config.Config) http.Handler {
