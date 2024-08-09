@@ -1,10 +1,9 @@
 package middleware
 
 import (
-	"net/http"
-
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
+	"net/http"
 )
 
 func CheckUserID(next http.Handler) http.Handler {

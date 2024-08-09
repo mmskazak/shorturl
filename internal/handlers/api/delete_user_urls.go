@@ -3,9 +3,8 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-
 	"mmskazak/shorturl/internal/storage"
+	"net/http"
 
 	"go.uber.org/zap"
 )

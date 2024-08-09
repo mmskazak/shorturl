@@ -7,12 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
+	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 

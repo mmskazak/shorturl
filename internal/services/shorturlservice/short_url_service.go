@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
-
 	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
+	"net/url"
 )
 
 var ErrServiceGenerateID = errors.New("generateID failed")
