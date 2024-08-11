@@ -2,7 +2,7 @@ package genidurl
 
 import "testing"
 
-// BenchmarkGenerate function Generate()
+// BenchmarkGenerate function Generate().
 func BenchmarkGenerate(b *testing.B) {
 	genID := &GenID{}
 	for i := 0; i < b.N; i++ {
