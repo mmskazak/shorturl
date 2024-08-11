@@ -14,18 +14,19 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// Config содержит поля вашей конфигурации.
+// Config содержит поля конфигурации.
 type Config struct {
-	Address         string        `validate:"required"`
-	BaseHost        string        `validate:"required"`
-	FileStoragePath string        `validate:"omitempty"`
-	DataBaseDSN     string        `validate:"omitempty"`
-	SecretKey       string        `validate:"omitempty"`
-	LogLevel        LogLevel      `validate:"required"`
-	ReadTimeout     time.Duration `validate:"required"`
-	WriteTimeout    time.Duration `validate:"required"`
+	Address         string        `validate:"required"`  // Адрес сервера
+	BaseHost        string        `validate:"required"`  // Базовый URL
+	FileStoragePath string        `validate:"omitempty"` // Путь к файлу хранилища
+	DataBaseDSN     string        `validate:"omitempty"` // Строка подключения к базе данных
+	SecretKey       string        `validate:"omitempty"` // Секретный ключ для авторизации JWT токена
+	LogLevel        LogLevel      `validate:"required"`  // Уровень логирования
+	ReadTimeout     time.Duration `validate:"required"`  // Таймаут чтения HTTP-запросов
+	WriteTimeout    time.Duration `validate:"required"`  // Таймаут записи HTTP-ответов
 }
 
+// validate проверяет правильность заполнения полей конфигурации.
 func (c *Config) validate() error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
@@ -37,8 +38,10 @@ func (c *Config) validate() error {
 	return nil
 }
 
+// LogLevel представляет уровень логирования.
 type LogLevel string
 
+// Value возвращает уровень логирования в формате zapcore.Level.
 func (ll LogLevel) Value() (zapcore.Level, error) {
 	switch strings.ToLower(string(ll)) {
 	case "debug":
@@ -57,10 +60,12 @@ func (ll LogLevel) Value() (zapcore.Level, error) {
 		return zapcore.FatalLevel, nil
 	default:
 		return zapcore.DebugLevel, errors.New("не найдено соответствие текстовому значению LogLevel, " +
-			"уровень логированя задан debug")
+			"уровень логирования задан debug")
 	}
 }
 
+// InitConfig инициализирует конфигурацию из флагов командной строки и переменных окружения.
+// Возвращает указатель на структуру Config и ошибку в случае её возникновения.
 func InitConfig() (*Config, error) {
 	baseDurationReadTimeout := 10 * time.Second  //nolint:gomnd  // 10 секунд.
 	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // 10 секунд.
@@ -75,8 +80,8 @@ func InitConfig() (*Config, error) {
 		SecretKey:       "secret",
 	}
 
-	// указываем ссылку на переменную, имя флага, значение по умолчанию и описание
-	flag.StringVar(&config.Address, "a", config.Address, "IP-адерс сервера")
+	// Указываем ссылку на переменную, имя флага, значение по умолчанию и описание
+	flag.StringVar(&config.Address, "a", config.Address, "IP-адрес сервера")
 	flag.StringVar(&config.BaseHost, "b", config.BaseHost, "Базовый URL")
 	flag.DurationVar(&config.ReadTimeout, "r", config.ReadTimeout, "ReadTimeout duration")
 	flag.DurationVar(&config.WriteTimeout, "w", config.WriteTimeout, "WriteTimeout duration")
@@ -85,9 +90,10 @@ func InitConfig() (*Config, error) {
 	flag.StringVar(&config.DataBaseDSN, "d", "", "Database connection string")
 	flag.StringVar(&config.SecretKey, "secret", config.SecretKey, "Secret key for authorization JWT token")
 
-	// делаем разбор командной строки
+	// Разбор командной строки
 	flag.Parse()
 
+	// Переопределение значений из переменных окружения, если они заданы
 	if envServAddr, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
 		config.Address = envServAddr
 	}

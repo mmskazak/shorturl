@@ -18,15 +18,18 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Pinger определяет интерфейс для проверки состояния хранилища.
 type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
+// URL представляет структуру URL с коротким и оригинальным URL.
 type URL struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
 
+// App представляет приложение с HTTP сервером и логгером.
 type App struct {
 	server *http.Server
 	zapLog *zap.SugaredLogger
@@ -35,6 +38,12 @@ type App struct {
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
+// ctx - контекст для управления временем выполнения.
+// cfg - конфигурация приложения.
+// store - хранилище данных.
+// readTimeout - таймаут чтения HTTP-запросов.
+// writeTimeout - таймаут записи HTTP-ответов.
+// zapLog - логгер.
 func NewApp(
 	ctx context.Context,
 	cfg *config.Config,

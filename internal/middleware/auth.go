@@ -23,6 +23,7 @@ const (
 	authorizationCookieName = "authorization"
 )
 
+// compareHMAC сравнивает два HMAC значения, возвращая true, если они идентичны.
 func compareHMAC(sig1, sig2 string) bool {
 	decodedSig1, err := base64.RawURLEncoding.DecodeString(sig1)
 	if err != nil {
@@ -37,11 +38,13 @@ func compareHMAC(sig1, sig2 string) bool {
 	return hmac.Equal(decodedSig1, decodedSig2)
 }
 
+// verifyHMAC проверяет, соответствует ли предоставленная подпись ожидаемому значению HMAC.
 func verifyHMAC(value, signature, key string) bool {
 	expectedSignature := jwtbuilder.GenerateHMAC(value, key)
 	return compareHMAC(expectedSignature, signature)
 }
 
+// setSignedCookie устанавливает подписанный JWT в виде cookie в ответе HTTP.
 func setSignedCookie(w http.ResponseWriter, name string, token string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
@@ -51,13 +54,14 @@ func setSignedCookie(w http.ResponseWriter, name string, token string) {
 	})
 }
 
+// getSignedPayloadJWT извлекает и проверяет подписанную полезную нагрузку JWT из cookie.
 func getSignedPayloadJWT(r *http.Request, name, secretKey string) (string, error) {
 	cookie, err := r.Cookie(name)
 	if err != nil {
 		return "", fmt.Errorf("error get signed cookie jwt: %w", err)
 	}
 	parts := strings.Split(cookie.Value, ".")
-	if len(parts) != 3 { //nolint:gomnd //3 части jwt токена
+	if len(parts) != 3 { //nolint:gomnd // 3 части JWT токена
 		return "", errors.New("invalid structure jwt")
 	}
 	headerStr, payloadStr, signatureStr := parts[0], parts[1], parts[2]
@@ -76,13 +80,15 @@ func getSignedPayloadJWT(r *http.Request, name, secretKey string) (string, error
 	return string(decodedPayload), nil
 }
 
+// AuthMiddleware создает middleware для аутентификации запросов на основе JWT cookie.
+// Если JWT отсутствует или недействителен, создается новый JWT токен и устанавливается в cookie.
 func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLogger) http.Handler {
 	secretKey := cfg.SecretKey
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var payloadStruct jwtbuilder.PayloadJWT
 		payloadString, err := getSignedPayloadJWT(r, authorizationCookieName, secretKey)
 		if err != nil {
-			// Логируем ошибку
+			// Логируем ошибку при получении или проверке JWT
 			zapLog.Warnf("Failed to get signed payloadString of JWT: %v", err)
 
 			// Создаем новый JWT токен

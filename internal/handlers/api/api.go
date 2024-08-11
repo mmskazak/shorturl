@@ -17,10 +17,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// JSONRequest представляет структуру запроса для создания короткого URL.
 type JSONRequest struct {
 	URL string `json:"url"`
 }
 
+// JSONResponse представляет структуру ответа с созданным коротким URL.
 type JSONResponse struct {
 	ShortURL string `json:"result"`
 }
@@ -29,6 +31,9 @@ const (
 	appJSON = "application/json"
 )
 
+// HandleCreateShortURL обрабатывает HTTP-запрос для создания короткого URL.
+// Он принимает JSON-запрос с оригинальным URL, генерирует короткий URL и сохраняет его в хранилище.
+// Если короткий URL уже существует, возвращает конфликт.
 func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
@@ -117,6 +122,7 @@ func HandleCreateShortURL(
 	}
 }
 
+// buildJSONResponse создает JSON-ответ с коротким URL.
 func buildJSONResponse(shortURL string) (string, error) {
 	jsonResp := JSONResponse{
 		ShortURL: shortURL,

@@ -14,11 +14,15 @@ import (
 	"go.uber.org/zap"
 )
 
+// URL представляет структуру для хранения сокращённых и оригинальных URL.
 type URL struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
 
+// FindUserURLs обрабатывает запрос на получение всех URL, созданных пользователем.
+// Он извлекает userID из контекста, получает соответствующие URL из хранилища и возвращает их клиенту в формате JSON.
+// Если возникают ошибки, возвращаются соответствующие HTTP-статус коды и сообщения об ошибке.
 func FindUserURLs(
 	ctx context.Context,
 	w http.ResponseWriter,
