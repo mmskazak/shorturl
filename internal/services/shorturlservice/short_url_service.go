@@ -47,7 +47,7 @@ func (s *ShortURLService) GenerateShortURL(
 	// Разбираем базовый URL
 	base, err := url.Parse(dto.BaseHost)
 	if err != nil {
-		return "", fmt.Errorf("ошибка при разборе базового URL: %w", err) //nolint:intrange
+		return "", fmt.Errorf("ошибка при разборе базового URL: %w", err)
 	}
 
 	var id string
