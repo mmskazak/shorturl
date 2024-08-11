@@ -41,7 +41,8 @@ type shortURLStruct struct {
 //   - error: Ошибка, если она произошла при создании объекта InFile.
 //
 // Примечание:
-// Функция сначала создает хранилище в памяти с помощью inmemory.NewInMemory, а затем читает данные из файла, если он существует.
+// Функция сначала создает хранилище в памяти с помощью inmemory.NewInMemory, а затем читает данные из файла,
+// если он существует.
 func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*InFile, error) {
 	inm, err := inmemory.NewInMemory(zapLog)
 	if err != nil {
@@ -90,7 +91,8 @@ func parseShortURLStruct(line string) (shortURLStruct, error) {
 //   - error: Ошибка, если произошла ошибка при чтении файла или загрузке данных в память.
 //
 // Примечание:
-// Функция открывает файл, считывает данные построчно, парсит их и добавляет в хранилище в памяти. Если файл не существует, он создается.
+// Функция открывает файл, считывает данные построчно,
+// парсит их и добавляет в хранилище в памяти. Если файл не существует, он создается.
 func (m *InFile) readFileStorage(ctx context.Context) error {
 	// Открываем файл с флагами для создания, если он не существует
 	file, err := os.OpenFile(m.filePath, os.O_RDONLY|os.O_CREATE, filePermissions)
@@ -116,7 +118,13 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 		}
 
 		// Добавляем запись в InMemoryStorage
-		if err := m.InMe.SetShortURL(ctx, record.ShortURL, record.OriginalURL, record.UserID, record.Deleted); err != nil {
+		if err := m.InMe.SetShortURL(
+			ctx,
+			record.ShortURL,
+			record.OriginalURL,
+			record.UserID,
+			record.Deleted,
+		); err != nil {
 			return fmt.Errorf("error setting short URL in memory: %w", err)
 		}
 	}
@@ -129,7 +137,8 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 	return nil
 }
 
-// Close завершает работу с хранилищем файла. В текущей реализации закрытие файла не требуется, поэтому функция просто записывает в лог сообщение о закрытии.
+// Close завершает работу с хранилищем файла. В текущей реализации закрытие файла не требуется,
+// поэтому функция просто записывает в лог сообщение о закрытии.
 //
 // Возвращает:
 //   - error: Ошибка, если она произошла при попытке завершить работу хранилища.

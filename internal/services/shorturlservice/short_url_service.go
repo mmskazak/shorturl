@@ -108,8 +108,7 @@ func (s *ShortURLService) GenerateShortURL(
 // NewShortURLService создает новый экземпляр ShortURLService с заданным количеством попыток генерации.
 func NewShortURLService() *ShortURLService {
 	return &ShortURLService{
-		// Количество попыток генерации короткого URL
-		maxIteration: 10, //nolint:gomnd
+		maxIteration: 10, //nolint:gomnd // Количество попыток генерации короткого URL
 	}
 }
 
