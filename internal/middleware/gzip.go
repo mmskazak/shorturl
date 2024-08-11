@@ -14,6 +14,8 @@ type GzipResponseWriter struct {
 	http.ResponseWriter
 }
 
+// Write переопределяет метод Write для GzipResponseWriter,
+// чтобы записывать данные в gzip.Writer вместо обычного ResponseWriter.
 func (w *GzipResponseWriter) Write(b []byte) (int, error) {
 	write, err := w.writer.Write(b)
 	if err != nil {
@@ -22,9 +24,12 @@ func (w *GzipResponseWriter) Write(b []byte) (int, error) {
 	return write, nil
 }
 
+// GzipMiddleware обрабатывает запросы и ответы с поддержкой сжатия gzip.
+// Если запрос содержит сжатое тело (gzip), оно будет декомпрессировано.
+// Если ответ должен быть сжат (gzip), он будет сжат перед отправкой клиенту.
 func GzipMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Handle gzip request body
+		// Декомпрессия тела запроса, если оно сжато (gzip)
 		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			gzipReader, err := gzip.NewReader(r.Body)
 			if err != nil {
@@ -40,11 +45,12 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			r.Body = gzipReader
 		}
 
+		// Проверка, нужно ли сжимать ответ
 		contentType := w.Header().Get("Content-Type")
 		isCompressingContent := strings.HasPrefix(contentType, "application/json") ||
 			strings.HasPrefix(contentType, "text/html")
 
-		// Handle gzip response
+		// Сжатие ответа (gzip), если клиент поддерживает gzip и контент подходящего типа
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && isCompressingContent {
 			w.Header().Set("Content-Encoding", "gzip")
 			w.Header().Del("Content-Length")
@@ -57,10 +63,12 @@ func GzipMiddleware(next http.Handler) http.Handler {
 				}
 			}(gzipWriter)
 
+			// Оборачиваем ResponseWriter в GzipResponseWriter для сжатия ответа
 			gzipResponseWriter := &GzipResponseWriter{writer: gzipWriter, ResponseWriter: w}
 			next.ServeHTTP(gzipResponseWriter, r)
 			return
 		}
+		// Если gzip не требуется, просто передаем запрос следующему обработчику
 		next.ServeHTTP(w, r)
 	})
 }
