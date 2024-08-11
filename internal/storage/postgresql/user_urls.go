@@ -12,6 +12,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// GetUserURLs возвращает список URL-адресов для заданного пользователя.
+// Возвращает ошибку, если процесс выполнения запроса или обработки данных завершается неудачей.
 func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
 	// Определяем SQL-запрос для получения URL-адресов пользователя
 	query := `
@@ -81,7 +83,7 @@ func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
-	// Если нет строк, возвращаем HTTP статус 204 No Content
+	// Если нет строк, возвращаем ошибку, означающую отсутствие URL для данного пользователя
 	if !hasRows {
 		return nil, storageErrors.ErrShortURLsForUserNotFound
 	}

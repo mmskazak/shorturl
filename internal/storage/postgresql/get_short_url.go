@@ -10,6 +10,19 @@ import (
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
+// GetShortURL получает оригинальный URL по короткому URL.
+//
+// Функция выполняет запрос к базе данных для получения оригинального URL и флага удаления
+// по короткому URL. Если короткий URL не найден, возвращает ошибку `ErrNotFound`.
+// Если URL был помечен как удаленный, возвращает ошибку `ErrDeletedShortURL`.
+//
+// Параметры:
+// - ctx: контекст выполнения запроса.
+// - shortURL: короткий URL, по которому нужно получить оригинальный URL.
+//
+// Возвращаемые значения:
+// - string: оригинальный URL, если он найден и не помечен как удаленный.
+// - error: ошибка, если она произошла в процессе выполнения запроса.
 func (s *PostgreSQL) GetShortURL(ctx context.Context, shortURL string) (string, error) {
 	var originalURL string
 	var deleted bool
