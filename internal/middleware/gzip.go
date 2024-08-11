@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// GzipResponseWriter - структрура для ответа.
 type GzipResponseWriter struct {
 	writer io.Writer
 	http.ResponseWriter

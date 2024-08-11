@@ -43,6 +43,7 @@ func (m *InMemory) NumberOfEntries() int {
 	return len(m.data)
 }
 
+// GetCopyData - копирует данные из памяти для того чтобы сохранить в файл.
 func (m *InMemory) GetCopyData() map[string]URLRecord {
 	m.mu.Lock()
 	defer m.mu.Unlock()

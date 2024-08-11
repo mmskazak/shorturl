@@ -15,6 +15,7 @@ import (
 
 const filePermissions = 0o644 // Константа для прав доступа к файлу
 
+// InFile - структура для реализации хранилища в файле.
 type InFile struct {
 	InMe     *inmemory.InMemory
 	zapLog   *zap.SugaredLogger

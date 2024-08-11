@@ -35,6 +35,7 @@ type App struct {
 	zapLog *zap.SugaredLogger
 }
 
+// ErrStartingServer - ошибка старта сервера.
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
