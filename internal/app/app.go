@@ -38,12 +38,12 @@ type App struct {
 const ErrStartingServer = "error starting server"
 
 // NewApp создает новый экземпляр приложения.
-// ctx - контекст для управления временем выполнения.
-// cfg - конфигурация приложения.
-// store - хранилище данных.
-// readTimeout - таймаут чтения HTTP-запросов.
-// writeTimeout - таймаут записи HTTP-ответов.
-// zapLog - логгер.
+// Ctx - контекст для управления временем выполнения.
+// Cfg - конфигурация приложения.
+// Store - хранилище данных.
+// ReadTimeout - таймаут чтения HTTP-запросов.
+// WriteTimeout - таймаут записи HTTP-ответов.
+// ZapLog - логгер.
 func NewApp(
 	ctx context.Context,
 	cfg *config.Config,
