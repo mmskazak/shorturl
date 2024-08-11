@@ -10,6 +10,7 @@ import (
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
+// IGenIDForURL - интерфейс генерирования ID ссылки для URL.
 type IGenIDForURL interface {
 	Generate() (string, error)
 }
