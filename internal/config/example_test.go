@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// ExampleStructConfig демонстрирует пример базовой(по умолчанию) структуры Config.
-func ExampleStructConfig() {
+// ExampleConfig демонстрирует пример базовой(по умолчанию) структуры Config.
+func ExampleConfig() {
 	config := &Config{
 		Address:         ":8080",
 		BaseHost:        "http://localhost:8080",
