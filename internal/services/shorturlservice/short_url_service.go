@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
@@ -36,12 +35,16 @@ type ShortURLService struct {
 	maxIteration int // Максимальное количество попыток генерации короткого URL
 }
 
+type ISetShortURL interface {
+	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
+}
+
 // GenerateShortURL создает короткий URL, используя данные из DTO и генератор ID.
 func (s *ShortURLService) GenerateShortURL(
 	ctx context.Context,
 	dto DTOShortURL,
 	generator IGenIDForURL,
-	data storage.Storage,
+	data ISetShortURL,
 ) (string, error) {
 	var err error
 	// Разбираем базовый URL
