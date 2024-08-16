@@ -35,6 +35,7 @@ type ShortURLService struct {
 	maxIteration int // Максимальное количество попыток генерации короткого URL
 }
 
+// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
 type ISetShortURL interface {
 	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
 }
