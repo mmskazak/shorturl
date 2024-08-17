@@ -2,9 +2,11 @@ package shorturlservice
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"mmskazak/shorturl/internal/services/shorturlservice/mocks"
 	"testing"
+
+	"mmskazak/shorturl/internal/services/shorturlservice/mocks"
+
+	"github.com/golang/mock/gomock"
 )
 
 func TestShortURLService_GenerateShortURL(t *testing.T) {

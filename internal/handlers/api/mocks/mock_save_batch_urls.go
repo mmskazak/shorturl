@@ -6,8 +6,9 @@ package mocks
 
 import (
 	context "context"
-	storage "mmskazak/shorturl/internal/storage"
 	reflect "reflect"
+
+	storage "mmskazak/shorturl/internal/storage"
 
 	gomock "github.com/golang/mock/gomock"
 )
