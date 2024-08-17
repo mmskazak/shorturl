@@ -16,6 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// ISaveBatch сохранение данных батчем.
 type ISaveBatch interface {
 	SaveBatch(
 		ctx context.Context,
