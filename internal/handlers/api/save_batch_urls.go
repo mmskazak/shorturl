@@ -16,6 +16,8 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=save_batch_urls.go -destination=mocks/mock_save_batch_urls.go -package=mocks
+
 // ISaveBatch сохранение данных батчем.
 type ISaveBatch interface {
 	SaveBatch(

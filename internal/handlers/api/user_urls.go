@@ -19,6 +19,8 @@ type IGetUserURLs interface {
 	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error)
 }
 
+//go:generate mockgen -source=user_urls.go -destination=mocks/mock_user_urls.go -package=mocks
+
 // FindUserURLs обрабатывает запрос на получение всех URL, созданных пользователем.
 // Он извлекает userID из контекста, получает соответствующие URL из хранилища и возвращает их клиенту в формате JSON.
 // Если возникают ошибки, возвращаются соответствующие HTTP-статус коды и сообщения об ошибке.
