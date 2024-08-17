@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"mmskazak/shorturl/internal/storage"
 	"net/http"
 
 	"mmskazak/shorturl/internal/ctxkeys"
@@ -13,15 +14,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// URL представляет структуру для хранения сокращённых и оригинальных URL.
-type URL struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
 // IGetUserURLs возвращает все URL-адреса, связанные с указанным пользователем.
 type IGetUserURLs interface {
-	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]URL, error)
+	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error)
 }
 
 // FindUserURLs обрабатывает запрос на получение всех URL, созданных пользователем.

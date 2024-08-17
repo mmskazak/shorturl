@@ -38,6 +38,22 @@ type App struct {
 // ErrStartingServer - ошибка старта сервера.
 const ErrStartingServer = "error starting server"
 
+// IGenIDForURL представляет интерфейс для генерации идентификаторов для коротких URL.
+type IGenIDForURL interface {
+	Generate() (string, error) // Метод для генерации нового идентификатора.
+}
+
+// ISaveBatch сохранение URLs батчем.
+type ISaveBatch interface {
+	SaveBatch(
+		ctx context.Context,
+		items []storage.Incoming,
+		baseHost string,
+		userID string,
+		generator IGenIDForURL,
+	) ([]storage.Output, error)
+}
+
 // NewApp создает новый экземпляр приложения.
 // Ctx - контекст для управления временем выполнения.
 // Cfg - конфигурация приложения.

@@ -16,18 +16,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// IGenIDForURL определяет интерфейс для генерации идентификаторов URL.
-type IGenIDForURL interface {
-	Generate() (string, error)
-}
-
 type ISaveBatch interface {
 	SaveBatch(
 		ctx context.Context,
 		items []storage.Incoming,
 		baseHost string,
 		userID string,
-		generator IGenIDForURL,
+		generator storage.IGenIDForURL,
 	) ([]storage.Output, error)
 }
 
