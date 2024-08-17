@@ -11,12 +11,12 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 	// Создание нового контроллера
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	ctx := context.Background()
 
 	type fields struct {
 		maxIteration int
 	}
 	type args struct {
-		ctx       context.Context
 		dto       DTOShortURL
 		generator *mocks.MockIGenIDForURL
 		data      *mocks.MockISetShortURL
@@ -34,7 +34,6 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 				maxIteration: 10,
 			},
 			args: args{
-				ctx: context.Background(),
 				dto: DTOShortURL{
 					OriginalURL: "ya.ru",
 					UserID:      "1",
@@ -55,9 +54,14 @@ func TestShortURLService_GenerateShortURL(t *testing.T) {
 			}
 			// Настройка ожиданий
 			tt.args.generator.EXPECT().Generate().Return("expectedID", nil)
-			tt.args.data.EXPECT().SetShortURL(tt.args.ctx, "expectedID", tt.args.dto.OriginalURL, tt.args.dto.UserID, false).Return(nil)
+			tt.args.data.EXPECT().SetShortURL(ctx,
+				"expectedID",
+				tt.args.dto.OriginalURL,
+				tt.args.dto.UserID,
+				false).
+				Return(nil)
 
-			got, err := s.GenerateShortURL(tt.args.ctx, tt.args.dto, tt.args.generator, tt.args.data)
+			got, err := s.GenerateShortURL(ctx, tt.args.dto, tt.args.generator, tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenerateShortURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
