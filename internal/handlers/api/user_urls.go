@@ -8,7 +8,6 @@ import (
 
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"go.uber.org/zap"
@@ -20,6 +19,11 @@ type URL struct {
 	OriginalURL string `json:"original_url"`
 }
 
+// IGetUserURLs возвращает все URL-адреса, связанные с указанным пользователем.
+type IGetUserURLs interface {
+	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]URL, error)
+}
+
 // FindUserURLs обрабатывает запрос на получение всех URL, созданных пользователем.
 // Он извлекает userID из контекста, получает соответствующие URL из хранилища и возвращает их клиенту в формате JSON.
 // Если возникают ошибки, возвращаются соответствующие HTTP-статус коды и сообщения об ошибке.
@@ -27,7 +31,7 @@ func FindUserURLs(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
+	store IGetUserURLs,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {

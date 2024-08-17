@@ -16,6 +16,21 @@ import (
 	"go.uber.org/zap"
 )
 
+// IGenIDForURL определяет интерфейс для генерации идентификаторов URL.
+type IGenIDForURL interface {
+	Generate() (string, error)
+}
+
+type ISaveBatch interface {
+	SaveBatch(
+		ctx context.Context,
+		items []storage.Incoming,
+		baseHost string,
+		userID string,
+		generator IGenIDForURL,
+	) ([]storage.Output, error)
+}
+
 // SaveShortenURLsBatch обрабатывает пакетный запрос на создание сокращённых URL.
 // Он парсит JSON-тело запроса, извлекает userID из контекста,
 // сохраняет пакет сокращённых URL и возвращает результат клиенту в виде JSON.
@@ -25,7 +40,7 @@ func SaveShortenURLsBatch(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
+	store ISaveBatch,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {

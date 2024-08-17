@@ -9,6 +9,8 @@ import (
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
+//go:generate mockgen -source=short_url_service.go -destination=mocks/mock_short_url_service.go -package=mocks
+
 // ErrServiceGenerateID указывает на ошибку, связанную с генерацией уникального идентификатора для короткого URL.
 // Эта ошибка может возникнуть, если система не может создать новый уникальный идентификатор.
 var ErrServiceGenerateID = errors.New("generateID failed")

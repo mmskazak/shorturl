@@ -5,10 +5,15 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"mmskazak/shorturl/internal/storage"
-
 	"go.uber.org/zap"
 )
+
+//go:generate mockgen -source=delete_user_urls.go -destination=mocks/mock_delete_user_urls.go -package=mocks
+
+// IDeleteUserURLs устанавливает флаг удаления для множества записей в хранилище.
+type IDeleteUserURLs interface {
+	DeleteURLs(ctx context.Context, urlIDs []string) error
+}
 
 // DeleteUserURLs - хендлер для асинхронного удаления сокращённых URL по их идентификаторам.
 // Он принимает JSON-массив с идентификаторами URL, которые нужно удалить.
@@ -18,7 +23,7 @@ func DeleteUserURLs(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
+	store IDeleteUserURLs,
 	zapLog *zap.SugaredLogger,
 ) {
 	var urlIDs []string
