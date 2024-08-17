@@ -1,11 +1,12 @@
 package inmemory
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 	"reflect"
 	"sync"
 	"testing"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestNewInMemory(t *testing.T) {
