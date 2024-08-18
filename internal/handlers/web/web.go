@@ -18,6 +18,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+//go:generate mockgen -source=web.go -destination=mocks/mock_web.go -package=mocks
+
 // IGenIDForURL определяет интерфейс для генерации идентификаторов URL.
 type IGenIDForURL interface {
 	Generate() (string, error)
@@ -28,6 +30,11 @@ type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
+// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
+type ISetShortURL interface {
+	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
+}
+
 // HandleCreateShortURL обрабатывает запрос на создание короткого URL.
 // Он извлекает оригинальный URL из тела запроса, генерирует короткий URL и сохраняет его в хранилище.
 // Возвращает HTTP-ответ с созданным коротким URL или ошибку в случае неудачи.
@@ -35,7 +42,7 @@ func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	data storage.Storage,
+	data ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {
@@ -43,6 +50,11 @@ func HandleCreateShortURL(
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		zapLog.Errorf("Не удалось прочитать тело запроса %v", err)
+		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
+		return
+	}
+	if len(body) == 0 {
+		zapLog.Error("Тело запроса пустое")
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
