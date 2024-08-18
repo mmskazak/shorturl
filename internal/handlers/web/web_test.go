@@ -57,8 +57,10 @@ func TestHandleCreateShortURL_StatusUnauthorized(t *testing.T) {
 	ctxBg := context.Background()
 	zapSugar := zaptest.NewLogger(t).Sugar()
 
+	// Создание HTTP-запроса с телом запроса
+	body := strings.NewReader("http://yandex.ru")
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
+	r := httptest.NewRequest(http.MethodPost, "/", body)
 
 	data := mocks.NewMockISetShortURL(ctrl)
 	baseHost := "http://localhost"
