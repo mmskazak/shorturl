@@ -10,7 +10,6 @@ import (
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"go.uber.org/zap"
@@ -33,6 +32,10 @@ type Pinger interface {
 // ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
 type ISetShortURL interface {
 	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
+}
+
+type IGetShortURL interface {
+	GetShortURL(ctx context.Context, idShortPath string) (string, error)
 }
 
 // HandleCreateShortURL обрабатывает запрос на создание короткого URL.
@@ -112,7 +115,7 @@ func HandleRedirect(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	data storage.Storage,
+	data IGetShortURL,
 	zapLog *zap.SugaredLogger,
 ) {
 	// Получение значения id из URL-адреса.

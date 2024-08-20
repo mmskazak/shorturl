@@ -59,6 +59,12 @@ func HandleCreateShortURL(
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
+	if len(body) == 0 {
+		zapLog.Error("Тело запроса пустое, ошибка.")
+		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
+		return
+	}
+
 	// Получаем userID из контекста
 	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
 	userID := payload.UserID

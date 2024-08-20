@@ -122,3 +122,41 @@ func (mr *MockISetShortURLMockRecorder) SetShortURL(ctx, idShortPath, targetURL,
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetShortURL", reflect.TypeOf((*MockISetShortURL)(nil).SetShortURL), ctx, idShortPath, targetURL, userID, deleted)
 }
+
+// MockIGetShortURL is a mock of IGetShortURL interface.
+type MockIGetShortURL struct {
+	ctrl     *gomock.Controller
+	recorder *MockIGetShortURLMockRecorder
+}
+
+// MockIGetShortURLMockRecorder is the mock recorder for MockIGetShortURL.
+type MockIGetShortURLMockRecorder struct {
+	mock *MockIGetShortURL
+}
+
+// NewMockIGetShortURL creates a new mock instance.
+func NewMockIGetShortURL(ctrl *gomock.Controller) *MockIGetShortURL {
+	mock := &MockIGetShortURL{ctrl: ctrl}
+	mock.recorder = &MockIGetShortURLMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockIGetShortURL) EXPECT() *MockIGetShortURLMockRecorder {
+	return m.recorder
+}
+
+// GetShortURL mocks base method.
+func (m *MockIGetShortURL) GetShortURL(ctx context.Context, idShortPath string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetShortURL", ctx, idShortPath)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetShortURL indicates an expected call of GetShortURL.
+func (mr *MockIGetShortURLMockRecorder) GetShortURL(ctx, idShortPath interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortURL", reflect.TypeOf((*MockIGetShortURL)(nil).GetShortURL), ctx, idShortPath)
+}
