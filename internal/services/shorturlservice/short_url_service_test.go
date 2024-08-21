@@ -119,3 +119,79 @@ func TestShortURLService_GenerateShortURL_ErrSetShortURL(t *testing.T) {
 	_, err := s.GenerateShortURL(ctx, dto, generator, data)
 	assert.Error(t, err)
 }
+
+func TestShortURLService_GenerateShortURL_ErrBaseHost(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Контекст и создание моков
+	ctx := context.Background()
+	generator := mocks.NewMockIGenIDForURL(ctrl)
+	data := mocks.NewMockISetShortURL(ctrl)
+
+	// Настройка полей и аргументов
+	s := &ShortURLService{
+		maxIteration: 10,
+	}
+	dto := DTOShortURL{
+		OriginalURL: "ya.ru",
+		UserID:      "1",
+		BaseHost:    "рtp://example.com",
+		Deleted:     false,
+	}
+
+	// Вызов тестируемого метода
+	_, err := s.GenerateShortURL(ctx, dto, generator, data)
+	assert.Error(t, err)
+}
+
+// ConflictError должен реализовывать интерфейс error
+type ConflictError struct {
+	Err      error
+	ShortURL string
+}
+
+func (e ConflictError) Error() string {
+	return e.Err.Error()
+}
+
+func TestShortURLService_GenerateShortURL_ErrConflictError(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Контекст и создание моков
+	ctx := context.Background()
+	generator := mocks.NewMockIGenIDForURL(ctrl)
+	data := mocks.NewMockISetShortURL(ctrl)
+
+	// Настройка полей и аргументов
+	s := &ShortURLService{
+		maxIteration: 2,
+	}
+	dto := DTOShortURL{
+		OriginalURL: "ya.ru",
+		UserID:      "1",
+		BaseHost:    "http://localhost",
+		Deleted:     false,
+	}
+
+	conflictError := ConflictError{
+		Err:      errors.New("test error set_short_url"),
+		ShortURL: "expectedID",
+	}
+
+	// Настройка ожиданий
+	generator.EXPECT().Generate().Return("expectedID", nil).Times(2)
+	data.EXPECT().SetShortURL(ctx,
+		"expectedID",
+		dto.OriginalURL,
+		dto.UserID,
+		false).
+		Return(conflictError).Times(2)
+
+	// Вызов тестируемого метода
+	_, err := s.GenerateShortURL(ctx, dto, generator, data)
+	assert.Error(t, err)
+}
