@@ -156,7 +156,6 @@ func TestInMemory_NumberOfEntries(t *testing.T) {
 			},
 			want: 3,
 		},
-		// Добавьте дополнительные тестовые случаи, если это необходимо
 	}
 
 	for _, tt := range tests {
