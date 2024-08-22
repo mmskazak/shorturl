@@ -34,6 +34,7 @@ type ISetShortURL interface {
 	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
 }
 
+// IGetShortURL - получение оригинального URL по короткому идентификатору.
 type IGetShortURL interface {
 	GetShortURL(ctx context.Context, idShortPath string) (string, error)
 }
