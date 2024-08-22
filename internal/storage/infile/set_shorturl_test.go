@@ -2,9 +2,10 @@ package infile
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
+
+	"go.uber.org/zap"
 )
 
 func TestInFile_SetShortURL(t *testing.T) {

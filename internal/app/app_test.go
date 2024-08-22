@@ -2,12 +2,13 @@ package app
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func TestNewApp(t *testing.T) {

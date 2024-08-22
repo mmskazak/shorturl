@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mock handler to be wrapped by middleware
+// Mock handler to be wrapped by middleware.
 func mockHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write([]byte(`{"message":"hello, world"}`))

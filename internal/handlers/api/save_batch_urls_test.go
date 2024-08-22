@@ -2,10 +2,6 @@ package api
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap/zaptest"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/handlers/api/mocks"
 	"mmskazak/shorturl/internal/services/genidurl"
@@ -15,6 +11,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestSaveShortenURLsBatch(t *testing.T) {

@@ -2,9 +2,10 @@ package inmemory
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"sync"
 	"testing"
+
+	"go.uber.org/zap"
 )
 
 func TestInMemory_GetShortURL(t *testing.T) {

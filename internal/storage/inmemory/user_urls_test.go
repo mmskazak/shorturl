@@ -2,11 +2,12 @@ package inmemory
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/storage"
 	"reflect"
 	"sync"
 	"testing"
+
+	"go.uber.org/zap"
 )
 
 func TestInMemory_GetUserURLs(t *testing.T) {

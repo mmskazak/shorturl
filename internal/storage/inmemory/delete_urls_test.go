@@ -2,10 +2,11 @@ package inmemory
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"sync"
 	"testing"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func TestInMemory_DeleteURLs(t *testing.T) {

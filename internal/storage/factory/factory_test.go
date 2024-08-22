@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
+
+	"go.uber.org/zap"
 )
 
 func TestNewStorage(t *testing.T) {

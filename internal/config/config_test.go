@@ -1,9 +1,10 @@
 package config
 
 import (
-	"go.uber.org/zap/zapcore"
 	"testing"
 	"time"
+
+	"go.uber.org/zap/zapcore"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -14,7 +15,7 @@ func TestInitConfig(t *testing.T) {
 		want *Config
 	}{
 		{
-			name: "Success init config",
+			name: "success init config",
 			want: &Config{
 				Address:         ":8080",
 				BaseHost:        "http://localhost:8080",

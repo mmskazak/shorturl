@@ -3,8 +3,9 @@ package shorturlservice
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"mmskazak/shorturl/internal/services/shorturlservice/mocks"
 
@@ -146,7 +147,7 @@ func TestShortURLService_GenerateShortURL_ErrBaseHost(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// ConflictError должен реализовывать интерфейс error
+// ConflictError должен реализовывать интерфейс error.
 type ConflictError struct {
 	Err      error
 	ShortURL string

@@ -2,11 +2,12 @@ package infile
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"reflect"
 	"testing"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func TestNewInFile(t *testing.T) {
