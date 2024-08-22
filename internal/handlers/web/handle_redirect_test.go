@@ -2,12 +2,13 @@ package web
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/handlers/web/mocks"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/handlers/web/mocks"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"

@@ -2,15 +2,16 @@ package api
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/handlers/api/mocks"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/storage"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"

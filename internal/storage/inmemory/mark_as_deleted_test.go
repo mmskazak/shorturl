@@ -9,6 +9,8 @@ import (
 )
 
 func TestInMemory_MarkURLAsDeleted(t *testing.T) {
+	ctx := context.Background()
+
 	type fields struct {
 		mu        *sync.Mutex
 		data      map[string]URLRecord
@@ -16,8 +18,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	type args struct {
-		in0 context.Context
-		id  string
+		id string
 	}
 	tests := []struct {
 		name    string
@@ -36,8 +37,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0: context.Background(),
-				id:  "short1",
+				id: "short1",
 			},
 			wantErr: false,
 		},
@@ -50,8 +50,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0: context.Background(),
-				id:  "short2",
+				id: "short2",
 			},
 			wantErr: true, // Ожидаем ошибку, так как URL нет в хранилище
 		},
@@ -66,8 +65,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0: context.Background(),
-				id:  "short1",
+				id: "short1",
 			},
 			wantErr: false,
 		},
@@ -81,7 +79,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 				userIndex: tt.fields.userIndex,
 				zapLog:    tt.fields.zapLog,
 			}
-			err := m.MarkURLAsDeleted(tt.args.in0, tt.args.id)
+			err := m.MarkURLAsDeleted(ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MarkURLAsDeleted() error = %v, wantErr %v", err, tt.wantErr)
 			}

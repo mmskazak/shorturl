@@ -2,17 +2,19 @@ package infile
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/config"
 	"reflect"
 	"testing"
 	"time"
+
+	"mmskazak/shorturl/internal/config"
 
 	"go.uber.org/zap"
 )
 
 func TestNewInFile(t *testing.T) {
+	ctx := context.Background()
+
 	type args struct {
-		ctx    context.Context
 		cfg    *config.Config
 		zapLog *zap.SugaredLogger
 	}
@@ -25,7 +27,6 @@ func TestNewInFile(t *testing.T) {
 		{
 			name: "error due to invalid config",
 			args: args{
-				ctx:    context.Background(),
 				cfg:    &config.Config{},
 				zapLog: zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
@@ -35,7 +36,7 @@ func TestNewInFile(t *testing.T) {
 		{
 			name: "error due to invalid config",
 			args: args{
-				ctx: context.Background(),
+
 				cfg: &config.Config{
 					Address:         ":8080",
 					BaseHost:        "http://localhost:8080",
@@ -54,7 +55,7 @@ func TestNewInFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewInFile(tt.args.ctx, tt.args.cfg, tt.args.zapLog)
+			got, err := NewInFile(ctx, tt.args.cfg, tt.args.zapLog)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewInFile() error = %v, wantErr %v", err, tt.wantErr)
 				return

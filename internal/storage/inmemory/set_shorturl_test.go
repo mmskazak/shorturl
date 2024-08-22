@@ -9,6 +9,8 @@ import (
 )
 
 func TestInMemory_SetShortURL(t *testing.T) {
+	ctx := context.Background()
+
 	type fields struct {
 		mu        *sync.Mutex
 		data      map[string]URLRecord
@@ -16,7 +18,6 @@ func TestInMemory_SetShortURL(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	type args struct {
-		in0         context.Context
 		id          string
 		originalURL string
 		userID      string
@@ -37,7 +38,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0:         context.Background(),
+
 				id:          "short1",
 				originalURL: "http://example.com",
 				userID:      "user1",
@@ -58,7 +59,6 @@ func TestInMemory_SetShortURL(t *testing.T) {
 				zapLog: zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0:         context.Background(),
 				id:          "short1",
 				originalURL: "http://new.com",
 				userID:      "user1",
@@ -79,7 +79,6 @@ func TestInMemory_SetShortURL(t *testing.T) {
 				zapLog: zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0:         context.Background(),
 				id:          "short2",
 				originalURL: "http://example2.com",
 				userID:      "user2",
@@ -96,7 +95,6 @@ func TestInMemory_SetShortURL(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0:         context.Background(),
 				id:          "short1",
 				originalURL: "http://example.com",
 				userID:      "user1",
@@ -114,7 +112,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 				userIndex: tt.fields.userIndex,
 				zapLog:    tt.fields.zapLog,
 			}
-			err := m.SetShortURL(tt.args.in0, tt.args.id, tt.args.originalURL, tt.args.userID, tt.args.deleted)
+			err := m.SetShortURL(ctx, tt.args.id, tt.args.originalURL, tt.args.userID, tt.args.deleted)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetShortURL() error = %v, wantErr %v", err, tt.wantErr)
 			}

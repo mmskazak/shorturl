@@ -2,15 +2,18 @@ package inmemory
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/storage"
 	"reflect"
 	"sync"
 	"testing"
+
+	"mmskazak/shorturl/internal/storage"
 
 	"go.uber.org/zap"
 )
 
 func TestInMemory_GetUserURLs(t *testing.T) {
+	ctx := context.Background()
+
 	type fields struct {
 		mu        *sync.Mutex
 		data      map[string]URLRecord
@@ -18,7 +21,6 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	type args struct {
-		ctx      context.Context
 		userID   string
 		baseHost string
 	}
@@ -38,7 +40,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
 			args: args{
-				ctx:      context.Background(),
+
 				userID:   "11111",
 				baseHost: "http://localhost",
 			},
@@ -59,7 +61,6 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 				zapLog: zap.NewNop().Sugar(),
 			},
 			args: args{
-				ctx:      context.Background(),
 				userID:   "11111",
 				baseHost: "http://localhost",
 			},
@@ -78,7 +79,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 				userIndex: tt.fields.userIndex,
 				zapLog:    tt.fields.zapLog,
 			}
-			got, err := m.GetUserURLs(tt.args.ctx, tt.args.userID, tt.args.baseHost)
+			got, err := m.GetUserURLs(ctx, tt.args.userID, tt.args.baseHost)
 			if got == nil {
 				got = []storage.URL{}
 			}

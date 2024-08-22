@@ -49,7 +49,7 @@ func TestGzipMiddleware(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reqBody := bytes.NewBufferString(`{"data":"example"}`)
-			req := httptest.NewRequest("POST", "/api/shorten", reqBody)
+			req := httptest.NewRequest(http.MethodPost, "/api/shorten", reqBody)
 			req.Header.Add("Content-Type", tt.contentType)
 
 			if tt.acceptEncoding != "" {

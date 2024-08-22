@@ -10,6 +10,8 @@ import (
 )
 
 func TestInMemory_DeleteURLs(t *testing.T) {
+	ctx := context.Background()
+
 	type fields struct {
 		mu        *sync.Mutex
 		data      map[string]URLRecord
@@ -17,7 +19,6 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	type args struct {
-		ctx    context.Context
 		urlIDs []string
 	}
 	tests := []struct {
@@ -37,7 +38,6 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				ctx:    context.Background(),
 				urlIDs: []string{"short1", "short2"},
 			},
 			wantErr: false, // Ожидаем отсутствие ошибки, даже если один из URL не существует
@@ -51,7 +51,6 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				ctx:    context.Background(),
 				urlIDs: []string{},
 			},
 			wantErr: false, // Ожидаем отсутствие ошибки при пустом списке
@@ -68,7 +67,6 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				ctx:    context.Background(),
 				urlIDs: []string{"short1", "short2"},
 			},
 			wantErr: false, // Ожидаем отсутствие ошибки, так как URL уже удалены
@@ -83,7 +81,7 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 				userIndex: tt.fields.userIndex,
 				zapLog:    tt.fields.zapLog,
 			}
-			err := m.DeleteURLs(tt.args.ctx, tt.args.urlIDs)
+			err := m.DeleteURLs(ctx, tt.args.urlIDs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteURLs() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -2,8 +2,9 @@ package infile
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
+
+	"mmskazak/shorturl/internal/storage/inmemory"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -42,8 +43,7 @@ func TestInFile_GetShortURL(t *testing.T) {
 	tests := []struct {
 		name string
 		args struct {
-			ctx context.Context
-			id  string
+			id string
 		}
 		want    string
 		wantErr bool
@@ -51,11 +51,9 @@ func TestInFile_GetShortURL(t *testing.T) {
 		{
 			name: "Success case",
 			args: struct {
-				ctx context.Context
-				id  string
+				id string
 			}{
-				ctx: ctx,
-				id:  testID,
+				id: testID,
 			},
 			want:    expectedURL,
 			wantErr: false,
@@ -63,21 +61,19 @@ func TestInFile_GetShortURL(t *testing.T) {
 		{
 			name: "Error case: ID not found",
 			args: struct {
-				ctx context.Context
-				id  string
+				id string
 			}{
-				ctx: ctx,
-				id:  "nonExistingID",
+				id: "nonExistingID",
 			},
 			want:    "",
 			wantErr: true,
 		},
 	}
 
-	// Запуск тестов
+	// Запуск тестов÷
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := s.GetShortURL(tt.args.ctx, tt.args.id)
+			got, err := s.GetShortURL(ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetShortURL() error = %v, wantErr %v", err, tt.wantErr)
 				return

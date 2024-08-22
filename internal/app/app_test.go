@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
-	"testing"
-	"time"
 
 	"go.uber.org/zap"
 )
@@ -19,7 +20,6 @@ func TestNewApp(t *testing.T) {
 		readTimeout  time.Duration
 		writeTimeout time.Duration
 		zapLog       *zap.SugaredLogger
-		ctx          context.Context
 	}
 	tests := []struct {
 		name string
@@ -29,7 +29,6 @@ func TestNewApp(t *testing.T) {
 		{
 			name: "test 1",
 			args: args{
-				ctx: ctx,
 				cfg: &config.Config{
 					Address: "https://127.0.0.1",
 				},
@@ -42,7 +41,7 @@ func TestNewApp(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		got := NewApp(tt.args.ctx,
+		got := NewApp(ctx,
 			tt.args.cfg,
 			tt.args.store,
 			tt.args.readTimeout,

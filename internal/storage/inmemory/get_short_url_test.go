@@ -9,6 +9,8 @@ import (
 )
 
 func TestInMemory_GetShortURL(t *testing.T) {
+	ctx := context.Background()
+
 	type fields struct {
 		mu        *sync.Mutex
 		data      map[string]URLRecord
@@ -16,8 +18,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	type args struct {
-		in0 context.Context
-		id  string
+		id string
 	}
 	tests := []struct {
 		name    string
@@ -37,8 +38,8 @@ func TestInMemory_GetShortURL(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0: context.Background(),
-				id:  "short1",
+
+				id: "short1",
 			},
 			want:    "http://example.com",
 			wantErr: false,
@@ -52,8 +53,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0: context.Background(),
-				id:  "short1",
+				id: "short1",
 			},
 			want:    "",
 			wantErr: true, // Ожидаем ошибку, так как URL не найден
@@ -69,8 +69,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 				zapLog:    zap.NewNop().Sugar(),
 			},
 			args: args{
-				in0: context.Background(),
-				id:  "short1",
+				id: "short1",
 			},
 			want:    "",
 			wantErr: true, // Ожидаем ошибку или пустое значение, так как URL помечен как удаленный
@@ -85,7 +84,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 				userIndex: tt.fields.userIndex,
 				zapLog:    tt.fields.zapLog,
 			}
-			got, err := m.GetShortURL(tt.args.in0, tt.args.id)
+			got, err := m.GetShortURL(ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetShortURL() error = %v, wantErr %v", err, tt.wantErr)
 				return

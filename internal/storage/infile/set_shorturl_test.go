@@ -2,20 +2,21 @@ package infile
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
+
+	"mmskazak/shorturl/internal/storage/inmemory"
 
 	"go.uber.org/zap"
 )
 
 func TestInFile_SetShortURL(t *testing.T) {
+	ctx := context.Background()
 	type fields struct {
 		InMe     *inmemory.InMemory
 		zapLog   *zap.SugaredLogger
 		filePath string
 	}
 	type args struct {
-		ctx         context.Context
 		idShortPath string
 		originalURL string
 		userID      string
@@ -38,7 +39,7 @@ func TestInFile_SetShortURL(t *testing.T) {
 				filePath: "/path/to/storage",
 			},
 			args: args{
-				ctx:         context.Background(),
+
 				idShortPath: "short123",
 				originalURL: "https://example.com",
 				userID:      "user1",
@@ -65,7 +66,6 @@ func TestInFile_SetShortURL(t *testing.T) {
 				filePath: "/path/to/storage",
 			},
 			args: args{
-				ctx:         context.Background(),
 				idShortPath: "short123", // Дублируем тот же short URL
 				originalURL: "https://test.com",
 				userID:      "user1",
@@ -92,7 +92,6 @@ func TestInFile_SetShortURL(t *testing.T) {
 				filePath: "/path/to/storage",
 			},
 			args: args{
-				ctx:         context.Background(),
 				idShortPath: "123short",
 				originalURL: "https://example.com",
 				userID:      "user1",
@@ -109,14 +108,14 @@ func TestInFile_SetShortURL(t *testing.T) {
 				zapLog:   tt.fields.zapLog,
 				filePath: tt.fields.filePath,
 			}
-			err := m.SetShortURL(tt.args.ctx, tt.args.idShortPath, tt.args.originalURL, tt.args.userID, tt.args.deleted)
+			err := m.SetShortURL(ctx, tt.args.idShortPath, tt.args.originalURL, tt.args.userID, tt.args.deleted)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetShortURL() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			// Дополнительно можно проверить, сохранился ли URL в памяти
 			if !tt.wantErr {
-				storedURL, err := m.GetShortURL(tt.args.ctx, tt.args.idShortPath)
+				storedURL, err := m.GetShortURL(ctx, tt.args.idShortPath)
 				if err != nil || storedURL != tt.args.originalURL {
 					t.Errorf("Expected URL = %v, but got %v (error: %v)", tt.args.originalURL, storedURL, err)
 				}
