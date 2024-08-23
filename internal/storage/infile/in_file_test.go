@@ -34,7 +34,7 @@ func TestNewInFile(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "error due to invalid config",
+			name: "success create config struct",
 			args: args{
 
 				cfg: &config.Config{
@@ -42,13 +42,13 @@ func TestNewInFile(t *testing.T) {
 					BaseHost:        "http://localhost:8080",
 					SecretKey:       "secret",
 					LogLevel:        "info",
-					FileStoragePath: "/tmp/short-url-db.json",
+					FileStoragePath: "/tmp/success-create-config.json",
 					ReadTimeout:     10 * time.Second,
 					WriteTimeout:    10 * time.Second,
 				},
 				zapLog: zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
-			want:    "/tmp/short-url-db.json",
+			want:    "/tmp/success-create-config.json",
 			wantErr: false,
 		},
 	}
@@ -69,7 +69,7 @@ func TestNewInFile(t *testing.T) {
 			r := reflect.ValueOf(got).Elem()
 			field := r.FieldByName("filePath")
 			if field.String() != tt.want {
-				t.Errorf("NewInFile() got = %v, want %v", got, tt.want)
+				t.Errorf("NewInFile() field.String() = %v, want %v", field.String(), tt.want)
 			}
 		})
 	}

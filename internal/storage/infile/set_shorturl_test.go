@@ -2,6 +2,7 @@ package infile
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"mmskazak/shorturl/internal/storage/inmemory"
@@ -36,7 +37,7 @@ func TestInFile_SetShortURL(t *testing.T) {
 					return in
 				}(), // инициализируем InMemory
 				zapLog:   zap.NewNop().Sugar(),
-				filePath: "/path/to/storage",
+				filePath: "/tmp/success-url-additional.json",
 			},
 			args: args{
 
@@ -63,7 +64,7 @@ func TestInFile_SetShortURL(t *testing.T) {
 					return in
 				}(), // инициализируем InMemory
 				zapLog:   zap.NewNop().Sugar(),
-				filePath: "/path/to/storage",
+				filePath: "/tmp/duplicate-short-url-db.json",
 			},
 			args: args{
 				idShortPath: "short123", // Дублируем тот же short URL
@@ -74,7 +75,7 @@ func TestInFile_SetShortURL(t *testing.T) {
 			wantErr: true, // Ожидаем ошибку из-за дублирования
 		},
 		{
-			name: "Empty original URL",
+			name: "URL already exist",
 			fields: fields{
 				InMe: func() *inmemory.InMemory {
 					in, _ := inmemory.NewInMemory(zap.NewNop().Sugar())
@@ -89,7 +90,7 @@ func TestInFile_SetShortURL(t *testing.T) {
 					return in
 				}(), // инициализируем InMemory
 				zapLog:   zap.NewNop().Sugar(),
-				filePath: "/path/to/storage",
+				filePath: "/tmp/url-already-exist-db.json",
 			},
 			args: args{
 				idShortPath: "123short",
@@ -103,6 +104,12 @@ func TestInFile_SetShortURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			// удалаяем если файл уже есть
+			if err := os.Remove(tt.fields.filePath); err != nil && !os.IsNotExist(err) {
+				t.Fatalf("failed to remove file %s: %v", tt.fields.filePath, err)
+			}
+
 			m := &InFile{
 				InMe:     tt.fields.InMe,
 				zapLog:   tt.fields.zapLog,
