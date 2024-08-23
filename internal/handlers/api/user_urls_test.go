@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"errors"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -56,7 +58,7 @@ func TestFindUserURLs_Success(t *testing.T) {
 		w.Body.String())
 }
 
-func TestFindUserURLs(t *testing.T) {
+func TestFindUserURLs_StatusUnauthorized(t *testing.T) {
 	// Создание нового контроллера
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -81,4 +83,113 @@ func TestFindUserURLs(t *testing.T) {
 	FindUserURLs(ctxBg, w, req, data, baseHost, zapSugar)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestFindUserURLs_StatusOK(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаем контекст реквеста с PayloadJWT
+	ctx := context.WithValue(context.Background(), ctxkeys.PayLoad, jwtbuilder.PayloadJWT{UserID: "11111"})
+
+	// Создаем обычный контекст
+	ctxBg := context.Background()
+
+	// Создание логгера
+	zapSugar := zaptest.NewLogger(t).Sugar()
+
+	// Создание HTTP-запроса и ResponseRecorder
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
+	req = req.WithContext(ctx)
+
+	// Базовый хост
+	baseHost := "http://localhost"
+
+	// Создание мока для ISetShortURL
+	data := mocks.NewMockIGetUserURLs(ctrl)
+	expectedURL := []storage.URL{
+		{
+			ShortURL:    "https://localhost:8080/nQm6WEim",
+			OriginalURL: "https://yandex.ru",
+		},
+	}
+	data.EXPECT().GetUserURLs(ctxBg, "11111", baseHost).Return(expectedURL, nil)
+
+	FindUserURLs(ctxBg, w, req, data, baseHost, zapSugar)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "[{\"short_url\":\"https://localhost:8080/nQm6WEim\","+
+		"\"original_url\":\"https://yandex.ru\"}]",
+		w.Body.String())
+}
+
+func TestFindUserURLs_StatusNoContent(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаем контекст реквеста с PayloadJWT
+	ctx := context.WithValue(context.Background(), ctxkeys.PayLoad, jwtbuilder.PayloadJWT{UserID: "11111"})
+
+	// Создаем обычный контекст
+	ctxBg := context.Background()
+
+	// Создание логгера
+	zapSugar := zaptest.NewLogger(t).Sugar()
+
+	// Создание HTTP-запроса и ResponseRecorder
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
+	req = req.WithContext(ctx)
+
+	// Базовый хост
+	baseHost := "http://localhost"
+
+	// Создание мока для ISetShortURL
+	data := mocks.NewMockIGetUserURLs(ctrl)
+
+	data.EXPECT().GetUserURLs(ctxBg, "11111", baseHost).
+		Return(nil, storageErrors.ErrShortURLsForUserNotFound)
+
+	FindUserURLs(ctxBg, w, req, data, baseHost, zapSugar)
+
+	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestFindUserURLs_StatusInternalServerError(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаем контекст реквеста с PayloadJWT
+	ctx := context.WithValue(context.Background(), ctxkeys.PayLoad, jwtbuilder.PayloadJWT{UserID: "11111"})
+
+	// Создаем обычный контекст
+	ctxBg := context.Background()
+
+	// Создание логгера
+	zapSugar := zaptest.NewLogger(t).Sugar()
+
+	// Создание HTTP-запроса и ResponseRecorder
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
+	req = req.WithContext(ctx)
+
+	// Базовый хост
+	baseHost := "http://localhost"
+
+	// Создание мока для ISetShortURL
+	data := mocks.NewMockIGetUserURLs(ctrl)
+
+	data.EXPECT().GetUserURLs(ctxBg, "11111", baseHost).
+		Return(nil, errors.New("test error"))
+
+	FindUserURLs(ctxBg, w, req, data, baseHost, zapSugar)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
