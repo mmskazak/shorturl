@@ -3,11 +3,13 @@ package web
 import (
 	"context"
 	"errors"
-	"github.com/go-chi/chi/v5"
-	storageErrors "mmskazak/shorturl/internal/storage/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
+
+	"github.com/go-chi/chi/v5"
 
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/handlers/web/mocks"
