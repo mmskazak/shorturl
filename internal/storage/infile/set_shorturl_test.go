@@ -104,7 +104,6 @@ func TestInFile_SetShortURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			// удалаяем если файл уже есть
 			if err := os.Remove(tt.fields.filePath); err != nil && !os.IsNotExist(err) {
 				t.Fatalf("failed to remove file %s: %v", tt.fields.filePath, err)
