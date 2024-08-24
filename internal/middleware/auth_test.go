@@ -2,6 +2,14 @@ package middleware
 
 import (
 	"encoding/base64"
+	"encoding/json"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -64,4 +72,76 @@ func Test_compareHMAC(t *testing.T) {
 			assert.Equalf(t, tt.want, compareHMAC(tt.args.sig1, tt.args.sig2), "compareHMAC(%v, %v)", tt.args.sig1, tt.args.sig2)
 		})
 	}
+}
+
+func TestAuthMiddleware(t *testing.T) {
+	cfg := &config.Config{
+		SecretKey: "test_secret_key",
+	}
+
+	// Создаем фейковый логгер для тестов
+	zapLog := zap.NewNop().Sugar()
+
+	// Создаем HTTP тестовый сервер с применением middleware
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Получаем payloadString из контекста
+		payload := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
+
+		// Сначала кодируем структуру в JSON
+		jsonData, err := json.Marshal(payload)
+		require.NoError(t, err)
+
+		// Устанавливаем заголовок Content-Type для ответа
+		w.Header().Set("Content-Type", "application/json")
+
+		// Устанавливаем статус ответа
+		w.WriteHeader(http.StatusOK)
+
+		// Записываем JSON в тело ответа
+		_, err = w.Write(jsonData)
+		require.NoError(t, err)
+	})
+
+	rr := httptest.NewRecorder()
+	middleware := AuthMiddleware(nextHandler, cfg, zapLog)
+
+	// Тестовый случай 1: JWT отсутствует или недействителен
+	req, err := http.NewRequest("GET", "/test", nil)
+	require.NoError(t, err)
+	middleware.ServeHTTP(rr, req)
+
+	// Проверяем, что middleware создал новый JWT и установил его в куки
+	assert.Equal(t, http.StatusOK, rr.Code)
+	var responsePayload jwtbuilder.PayloadJWT
+	err = json.NewDecoder(rr.Body).Decode(&responsePayload)
+	require.NoError(t, err)
+	assert.NotEmpty(t, responsePayload.UserID)
+
+	// Тестовый случай 2: JWT уже существует и валиден
+	// Создаем фейковый JWT и устанавливаем его в куки для теста
+	jwt := jwtbuilder.New()
+	header := jwtbuilder.HeaderJWT{
+		Alg: "HS256",
+		Typ: "JWT",
+	}
+
+	fakeUserID := "exampleUserID"
+
+	payload := jwtbuilder.PayloadJWT{
+		UserID: fakeUserID,
+	}
+	fakeToken, err := jwt.Create(header, payload, cfg.SecretKey)
+	require.NoError(t, err)
+
+	req.Header.Set("Cookie", authorizationCookieName+"="+fakeToken)
+	rr = httptest.NewRecorder()
+
+	middleware.ServeHTTP(rr, req)
+
+	// Проверяем, что middleware использовал существующий JWT из куки
+	assert.Equal(t, http.StatusOK, rr.Code)
+	err = json.NewDecoder(rr.Body).Decode(&responsePayload)
+	require.NoError(t, err)
+
+	assert.Equal(t, fakeUserID, responsePayload.UserID) // заменить fakeUserID на фактический идентификатор пользователя
 }
