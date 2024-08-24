@@ -57,7 +57,7 @@ func TestGetUserURLsForAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest("GET", tt.requestPath, nil)
+			req, err := http.NewRequest(http.MethodGet, tt.requestPath, http.NoBody)
 			require.NoError(t, err)
 
 			// Устанавливаем JWT в куки, если это необходимо
