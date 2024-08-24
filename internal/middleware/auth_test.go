@@ -106,7 +106,7 @@ func TestAuthMiddleware(t *testing.T) {
 	middleware := AuthMiddleware(nextHandler, cfg, zapLog)
 
 	// Тестовый случай 1: JWT отсутствует или недействителен
-	req, err := http.NewRequest("GET", "/test", nil)
+	req, err := http.NewRequest(http.MethodGet, "/test", nil)
 	require.NoError(t, err)
 	middleware.ServeHTTP(rr, req)
 
