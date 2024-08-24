@@ -6,10 +6,10 @@ package mocks
 
 import (
 	context "context"
-	reflect "reflect"
-
 	contracts "mmskazak/shorturl/internal/contracts"
+	dtos "mmskazak/shorturl/internal/dtos"
 	models "mmskazak/shorturl/internal/models"
+	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -385,4 +385,42 @@ func (m *MockIGetShortURL) GetShortURL(ctx context.Context, idShortPath string) 
 func (mr *MockIGetShortURLMockRecorder) GetShortURL(ctx, idShortPath interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortURL", reflect.TypeOf((*MockIGetShortURL)(nil).GetShortURL), ctx, idShortPath)
+}
+
+// MockIShortURLService is a mock of IShortURLService interface.
+type MockIShortURLService struct {
+	ctrl     *gomock.Controller
+	recorder *MockIShortURLServiceMockRecorder
+}
+
+// MockIShortURLServiceMockRecorder is the mock recorder for MockIShortURLService.
+type MockIShortURLServiceMockRecorder struct {
+	mock *MockIShortURLService
+}
+
+// NewMockIShortURLService creates a new mock instance.
+func NewMockIShortURLService(ctrl *gomock.Controller) *MockIShortURLService {
+	mock := &MockIShortURLService{ctrl: ctrl}
+	mock.recorder = &MockIShortURLServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockIShortURLService) EXPECT() *MockIShortURLServiceMockRecorder {
+	return m.recorder
+}
+
+// GenerateShortURL mocks base method.
+func (m *MockIShortURLService) GenerateShortURL(ctx context.Context, dto dtos.DTOShortURL, generator contracts.IGenIDForURL, data contracts.ISetShortURL) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateShortURL", ctx, dto, generator, data)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateShortURL indicates an expected call of GenerateShortURL.
+func (mr *MockIShortURLServiceMockRecorder) GenerateShortURL(ctx, dto, generator, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateShortURL", reflect.TypeOf((*MockIShortURLService)(nil).GenerateShortURL), ctx, dto, generator, data)
 }
