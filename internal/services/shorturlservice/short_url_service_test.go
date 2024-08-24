@@ -3,8 +3,9 @@ package shorturlservice
 import (
 	"context"
 	"errors"
-	"mmskazak/shorturl/internal/dtos"
 	"testing"
+
+	"mmskazak/shorturl/internal/dtos"
 
 	"github.com/stretchr/testify/assert"
 

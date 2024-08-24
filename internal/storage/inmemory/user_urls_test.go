@@ -2,10 +2,11 @@ package inmemory
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/models"
 	"reflect"
 	"sync"
 	"testing"
+
+	"mmskazak/shorturl/internal/models"
 
 	"go.uber.org/zap"
 )

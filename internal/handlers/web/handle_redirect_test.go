@@ -3,10 +3,11 @@ package web
 import (
 	"context"
 	"errors"
-	"mmskazak/shorturl/internal/contracts/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts/mocks"
 
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 

@@ -3,19 +3,21 @@ package api
 import (
 	"context"
 	"errors"
-	"mmskazak/shorturl/internal/contracts/mocks"
-	"mmskazak/shorturl/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"mmskazak/shorturl/internal/contracts/mocks"
+	"mmskazak/shorturl/internal/models"
+
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
+
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
 )
 
 func TestFindUserURLs_Success(t *testing.T) {

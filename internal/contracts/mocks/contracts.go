@@ -6,9 +6,10 @@ package mocks
 
 import (
 	context "context"
+	reflect "reflect"
+
 	contracts "mmskazak/shorturl/internal/contracts"
 	models "mmskazak/shorturl/internal/models"
-	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 )

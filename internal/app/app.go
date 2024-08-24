@@ -4,15 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mmskazak/shorturl/internal/contracts"
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
+	"mmskazak/shorturl/internal/contracts"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
+
+	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )

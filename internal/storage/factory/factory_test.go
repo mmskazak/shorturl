@@ -3,8 +3,9 @@ package factory
 import (
 	"context"
 	"fmt"
-	"mmskazak/shorturl/internal/contracts"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts"
 
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage/inmemory"

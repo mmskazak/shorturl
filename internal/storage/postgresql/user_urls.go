@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mmskazak/shorturl/internal/models"
 	"net/url"
+
+	"mmskazak/shorturl/internal/models"
 
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
