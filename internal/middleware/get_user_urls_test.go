@@ -28,8 +28,10 @@ func TestGetUserURLsForAuth(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:           "Valid JWT on /api/user/urls",
-			cookieValue:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODUyOGQ2MDYtZjEyZi00MTdkLTk3YjAtNDljOWE3NjE2M2FhIn0.IAoOF6UEjDuK5BIMoSisZEoaGyB8Yb4Z_hdn75_3nu0",
+			name: "Valid JWT on /api/user/urls",
+			cookieValue: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+				"eyJ1c2VyX2lkIjoiODUyOGQ2MDYtZjEyZi00MTdkLTk3YjAtNDljOWE3NjE2M2FhIn0." +
+				"IAoOF6UEjDuK5BIMoSisZEoaGyB8Yb4Z_hdn75_3nu0",
 			requestPath:    "/api/user/urls",
 			expectedStatus: http.StatusOK,
 		},
