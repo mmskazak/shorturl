@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/dtos"
 
 	"mmskazak/shorturl/internal/models"
 )
@@ -69,4 +70,15 @@ type IGetUserURLs interface {
 // IGetShortURL - получение оригинального URL по короткому идентификатору.
 type IGetShortURL interface {
 	GetShortURL(ctx context.Context, idShortPath string) (string, error)
+}
+
+// IShortURLService описывает контракт для сервиса создания и управления короткими URL.
+type IShortURLService interface {
+	// GenerateShortURL создает короткий URL, используя данные из DTO и генератор ID.
+	GenerateShortURL(
+		ctx context.Context,
+		dto dtos.DTOShortURL,
+		generator IGenIDForURL,
+		data ISetShortURL,
+	) (string, error)
 }

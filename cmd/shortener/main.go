@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 	_ "net/http/pprof"
 
@@ -52,8 +53,18 @@ func main() {
 		}
 	}()
 
+	shortURLService := shorturlservice.NewShortURLService()
+
 	// Создание и запуск приложения.
-	newApp := app.NewApp(ctx, cfg, storage, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
+	newApp := app.NewApp(
+		ctx,
+		cfg,
+		storage,
+		cfg.ReadTimeout,
+		cfg.WriteTimeout,
+		zapLog,
+		shortURLService,
+	)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"testing"
 	"time"
 
@@ -16,11 +17,12 @@ import (
 func TestNewApp(t *testing.T) {
 	ctx := context.Background()
 	type args struct {
-		cfg          *config.Config
-		store        contracts.Storage
-		readTimeout  time.Duration
-		writeTimeout time.Duration
-		zapLog       *zap.SugaredLogger
+		cfg             *config.Config
+		store           contracts.Storage
+		readTimeout     time.Duration
+		writeTimeout    time.Duration
+		zapLog          *zap.SugaredLogger
+		shortURLService contracts.IShortURLService
 	}
 	tests := []struct {
 		name string
@@ -37,6 +39,7 @@ func TestNewApp(t *testing.T) {
 					in, _ := inmemory.NewInMemory(zap.NewNop().Sugar())
 					return in
 				}(),
+				shortURLService: shorturlservice.NewShortURLService(),
 			},
 			want: &App{},
 		},
@@ -47,7 +50,9 @@ func TestNewApp(t *testing.T) {
 			tt.args.store,
 			tt.args.readTimeout,
 			tt.args.writeTimeout,
-			tt.args.zapLog)
+			tt.args.zapLog,
+			tt.args.shortURLService,
+		)
 		// Проверка типа через утверждение типа
 		var _ *App = got
 	}

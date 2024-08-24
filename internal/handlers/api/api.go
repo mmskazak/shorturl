@@ -34,6 +34,7 @@ func HandleCreateShortURL(
 	store contracts.ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
+	shortURLService contracts.IShortURLService,
 ) {
 	// Установка заголовков, чтобы указать, что мы принимаем и отправляем JSON.
 	w.Header().Set("Content-Type", appJSON)
@@ -70,7 +71,6 @@ func HandleCreateShortURL(
 	}
 
 	generator := genidurl.NewGenIDService()
-	shortURLService := shorturlservice.NewShortURLService()
 	dto := dtos.DTOShortURL{
 		UserID:      userID,
 		OriginalURL: jsonReq.URL,

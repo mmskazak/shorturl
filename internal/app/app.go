@@ -42,6 +42,7 @@ func NewApp(
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 	zapLog *zap.SugaredLogger,
+	shortURLService contracts.IShortURLService,
 ) *App {
 	router := chi.NewRouter()
 
@@ -76,7 +77,7 @@ func NewApp(
 	})
 
 	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		api.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog)
+		api.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
 	})
 
 	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {

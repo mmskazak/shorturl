@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -33,7 +34,9 @@ func TestHandleCreateShortURL_StatusUnauthorized(t *testing.T) {
 	data := mocks.NewMockISetShortURL(ctrl)
 	baseHost := "http://localhost"
 
-	HandleCreateShortURL(ctxBg, w, r, data, baseHost, zapSugar)
+	shortURLService := shorturlservice.NewShortURLService()
+
+	HandleCreateShortURL(ctxBg, w, r, data, baseHost, zapSugar, shortURLService)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
@@ -61,8 +64,9 @@ func TestHandleCreateShortURL_EmptyBody(t *testing.T) {
 	// Базовый хост
 	baseHost := "http://localhost"
 
+	shortURLService := shorturlservice.NewShortURLService()
 	// Вызов функции
-	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar)
+	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar, shortURLService)
 
 	// Проверка кода ответа
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -92,8 +96,10 @@ func TestHandleCreateShortURL_ErrUnmarshal(t *testing.T) {
 	// Базовый хост
 	baseHost := "http://localhost"
 
+	shortURLService := shorturlservice.NewShortURLService()
+
 	// Вызов функции
-	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar)
+	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar, shortURLService)
 
 	// Проверка кода ответа
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -129,8 +135,10 @@ func TestHandleCreateShortURL_Success(t *testing.T) {
 	// Базовый хост
 	baseHost := "http://localhost"
 
+	shortURLService := shorturlservice.NewShortURLService()
+
 	// Вызов функции
-	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar)
+	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar, shortURLService)
 
 	// Проверка кода ответа
 	assert.Equal(t, http.StatusCreated, w.Code)

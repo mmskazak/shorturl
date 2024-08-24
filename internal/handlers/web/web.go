@@ -20,8 +20,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-//go:generate mockgen -source=web.go -destination=mocks/mock_web.go -package=mocks
-
 // HandleCreateShortURL обрабатывает запрос на создание короткого URL.
 // Он извлекает оригинальный URL из тела запроса, генерирует короткий URL и сохраняет его в хранилище.
 // Возвращает HTTP-ответ с созданным коротким URL или ошибку в случае неудачи.
