@@ -2,11 +2,11 @@ package app
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/contracts"
 	"testing"
 	"time"
 
 	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 
 	"go.uber.org/zap"
@@ -16,7 +16,7 @@ func TestNewApp(t *testing.T) {
 	ctx := context.Background()
 	type args struct {
 		cfg          *config.Config
-		store        storage.Storage
+		store        contracts.Storage
 		readTimeout  time.Duration
 		writeTimeout time.Duration
 		zapLog       *zap.SugaredLogger

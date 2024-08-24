@@ -6,9 +6,8 @@ package mocks
 
 import (
 	context "context"
+	"mmskazak/shorturl/internal/models"
 	reflect "reflect"
-
-	storage "mmskazak/shorturl/internal/storage"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -37,10 +36,10 @@ func (m *MockIGetUserURLs) EXPECT() *MockIGetUserURLsMockRecorder {
 }
 
 // GetUserURLs mocks base method.
-func (m *MockIGetUserURLs) GetUserURLs(ctx context.Context, userID, baseHost string) ([]storage.URL, error) {
+func (m *MockIGetUserURLs) GetUserURLs(ctx context.Context, userID, baseHost string) ([]models.URL, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserURLs", ctx, userID, baseHost)
-	ret0, _ := ret[0].([]storage.URL)
+	ret0, _ := ret[0].([]models.URL)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -3,10 +3,10 @@ package factory
 import (
 	"context"
 	"fmt"
+	"mmskazak/shorturl/internal/contracts"
 	"testing"
 
 	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 
 	"go.uber.org/zap"
@@ -17,7 +17,7 @@ func TestNewStorage(t *testing.T) {
 		name    string
 		cfg     *config.Config
 		wantErr bool
-		want    storage.Storage
+		want    contracts.Storage
 	}{
 		{
 			name: "InMemory storage",

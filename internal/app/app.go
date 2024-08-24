@@ -4,30 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/contracts"
 	"net/http"
 	"time"
 
+	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
-	"mmskazak/shorturl/internal/storage"
-
-	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )
-
-// Pinger определяет интерфейс для проверки состояния хранилища.
-type Pinger interface {
-	Ping(ctx context.Context) error
-}
-
-// URL представляет структуру URL с коротким и оригинальным URL.
-type URL struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
 
 // App представляет приложение с HTTP сервером и логгером.
 type App struct {
@@ -37,22 +25,6 @@ type App struct {
 
 // ErrStartingServer - ошибка старта сервера.
 const ErrStartingServer = "error starting server"
-
-// IGenIDForURL представляет интерфейс для генерации идентификаторов для коротких URL.
-type IGenIDForURL interface {
-	Generate() (string, error) // Метод для генерации нового идентификатора.
-}
-
-// ISaveBatch сохранение URLs батчем.
-type ISaveBatch interface {
-	SaveBatch(
-		ctx context.Context,
-		items []storage.Incoming,
-		baseHost string,
-		userID string,
-		generator IGenIDForURL,
-	) ([]storage.Output, error)
-}
 
 // NewApp создает новый экземпляр приложения.
 // Ctx - контекст для управления временем выполнения.
@@ -64,7 +36,7 @@ type ISaveBatch interface {
 func NewApp(
 	ctx context.Context,
 	cfg *config.Config,
-	store storage.Storage,
+	store contracts.Storage,
 	readTimeout time.Duration,
 	writeTimeout time.Duration,
 	zapLog *zap.SugaredLogger,
@@ -110,7 +82,7 @@ func NewApp(
 	})
 
 	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
-		pinger, ok := store.(Pinger)
+		pinger, ok := store.(contracts.Pinger)
 		if !ok {
 			zapLog.Infoln("The storage does not support Ping")
 			return

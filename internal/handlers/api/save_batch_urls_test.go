@@ -2,21 +2,20 @@ package api
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/handlers/api/mocks"
-	"mmskazak/shorturl/internal/services/genidurl"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
-	"mmskazak/shorturl/internal/storage"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/handlers/api/mocks"
+	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 )
 
 func TestSaveShortenURLsBatch(t *testing.T) {
@@ -55,7 +54,7 @@ func TestSaveShortenURLsBatch(t *testing.T) {
 	store := mocks.NewMockISaveBatch(ctrl)
 	generator := genidurl.NewGenIDService()
 
-	expectedOutput := []storage.Output{
+	expectedOutput := []models.Output{
 		{
 			CorrelationID: "123",
 			ShortURL:      "http://localhost:8080/nQm6WEim",
@@ -66,7 +65,7 @@ func TestSaveShortenURLsBatch(t *testing.T) {
 		},
 	}
 
-	incomingOutput := []storage.Incoming{
+	incomingOutput := []models.Incoming{
 		{
 			CorrelationID: "123",
 			OriginalURL:   "https://example.com/long-url-00012",

@@ -3,9 +3,8 @@ package inmemory
 import (
 	"context"
 	"fmt"
+	"mmskazak/shorturl/internal/models"
 	"net/url"
-
-	"mmskazak/shorturl/internal/storage"
 )
 
 // GetUserURLs - получение всех URL для конкретного пользователя.
@@ -20,13 +19,13 @@ import (
 // - baseHost: базовый хост для создания полного сокращенного URL.
 //
 // Возвращаемые значения:
-// - []storage.URL: список структур URL, содержащих сокращенные и оригинальные URL-адреса.
+// - []models.URL: список структур URL, содержащих сокращенные и оригинальные URL-адреса.
 // - error: ошибка, если она произошла в процессе выполнения запроса.
-func (m *InMemory) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
+func (m *InMemory) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	var urls []storage.URL
+	var urls []models.URL
 	ids, ok := m.userIndex[userID]
 	if !ok {
 		return urls, nil // Пустой список, если пользователь не найден
@@ -50,7 +49,7 @@ func (m *InMemory) GetUserURLs(ctx context.Context, userID string, baseHost stri
 			// Объединяем baseURL и relativeURL
 			fullShortURL := baseURL.ResolveReference(relativeURL).String()
 
-			urls = append(urls, storage.URL{
+			urls = append(urls, models.URL{
 				ShortURL:    fullShortURL,
 				OriginalURL: record.OriginalURL,
 			})

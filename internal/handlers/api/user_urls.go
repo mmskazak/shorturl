@@ -4,9 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"mmskazak/shorturl/internal/contracts"
 	"net/http"
-
-	"mmskazak/shorturl/internal/storage"
 
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
@@ -14,11 +13,6 @@ import (
 
 	"go.uber.org/zap"
 )
-
-// IGetUserURLs возвращает все URL-адреса, связанные с указанным пользователем.
-type IGetUserURLs interface {
-	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error)
-}
 
 //go:generate mockgen -source=user_urls.go -destination=mocks/mock_user_urls.go -package=mocks
 
@@ -29,7 +23,7 @@ func FindUserURLs(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store IGetUserURLs,
+	store contracts.IGetUserURLs,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {

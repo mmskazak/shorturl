@@ -6,9 +6,9 @@ package mocks
 
 import (
 	context "context"
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/models"
 	reflect "reflect"
-
-	storage "mmskazak/shorturl/internal/storage"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -37,10 +37,10 @@ func (m *MockISaveBatch) EXPECT() *MockISaveBatchMockRecorder {
 }
 
 // SaveBatch mocks base method.
-func (m *MockISaveBatch) SaveBatch(ctx context.Context, items []storage.Incoming, baseHost, userID string, generator storage.IGenIDForURL) ([]storage.Output, error) {
+func (m *MockISaveBatch) SaveBatch(ctx context.Context, items []models.Incoming, baseHost, userID string, generator contracts.IGenIDForURL) ([]models.Output, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveBatch", ctx, items, baseHost, userID, generator)
-	ret0, _ := ret[0].([]storage.Output)
+	ret0, _ := ret[0].([]models.Output)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

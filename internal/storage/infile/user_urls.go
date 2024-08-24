@@ -2,8 +2,7 @@ package infile
 
 import (
 	"context"
-
-	"mmskazak/shorturl/internal/storage"
+	"mmskazak/shorturl/internal/models"
 )
 
 // GetUserURLs возвращает все URL-адреса, связанные с указанным пользователем.
@@ -19,12 +18,12 @@ import (
 // - baseHost: базовый хост, который будет использован при формировании полного URL (если это применимо).
 //
 // Возвращаемые значения:
-// - []storage.URL: список URL-адресов пользователя.
+// - []models.URL: список URL-адресов пользователя.
 // - error: ошибка, если она произошла в процессе выполнения запроса.
 //
 // Примечания:
 // - Ошибка пробрасывается дальше без обёртывания, чтобы сохранить оригинальное сообщение об ошибке.
-func (m *InFile) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
+func (m *InFile) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error) {
 	urls, err := m.InMe.GetUserURLs(ctx, userID, baseHost)
 	if err != nil {
 		return nil, err //nolint:wrapcheck // пробрасываем дальше ошибку

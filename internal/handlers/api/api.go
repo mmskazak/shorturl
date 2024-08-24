@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/dtos"
+	"mmskazak/shorturl/internal/models"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -18,24 +21,9 @@ import (
 
 //go:generate mockgen -source=api.go -destination=mocks/mock_api.go -package=mocks
 
-// JSONRequest представляет структуру запроса для создания короткого URL.
-type JSONRequest struct {
-	URL string `json:"url"`
-}
-
-// JSONResponse представляет структуру ответа с созданным коротким URL.
-type JSONResponse struct {
-	ShortURL string `json:"result"`
-}
-
 const (
 	appJSON = "application/json"
 )
-
-// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
-type ISetShortURL interface {
-	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
-}
 
 // HandleCreateShortURL обрабатывает HTTP-запрос для создания короткого URL.
 // Он принимает JSON-запрос с оригинальным URL, генерирует короткий URL и сохраняет его в хранилище.
@@ -44,7 +32,7 @@ func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store ISetShortURL,
+	store contracts.ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {
@@ -74,7 +62,7 @@ func HandleCreateShortURL(
 		return
 	}
 
-	jsonReq := JSONRequest{}
+	jsonReq := models.JSONRequest{}
 	err = json.Unmarshal(body, &jsonReq)
 	if err != nil {
 		zapLog.Errorf("Ошибка json.Unmarshal: %v", err)
@@ -84,7 +72,7 @@ func HandleCreateShortURL(
 
 	generator := genidurl.NewGenIDService()
 	shortURLService := shorturlservice.NewShortURLService()
-	dto := shorturlservice.DTOShortURL{
+	dto := dtos.DTOShortURL{
 		UserID:      userID,
 		OriginalURL: jsonReq.URL,
 		BaseHost:    baseHost,
@@ -115,7 +103,7 @@ func HandleCreateShortURL(
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
-	jsonResp := JSONResponse{
+	jsonResp := models.JSONResponse{
 		ShortURL: shortURL,
 	}
 	shortURLAsJSON, err := json.Marshal(jsonResp)
@@ -136,7 +124,7 @@ func HandleCreateShortURL(
 
 // buildJSONResponse создает JSON-ответ с коротким URL.
 func buildJSONResponse(shortURL string) (string, error) {
-	jsonResp := JSONResponse{
+	jsonResp := models.JSONResponse{
 		ShortURL: shortURL,
 	}
 	shortURLAsJSON, err := json.Marshal(jsonResp)

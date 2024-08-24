@@ -3,20 +3,19 @@ package api
 import (
 	"context"
 	"errors"
+	"mmskazak/shorturl/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/handlers/api/mocks"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
-	"mmskazak/shorturl/internal/storage"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/handlers/api/mocks"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 )
 
 func TestFindUserURLs_Success(t *testing.T) {
@@ -38,7 +37,7 @@ func TestFindUserURLs_Success(t *testing.T) {
 	// Базовый хост
 	baseHost := "http://localhost"
 
-	expectedOutput := []storage.URL{
+	expectedOutput := []models.URL{
 		{
 			ShortURL:    "http://localhost:8080/eythhwGV",
 			OriginalURL: "https://google.ru",
@@ -111,7 +110,7 @@ func TestFindUserURLs_StatusOK(t *testing.T) {
 
 	// Создание мока для ISetShortURL
 	data := mocks.NewMockIGetUserURLs(ctrl)
-	expectedURL := []storage.URL{
+	expectedURL := []models.URL{
 		{
 			ShortURL:    "https://localhost:8080/nQm6WEim",
 			OriginalURL: "https://yandex.ru",

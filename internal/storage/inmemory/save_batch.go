@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/dtos"
+	"mmskazak/shorturl/internal/models"
 
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
@@ -21,16 +23,16 @@ type IGenIDForURL interface {
 // ConflictError (ErrOriginalURLAlreadyExists).
 func (m *InMemory) SaveBatch(
 	ctx context.Context,
-	items []storage.Incoming,
+	items []models.Incoming,
 	baseHost string,
 	userID string,
-	generator storage.IGenIDForURL,
-) ([]storage.Output, error) {
+	generator contracts.IGenIDForURL,
+) ([]models.Output, error) {
 	dontChangedData := m.data
 
-	outputs := make([]storage.Output, 0, len(items))
+	outputs := make([]models.Output, 0, len(items))
 	for _, v := range items {
-		dto := shorturlservice.DTOShortURL{
+		dto := dtos.DTOShortURL{
 			OriginalURL: v.OriginalURL,
 			UserID:      userID,
 			BaseHost:    baseHost,
@@ -57,7 +59,7 @@ func (m *InMemory) SaveBatch(
 			return nil, fmt.Errorf("error inserting data: %w", err)
 		}
 
-		outputs = append(outputs, storage.Output{
+		outputs = append(outputs, models.Output{
 			CorrelationID: v.CorrelationID,
 			ShortURL:      fullShortURL,
 		})

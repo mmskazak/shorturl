@@ -5,29 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/models"
 	"net/http"
 
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"go.uber.org/zap"
 )
 
 //go:generate mockgen -source=save_batch_urls.go -destination=mocks/mock_save_batch_urls.go -package=mocks
-
-// ISaveBatch сохранение данных батчем.
-type ISaveBatch interface {
-	SaveBatch(
-		ctx context.Context,
-		items []storage.Incoming,
-		baseHost string,
-		userID string,
-		generator storage.IGenIDForURL,
-	) ([]storage.Output, error)
-}
 
 // SaveShortenURLsBatch обрабатывает пакетный запрос на создание сокращённых URL.
 // Он парсит JSON-тело запроса, извлекает userID из контекста,
@@ -38,12 +28,12 @@ func SaveShortenURLsBatch(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store ISaveBatch,
+	store contracts.ISaveBatch,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {
 	// Парсинг JSON из тела запроса
-	var requestData []storage.Incoming
+	var requestData []models.Incoming
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
 		zapLog.Errorf("error decoding request: %v", err)

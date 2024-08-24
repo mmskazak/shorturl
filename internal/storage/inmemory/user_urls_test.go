@@ -2,11 +2,10 @@ package inmemory
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/models"
 	"reflect"
 	"sync"
 	"testing"
-
-	"mmskazak/shorturl/internal/storage"
 
 	"go.uber.org/zap"
 )
@@ -28,7 +27,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []storage.URL
+		want    []models.URL
 		wantErr bool
 	}{
 		{
@@ -64,7 +63,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 				userID:   "11111",
 				baseHost: "http://localhost",
 			},
-			want: []storage.URL{
+			want: []models.URL{
 				{OriginalURL: "http://example.com/1", ShortURL: "http://localhost/short1"},
 				{OriginalURL: "http://example.com/2", ShortURL: "http://localhost/short2"},
 			},
@@ -81,10 +80,10 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 			}
 			got, err := m.GetUserURLs(ctx, tt.args.userID, tt.args.baseHost)
 			if got == nil {
-				got = []storage.URL{}
+				got = []models.URL{}
 			}
 			if tt.want == nil {
-				tt.want = []storage.URL{}
+				tt.want = []models.URL{}
 			}
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUserURLs() error = %v, wantErr %v", err, tt.wantErr)

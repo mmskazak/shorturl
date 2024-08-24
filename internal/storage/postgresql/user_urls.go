@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/models"
 	"net/url"
 
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"github.com/jackc/pgx/v5"
@@ -14,7 +14,7 @@ import (
 
 // GetUserURLs возвращает список URL-адресов для заданного пользователя.
 // Возвращает ошибку, если процесс выполнения запроса или обработки данных завершается неудачей.
-func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]storage.URL, error) {
+func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error) {
 	// Определяем SQL-запрос для получения URL-адресов пользователя
 	query := `
         SELECT short_url, original_url
@@ -41,13 +41,13 @@ func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 	defer rows.Close()
 
 	// Создаем слайс для хранения результатов
-	var urls []storage.URL
+	var urls []models.URL
 
 	// Проверяем наличие строк в результате запроса
 	hasRows := false
 	for rows.Next() {
 		hasRows = true
-		var storageURL storage.URL
+		var storageURL models.URL
 		if err := rows.Scan(&storageURL.ShortURL, &storageURL.OriginalURL); err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)
 		}

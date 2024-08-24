@@ -3,6 +3,7 @@ package shorturlservice
 import (
 	"context"
 	"errors"
+	"mmskazak/shorturl/internal/dtos"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,7 @@ func TestShortURLService_GenerateShortURL_Success(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 10,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
@@ -72,7 +73,7 @@ func TestShortURLService_GenerateShortURL_ErrGenerate(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 1,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
@@ -100,7 +101,7 @@ func TestShortURLService_GenerateShortURL_ErrSetShortURL(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 2,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
@@ -135,7 +136,7 @@ func TestShortURLService_GenerateShortURL_ErrBaseHost(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 10,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "рtp://example.com",
@@ -171,7 +172,7 @@ func TestShortURLService_GenerateShortURL_ErrConflictError(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 2,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
