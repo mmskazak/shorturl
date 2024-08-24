@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"log"
-	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 	_ "net/http/pprof"
+
+	"mmskazak/shorturl/internal/services/shorturlservice"
 
 	"mmskazak/shorturl/internal/app"
 	"mmskazak/shorturl/internal/config"
