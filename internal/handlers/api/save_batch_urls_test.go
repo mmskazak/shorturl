@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/contracts/mocks"
 	"mmskazak/shorturl/internal/models"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/handlers/api/mocks"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 )

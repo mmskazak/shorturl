@@ -9,8 +9,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=delete_user_urls.go -destination=mocks/mock_delete_user_urls.go -package=mocks
-
 // DeleteUserURLs - хендлер для асинхронного удаления сокращённых URL по их идентификаторам.
 // Он принимает JSON-массив с идентификаторами URL, которые нужно удалить.
 // Если массив не может быть декодирован или если возникает ошибка при удалении URL,

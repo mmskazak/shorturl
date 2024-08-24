@@ -17,8 +17,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=save_batch_urls.go -destination=mocks/mock_save_batch_urls.go -package=mocks
-
 // SaveShortenURLsBatch обрабатывает пакетный запрос на создание сокращённых URL.
 // Он парсит JSON-тело запроса, извлекает userID из контекста,
 // сохраняет пакет сокращённых URL и возвращает результат клиенту в виде JSON.

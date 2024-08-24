@@ -19,8 +19,6 @@ import (
 	"mmskazak/shorturl/internal/services/shorturlservice"
 )
 
-//go:generate mockgen -source=api.go -destination=mocks/mock_api.go -package=mocks
-
 const (
 	appJSON = "application/json"
 )
