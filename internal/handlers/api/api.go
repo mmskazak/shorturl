@@ -6,20 +6,24 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+
+	"go.uber.org/zap"
+
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	"mmskazak/shorturl/internal/storage"
-	"net/http"
-
-	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=api.go -destination=mocks/mock_api.go -package=mocks
+
+// JSONRequest представляет структуру запроса для создания короткого URL.
 type JSONRequest struct {
 	URL string `json:"url"`
 }
 
+// JSONResponse представляет структуру ответа с созданным коротким URL.
 type JSONResponse struct {
 	ShortURL string `json:"result"`
 }
@@ -28,11 +32,19 @@ const (
 	appJSON = "application/json"
 )
 
+// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
+type ISetShortURL interface {
+	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
+}
+
+// HandleCreateShortURL обрабатывает HTTP-запрос для создания короткого URL.
+// Он принимает JSON-запрос с оригинальным URL, генерирует короткий URL и сохраняет его в хранилище.
+// Если короткий URL уже существует, возвращает конфликт.
 func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	store storage.Storage,
+	store ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {
@@ -47,6 +59,12 @@ func HandleCreateShortURL(
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
+	if len(body) == 0 {
+		zapLog.Error("Тело запроса пустое, ошибка.")
+		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
+		return
+	}
+
 	// Получаем userID из контекста
 	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
 	userID := payload.UserID
@@ -116,6 +134,7 @@ func HandleCreateShortURL(
 	}
 }
 
+// buildJSONResponse создает JSON-ответ с коротким URL.
 func buildJSONResponse(shortURL string) (string, error) {
 	jsonResp := JSONResponse{
 		ShortURL: shortURL,

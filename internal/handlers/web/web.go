@@ -4,32 +4,49 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
+
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	"mmskazak/shorturl/internal/storage"
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
-	"net/http"
 
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )
 
+//go:generate mockgen -source=web.go -destination=mocks/mock_web.go -package=mocks
+
+// IGenIDForURL определяет интерфейс для генерации идентификаторов URL.
 type IGenIDForURL interface {
 	Generate() (string, error)
 }
 
+// Pinger определяет интерфейс для проверки состояния базы данных.
 type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
+// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
+type ISetShortURL interface {
+	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
+}
+
+// IGetShortURL - получение оригинального URL по короткому идентификатору.
+type IGetShortURL interface {
+	GetShortURL(ctx context.Context, idShortPath string) (string, error)
+}
+
+// HandleCreateShortURL обрабатывает запрос на создание короткого URL.
+// Он извлекает оригинальный URL из тела запроса, генерирует короткий URL и сохраняет его в хранилище.
+// Возвращает HTTP-ответ с созданным коротким URL или ошибку в случае неудачи.
 func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	data storage.Storage,
+	data ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
 ) {
@@ -40,12 +57,17 @@ func HandleCreateShortURL(
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
-	// Получаем userID из контекста
+	if len(body) == 0 {
+		zapLog.Error("Тело запроса пустое")
+		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
+		return
+	}
+
+	// Получаем userID из контекста.
 	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
 	userID := payload.UserID
 	if !ok {
 		zapLog.Infof("userID не найден или неверного типа, возвращаем http ошибку")
-		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -87,14 +109,17 @@ func HandleCreateShortURL(
 	}
 }
 
+// HandleRedirect обрабатывает запрос на перенаправление по короткому URL.
+// Получает короткий URL из параметра запроса, извлекает оригинальный URL из хранилища и выполняет перенаправление.
+// Возвращает HTTP-ответ с кодом перенаправления или ошибку в случае неудачи.
 func HandleRedirect(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	data storage.Storage,
+	data IGetShortURL,
 	zapLog *zap.SugaredLogger,
 ) {
-	// Получение значения id из URL-адреса
+	// Получение значения id из URL-адреса.
 	id := chi.URLParam(r, "id")
 
 	originalURL, err := data.GetShortURL(ctx, id)
@@ -113,6 +138,8 @@ func HandleRedirect(
 	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
 }
 
+// MainPage обрабатывает запросы к главной странице.
+// Возвращает сообщение о службе сокращения URL или ошибку в случае неудачи.
 func MainPage(w http.ResponseWriter, _ *http.Request, zapLog *zap.SugaredLogger) {
 	_, err := w.Write([]byte("Сервис сокращения URL"))
 	if err != nil {
@@ -122,6 +149,8 @@ func MainPage(w http.ResponseWriter, _ *http.Request, zapLog *zap.SugaredLogger)
 	}
 }
 
+// PingPostgreSQL проверяет состояние подключения к базе данных PostgreSQL.
+// Возвращает HTTP-ответ с кодом состояния 200 OK, если база данных доступна, или ошибку в случае неудачи.
 func PingPostgreSQL(
 	ctx context.Context,
 	w http.ResponseWriter,

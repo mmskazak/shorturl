@@ -11,10 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// SetShortURL error:
-// different error
-// ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists).
+// SetShortURL сохраняет короткий URL в базе данных PostgreSQL.
+// Возвращает ошибку в случае неудачи.
+//
+// Ошибки:
+// - ErrKeyAlreadyExists: короткий URL уже существует
+// - ConflictError (ErrOriginalURLAlreadyExists): оригинальный URL уже существует.
 func (s *PostgreSQL) SetShortURL(
 	ctx context.Context,
 	shortURL string,
@@ -52,6 +54,8 @@ func (s *PostgreSQL) SetShortURL(
 	return nil
 }
 
+// handleError обрабатывает ошибки, возникающие при выполнении SQL-запроса.
+// Возвращает специализированные ошибки для уникальных нарушений.
 func (s *PostgreSQL) handleError(ctx context.Context, err error, targetURL string) error {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {

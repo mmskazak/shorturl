@@ -13,52 +13,54 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test for GzipMiddleware.
-func TestGzipMiddleware(t *testing.T) {
-	// Mock handler to be wrapped by middleware
-	mockHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"message":"hello, world"}`))
-	})
+// Mock handler to be wrapped by middleware.
+func mockHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write([]byte(`{"message":"hello, world"}`))
+}
 
+func TestGzipMiddleware(t *testing.T) {
 	tests := []struct {
-		todo           string
 		name           string
 		acceptEncoding string
+		contentType    string
 		expectGzip     bool
 	}{
 		{
 			name:           "without gzip",
 			acceptEncoding: "",
+			contentType:    "application/json",
 			expectGzip:     false,
 		},
 		{
-			todo:           "skip", //TODO: разобраться с тестом
-			name:           "with gzip",
+			name:           "with non-gzip encoding",
+			acceptEncoding: "deflate",
+			contentType:    "application/json",
+			expectGzip:     false,
+		},
+		{
+			name:           "unsupported content type",
 			acceptEncoding: "gzip",
-			expectGzip:     true,
+			contentType:    "text/plain",
+			expectGzip:     false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.todo == "skip" {
-				return
-			}
 			reqBody := bytes.NewBufferString(`{"data":"example"}`)
-			req := httptest.NewRequest("http.MethodPost", "/api/shorten", reqBody)
-
-			req.Header.Set("Content-Type", "application/json")
+			req := httptest.NewRequest(http.MethodPost, "/api/shorten", reqBody)
+			req.Header.Add("Content-Type", tt.contentType)
 
 			if tt.acceptEncoding != "" {
-				req.Header.Set("Accept-Encoding", tt.acceptEncoding)
+				req.Header.Add("Accept-Encoding", tt.acceptEncoding)
 			}
 
 			// Create a ResponseRecorder to record the response
 			rr := httptest.NewRecorder()
 
 			// Wrap the handler with the middleware
-			handler := GzipMiddleware(mockHandler)
+			handler := GzipMiddleware(http.HandlerFunc(mockHandler))
 
 			// Serve the HTTP request
 			handler.ServeHTTP(rr, req)
@@ -79,7 +81,7 @@ func TestGzipMiddleware(t *testing.T) {
 				defer func(gzipReader *gzip.Reader) {
 					err := gzipReader.Close()
 					if err != nil {
-						log.Fatalf("error close gzipReader: %v", err)
+						log.Fatalf("error closing gzipReader: %v", err)
 					}
 				}(gzipReader)
 

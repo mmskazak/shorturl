@@ -9,48 +9,48 @@ import (
 )
 
 const (
-	noStatus = 0
+	noStatus = 0 // Константа для обозначения отсутствия статуса
 )
 
-// Берём структуру для хранения сведений об ответе.
+// responseData хранит информацию о статусе ответа и размере данных.
 type responseData struct {
-	status int
-	size   int
+	status int // HTTP статус-код ответа
+	size   int // Размер ответа в байтах
 }
 
-// Добавляем реализацию http.ResponseWriter.
+// loggingResponseWriter реализует http.ResponseWriter и добавляет функциональность для логирования.
 type loggingResponseWriter struct {
-	http.ResponseWriter // встраиваем оригинальный http.ResponseWriter
-	responseData        *responseData
+	http.ResponseWriter               // Встраиваем оригинальный http.ResponseWriter
+	responseData        *responseData // Ссылка на структуру для хранения данных о ответе
 }
 
+// Write переопределяет метод Write для записи ответа и сбора размера ответа.
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
-	// записываем ответ, используя оригинальный http.ResponseWriter
 	size, err := r.ResponseWriter.Write(b)
 	if err != nil {
-		return 0, fmt.Errorf("ошибка в middleware.loggingResponseWriter.Write %w", err)
+		return 0, fmt.Errorf("ошибка в middleware.loggingResponseWriter.Write: %w", err)
 	}
-	r.responseData.size += size // захватываем размер
+	r.responseData.size += size // Увеличиваем размер ответа
 	if r.responseData.status == noStatus {
-		r.responseData.status = http.StatusOK
+		r.responseData.status = http.StatusOK // Устанавливаем статус по умолчанию, если он ещё не был установлен
 	}
 	return size, nil
 }
 
+// WriteHeader переопределяет метод WriteHeader для записи кодов статуса ответа и их хранения.
 func (r *loggingResponseWriter) WriteHeader(statusCode int) {
-	// записываем код статуса, используя оригинальный http.ResponseWriter
 	r.ResponseWriter.WriteHeader(statusCode)
-	r.responseData.status = statusCode // захватываем код статуса
+	r.responseData.status = statusCode // Сохраняем статус ответа
 }
 
-// LoggingRequestMiddleware для логирования запросов.
+// LoggingRequestMiddleware логирует информацию о каждом HTTP-запросе и ответе.
 func LoggingRequestMiddleware(next http.Handler, zapLog *zap.SugaredLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+		start := time.Now() // Засекаем время начала обработки запроса
 
 		responseData := &responseData{
-			status: 0,
-			size:   0,
+			status: noStatus, // Инициализируем статус как нет установленного значения
+			size:   0,        // Инициализируем размер как ноль
 		}
 
 		lw := loggingResponseWriter{
@@ -58,17 +58,18 @@ func LoggingRequestMiddleware(next http.Handler, zapLog *zap.SugaredLogger) http
 			responseData:   responseData,
 		}
 
-		// Проход далее по цепочке middleware и обработчиков
+		// Передаем запрос следующему обработчику
 		next.ServeHTTP(&lw, r)
 
-		duration := time.Since(start)
+		duration := time.Since(start) // Вычисляем длительность обработки запроса
 
+		// Логируем информацию о запросе и ответе
 		zapLog.Infoln(
 			"uri", r.RequestURI,
 			"method", r.Method,
-			"status", responseData.status, // получаем перехваченный код статуса ответа
-			"duration", duration,
-			"size", responseData.size, // получаем перехваченный размер ответа
+			"status", responseData.status, // Логируем статус ответа
+			"duration", duration, // Логируем длительность обработки запроса
+			"size", responseData.size, // Логируем размер ответа
 		)
 	})
 }

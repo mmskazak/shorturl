@@ -8,21 +8,26 @@ import (
 	"fmt"
 )
 
+// HeaderJWT представляет заголовок JWT, который содержит информацию о типе токена и алгоритме подписи.
 type HeaderJWT struct {
-	Alg string `json:"alg"`
-	Typ string `json:"typ"`
+	Alg string `json:"alg"` // Алгоритм подписи (например, HS256)
+	Typ string `json:"typ"` // Тип токена (например, JWT)
 }
 
+// PayloadJWT представляет полезную нагрузку JWT, которая содержит данные пользователя.
 type PayloadJWT struct {
-	UserID string `json:"user_id"`
+	UserID string `json:"user_id"` // Идентификатор пользователя
 }
 
+// JWTBuilder представляет собой конструктор для создания JWT.
 type JWTBuilder struct{}
 
+// New создает новый экземпляр JWTBuilder.
 func New() JWTBuilder {
 	return JWTBuilder{}
 }
 
+// Create формирует JWT, используя заголовок, полезную нагрузку и секретный ключ.
 func (j *JWTBuilder) Create(header HeaderJWT, payload PayloadJWT, secret string) (string, error) {
 	// Сериализация структур в JSON
 	headerJSON, err := json.Marshal(header)
@@ -47,6 +52,7 @@ func (j *JWTBuilder) Create(header HeaderJWT, payload PayloadJWT, secret string)
 	return token, nil
 }
 
+// GenerateHMAC создает HMAC-подпись для данных, используя секретный ключ.
 func GenerateHMAC(data, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
 	h.Write([]byte(data))

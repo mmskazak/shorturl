@@ -8,6 +8,17 @@ import (
 )
 
 // DeleteURLs выполняет batch update записей, устанавливая флаг удаления.
+//
+// Функция удаляет URL-адреса, устанавливая флаг `deleted` в TRUE для каждой записи в списке `urlIDs`.
+// Если список пуст, функция завершает выполнение без действий. Обновления выполняются в транзакции.
+// В случае ошибки все изменения откатываются.
+//
+// Параметры:
+// - ctx: контекст выполнения запроса.
+// - urlIDs: список URL-идентификаторов для удаления.
+//
+// Возвращаемые значения:
+// - error: ошибка, если она произошла в процессе выполнения запроса.
 func (s *PostgreSQL) DeleteURLs(ctx context.Context, urlIDs []string) error {
 	if len(urlIDs) == 0 {
 		return nil // Если список пуст, ничего не делаем
@@ -53,7 +64,7 @@ func (s *PostgreSQL) DeleteURLs(ctx context.Context, urlIDs []string) error {
 		batchSizeCounter++
 	}
 
-	// Сохрвняем оставшиеся данные
+	// Сохраняем оставшиеся данные
 	if batchSizeCounter != 0 {
 		// Выполняем batch
 		br := tx.SendBatch(ctx, batch)
@@ -67,6 +78,7 @@ func (s *PostgreSQL) DeleteURLs(ctx context.Context, urlIDs []string) error {
 			return fmt.Errorf("failed to delete URLs in batch: %w", err)
 		}
 	}
+
 	// Фиксируем транзакцию
 	err = tx.Commit(ctx)
 	if err != nil {

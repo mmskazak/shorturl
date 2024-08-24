@@ -15,6 +15,7 @@ import (
 
 const filePermissions = 0o644 // Константа для прав доступа к файлу
 
+// InFile - структура для реализации хранилища в файле.
 type InFile struct {
 	InMe     *inmemory.InMemory
 	zapLog   *zap.SugaredLogger
@@ -29,7 +30,20 @@ type shortURLStruct struct {
 	Deleted     bool   `json:"deleted"`
 }
 
-// NewInFile - конструктор для создания нового хранилища с поддержкой работы с файлом.
+// NewInFile создает новый объект InFile, инициализируя хранилище с поддержкой работы с файлом.
+//
+// Аргументы:
+//   - ctx: Контекст выполнения, который может использоваться для управления временем жизни запроса и отмены.
+//   - cfg: Конфигурация, содержащая путь к файлу для хранения данных.
+//   - zapLog: Логгер для ведения логов.
+//
+// Возвращает:
+//   - *InFile: Указатель на созданный объект InFile.
+//   - error: Ошибка, если она произошла при создании объекта InFile.
+//
+// Примечание:
+// Функция сначала создает хранилище в памяти с помощью inmemory.NewInMemory, а затем читает данные из файла,
+// если он существует.
 func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*InFile, error) {
 	inm, err := inmemory.NewInMemory(zapLog)
 	if err != nil {
@@ -49,7 +63,17 @@ func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogge
 	return ms, nil
 }
 
-// parseShortURLStruct - вспомогательная функция для парсинга строки JSON в структуру shortURLStruct.
+// parseShortURLStruct парсит строку JSON в структуру shortURLStruct.
+//
+// Аргументы:
+//   - line: Строка JSON, представляющая запись данных.
+//
+// Возвращает:
+//   - shortURLStruct: Структура, содержащая данные из JSON.
+//   - error: Ошибка, если произошла ошибка при парсинге JSON.
+//
+// Примечание:
+// Функция используется для преобразования строки JSON в структуру данных для хранения в памяти.
 func parseShortURLStruct(line string) (shortURLStruct, error) {
 	var record shortURLStruct
 	err := json.Unmarshal([]byte(line), &record)
@@ -59,6 +83,17 @@ func parseShortURLStruct(line string) (shortURLStruct, error) {
 	return record, nil
 }
 
+// readFileStorage читает данные из файла и загружает их в хранилище в памяти.
+//
+// Аргументы:
+//   - ctx: Контекст выполнения, который может использоваться для управления временем жизни запроса и отмены.
+//
+// Возвращает:
+//   - error: Ошибка, если произошла ошибка при чтении файла или загрузке данных в память.
+//
+// Примечание:
+// Функция открывает файл, считывает данные построчно,
+// парсит их и добавляет в хранилище в памяти. Если файл не существует, он создается.
 func (m *InFile) readFileStorage(ctx context.Context) error {
 	// Открываем файл с флагами для создания, если он не существует
 	file, err := os.OpenFile(m.filePath, os.O_RDONLY|os.O_CREATE, filePermissions)
@@ -84,7 +119,13 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 		}
 
 		// Добавляем запись в InMemoryStorage
-		if err := m.InMe.SetShortURL(ctx, record.ShortURL, record.OriginalURL, record.UserID, record.Deleted); err != nil {
+		if err := m.InMe.SetShortURL(
+			ctx,
+			record.ShortURL,
+			record.OriginalURL,
+			record.UserID,
+			record.Deleted,
+		); err != nil {
 			return fmt.Errorf("error setting short URL in memory: %w", err)
 		}
 	}
@@ -97,6 +138,11 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 	return nil
 }
 
+// Close завершает работу с хранилищем файла. В текущей реализации закрытие файла не требуется,
+// поэтому функция просто записывает в лог сообщение о закрытии.
+//
+// Возвращает:
+//   - error: Ошибка, если она произошла при попытке завершить работу хранилища.
 func (m *InFile) Close() error {
 	m.zapLog.Debugln("InFile storage closed (nothing to close currently)")
 	return nil

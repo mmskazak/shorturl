@@ -18,35 +18,35 @@ func TestInitWriteToOutput(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "success InitWriteToFile",
+			name: "debug",
 			args: args{
 				level: zapcore.DebugLevel,
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "info level InitWriteToFile",
+			name: "info",
 			args: args{
 				level: zapcore.InfoLevel,
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "warn level InitWriteToFile",
+			name: "warn level",
 			args: args{
 				level: zapcore.WarnLevel,
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "error level InitWriteToFile",
+			name: "error level",
 			args: args{
 				level: zapcore.ErrorLevel,
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "invalid level InitWriteToFile",
+			name: "invalid level",
 			args: args{
 				level: zapcore.Level(-1),
 			},

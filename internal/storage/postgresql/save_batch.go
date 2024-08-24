@@ -16,10 +16,12 @@ import (
 
 const batchSize = 5000
 
-// SaveBatch error:
-// different error
-// ErrKeyAlreadyExists
-// ConflictError (ErrOriginalURLAlreadyExists).
+// SaveBatch сохраняет пакет URL-адресов в базе данных PostgreSQL.
+// Возвращает список сохраненных коротких URL-адресов или ошибку в случае неудачи.
+//
+// Ошибки:
+// - ErrKeyAlreadyExists: короткий URL уже существует
+// - ConflictError: оригинальный URL уже существует.
 func (s *PostgreSQL) SaveBatch(
 	ctx context.Context,
 	items []storage.Incoming,
@@ -58,8 +60,8 @@ func (s *PostgreSQL) SaveBatch(
 		if err != nil {
 			return nil, fmt.Errorf("error generating ID for URL: %w", err)
 		}
-		stmt := "INSERT INTO urls(short_url, original_url, user_id, deleted) " +
-			"VALUES ($1, $2, $3, $4) RETURNING short_url, original_url"
+		stmt := "INSERT INTO urls(short_url, original_url, user_id, deleted) VALUES ($1, $2, $3, $4) " +
+			"RETURNING short_url, original_url"
 		batch.Queue(stmt, idShortURL, item.OriginalURL, userID, false)
 
 		// Если количество запросов в батче достигло предела или это последний элемент,

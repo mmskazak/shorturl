@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// PostgreSQL представляет собой структуру для работы с PostgreSQL.
 type PostgreSQL struct {
 	pool   *pgxpool.Pool
 	zapLog *zap.SugaredLogger
@@ -25,6 +26,8 @@ var embedMigrations embed.FS
 
 const migrationsDir = "migrations"
 
+// NewPostgreSQL инициализирует новое соединение с PostgreSQL, проверяет подключение,
+// запускает миграции и запускает горутину для периодического удаления помеченных записей.
 func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*PostgreSQL, error) {
 	zapLog.Infof("initializing PostgreSQL")
 	pool, err := pgxpool.New(ctx, cfg.DataBaseDSN)
@@ -38,8 +41,7 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredL
 		return nil, fmt.Errorf("failed to ping dbshorturl connection: %w", err)
 	}
 	zapLog.Infof("run migrations")
-	if err := runMigrations(cfg.
-		DataBaseDSN, zapLog); err != nil {
+	if err := runMigrations(cfg.DataBaseDSN, zapLog); err != nil {
 		return nil, fmt.Errorf("failed to run DB migrations: %w", err)
 	}
 
@@ -51,6 +53,7 @@ func NewPostgreSQL(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredL
 	}, nil
 }
 
+// Ping проверяет доступность соединения с PostgreSQL.
 func (s *PostgreSQL) Ping(ctx context.Context) error {
 	err := s.pool.Ping(ctx)
 	if err != nil {
@@ -59,6 +62,7 @@ func (s *PostgreSQL) Ping(ctx context.Context) error {
 	return nil
 }
 
+// Close закрывает пул соединений с PostgreSQL.
 func (s *PostgreSQL) Close() error {
 	if s.pool == nil {
 		return nil
@@ -67,6 +71,7 @@ func (s *PostgreSQL) Close() error {
 	return nil
 }
 
+// runMigrations запускает миграции базы данных из встраиваемой файловой системы.
 func runMigrations(dsn string, zapLog *zap.SugaredLogger) error {
 	zapLog.Infof("Путь к директории миграций: %s", migrationsDir)
 	dir, err := iofs.New(embedMigrations, migrationsDir)

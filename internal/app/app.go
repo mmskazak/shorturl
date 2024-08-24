@@ -4,36 +4,63 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
 	"mmskazak/shorturl/internal/middleware"
 	"mmskazak/shorturl/internal/storage"
-	"net/http"
-	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )
 
+// Pinger определяет интерфейс для проверки состояния хранилища.
 type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
+// URL представляет структуру URL с коротким и оригинальным URL.
 type URL struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
 
+// App представляет приложение с HTTP сервером и логгером.
 type App struct {
 	server *http.Server
 	zapLog *zap.SugaredLogger
 }
 
+// ErrStartingServer - ошибка старта сервера.
 const ErrStartingServer = "error starting server"
 
+// IGenIDForURL представляет интерфейс для генерации идентификаторов для коротких URL.
+type IGenIDForURL interface {
+	Generate() (string, error) // Метод для генерации нового идентификатора.
+}
+
+// ISaveBatch сохранение URLs батчем.
+type ISaveBatch interface {
+	SaveBatch(
+		ctx context.Context,
+		items []storage.Incoming,
+		baseHost string,
+		userID string,
+		generator IGenIDForURL,
+	) ([]storage.Output, error)
+}
+
 // NewApp создает новый экземпляр приложения.
+// Ctx - контекст для управления временем выполнения.
+// Cfg - конфигурация приложения.
+// Store - хранилище данных.
+// ReadTimeout - таймаут чтения HTTP-запросов.
+// WriteTimeout - таймаут записи HTTP-ответов.
+// ZapLog - логгер.
 func NewApp(
 	ctx context.Context,
 	cfg *config.Config,
