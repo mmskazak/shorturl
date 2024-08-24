@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type ResponseWriterDummy struct{}
@@ -97,7 +98,7 @@ func TestLoggingRequestMiddleware(t *testing.T) {
 	handler := LoggingRequestMiddleware(next, zapLog)
 
 	// Создаем mock-запрос
-	req := httptest.NewRequest("GET", "/", nil)
+	req := httptest.NewRequest("GET", "/", http.NoBody)
 	w := httptest.NewRecorder()
 
 	// Выполняем запрос через созданный handler

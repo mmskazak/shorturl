@@ -1,9 +1,10 @@
 package config
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zapcore"
-	"testing"
 )
 
 func TestLogLevel_Value(t *testing.T) {

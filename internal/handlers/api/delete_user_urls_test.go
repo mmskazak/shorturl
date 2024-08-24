@@ -3,9 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/contracts/mocks"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
@@ -13,6 +10,10 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestDeleteUserURLs_Success(t *testing.T) {
