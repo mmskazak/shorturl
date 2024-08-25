@@ -1,8 +1,9 @@
 package inmemory
 
 import (
-	"mmskazak/shorturl/internal/models"
 	"sync"
+
+	"mmskazak/shorturl/internal/models"
 
 	"go.uber.org/zap"
 )

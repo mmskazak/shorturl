@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"mmskazak/shorturl/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"mmskazak/shorturl/internal/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

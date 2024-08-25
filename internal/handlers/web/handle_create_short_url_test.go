@@ -2,12 +2,13 @@ package web
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/contracts/mocks"
-	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts/mocks"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"

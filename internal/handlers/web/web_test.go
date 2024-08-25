@@ -3,17 +3,21 @@ package web
 import (
 	"context"
 	"errors"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap/zaptest"
-	"mmskazak/shorturl/internal/contracts/mocks"
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
-	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/contracts/mocks"
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
+	"mmskazak/shorturl/internal/services/shorturlservice"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestHandleCreateShortURL_ErrConflict(t *testing.T) {
@@ -84,4 +88,42 @@ func TestHandleCreateShortURL_ErrGenerateShortURL(t *testing.T) {
 
 	// Проверка кода ответа
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestPingPostgreSQL(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+
+	pinger := mocks.NewMockPinger(ctrl)
+
+	type args struct {
+		w      http.ResponseWriter
+		req    *http.Request
+		data   contracts.Pinger
+		zapLog *zap.SugaredLogger
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "test 1",
+			args: args{
+				w:      httptest.NewRecorder(),
+				req:    httptest.NewRequest(http.MethodPost, "/", http.NoBody),
+				data:   pinger,
+				zapLog: zap.NewNop().Sugar(),
+			},
+		},
+	}
+	for _, tt := range tests {
+		if tt.name == "test 1" {
+			pinger.EXPECT().Ping(ctx)
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			PingPostgreSQL(ctx, tt.args.w, tt.args.req, tt.args.data, tt.args.zapLog)
+		})
+	}
 }

@@ -2,12 +2,13 @@ package inmemory
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/contracts"
-	"mmskazak/shorturl/internal/contracts/mocks"
-	"mmskazak/shorturl/internal/models"
 	"reflect"
 	"sync"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/contracts/mocks"
+	"mmskazak/shorturl/internal/models"
 
 	"github.com/golang/mock/gomock"
 	"go.uber.org/zap"

@@ -3,13 +3,14 @@ package api
 import (
 	"context"
 	"errors"
-	"mmskazak/shorturl/internal/contracts/mocks"
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts/mocks"
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

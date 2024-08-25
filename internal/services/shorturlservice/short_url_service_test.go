@@ -3,8 +3,10 @@ package shorturlservice
 import (
 	"context"
 	"errors"
-	"mmskazak/shorturl/internal/contracts/mocks"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts/mocks"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"mmskazak/shorturl/internal/dtos"
 
@@ -148,18 +150,7 @@ func TestShortURLService_GenerateShortURL_ErrBaseHost(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// ConflictError должен реализовывать интерфейс error.
-type ConflictError struct {
-	Err      error
-	ShortURL string
-}
-
-func (e ConflictError) Error() string {
-	return e.Err.Error()
-}
-
-func TestShortURLService_GenerateShortURL_ErrConflictError(t *testing.T) {
-	// Создание нового контроллера
+func TestShortURLService_GenerateShortURL_ErrConflict(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -179,19 +170,23 @@ func TestShortURLService_GenerateShortURL_ErrConflictError(t *testing.T) {
 		Deleted:     false,
 	}
 
-	conflictError := ConflictError{
-		Err:      errors.New("test error set_short_url"),
-		ShortURL: "expectedID",
+	// Оригинальная ошибка
+	originalErr := errors.New("test error set_short_url")
+
+	// Создание объекта ConflictError
+	conflictErr := storageErrors.ConflictError{
+		Err:      originalErr,
+		ShortURL: "exampleX",
 	}
 
 	// Настройка ожиданий
-	generator.EXPECT().Generate().Return("expectedID", nil).Times(2)
+	generator.EXPECT().Generate().Return("expectedID", nil).Times(1)
 	data.EXPECT().SetShortURL(ctx,
 		"expectedID",
 		dto.OriginalURL,
 		dto.UserID,
 		false).
-		Return(conflictError).Times(2)
+		Return(conflictErr).Times(1)
 
 	// Вызов тестируемого метода
 	_, err := s.GenerateShortURL(ctx, dto, generator, data)

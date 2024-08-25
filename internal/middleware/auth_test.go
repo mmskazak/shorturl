@@ -3,12 +3,13 @@ package middleware
 import (
 	"encoding/base64"
 	"encoding/json"
-	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/ctxkeys"
+	"mmskazak/shorturl/internal/services/jwtbuilder"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
