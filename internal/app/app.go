@@ -73,7 +73,7 @@ func NewApp(
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		web.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog)
+		web.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
 	})
 
 	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {

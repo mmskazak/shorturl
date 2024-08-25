@@ -30,6 +30,7 @@ func HandleCreateShortURL(
 	data contracts.ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
+	shortURLService contracts.IShortURLService,
 ) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
@@ -55,7 +56,6 @@ func HandleCreateShortURL(
 
 	originalURL := string(body)
 	generator := genidurl.NewGenIDService()
-	shortURLService := shorturlservice.NewShortURLService()
 	dto := dtos.DTOShortURL{
 		UserID:      userID,
 		OriginalURL: originalURL,

@@ -3,13 +3,12 @@ package shorturlservice
 import (
 	"context"
 	"errors"
+	"mmskazak/shorturl/internal/contracts/mocks"
 	"testing"
 
 	"mmskazak/shorturl/internal/dtos"
 
 	"github.com/stretchr/testify/assert"
-
-	"mmskazak/shorturl/internal/services/shorturlservice/mocks"
 
 	"github.com/golang/mock/gomock"
 )
