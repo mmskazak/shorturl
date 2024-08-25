@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"net/http"
 	"net/http/httptest"
@@ -85,22 +84,7 @@ func TestAuthMiddleware(t *testing.T) {
 
 	// Создаем HTTP тестовый сервер с применением middleware
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Получаем payloadString из контекста
-		payload := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
-
-		// Сначала кодируем структуру в JSON
-		jsonData, err := json.Marshal(payload)
-		require.NoError(t, err)
-
-		// Устанавливаем заголовок Content-Type для ответа
-		w.Header().Set("Content-Type", "application/json")
-
-		// Устанавливаем статус ответа
 		w.WriteHeader(http.StatusOK)
-
-		// Записываем JSON в тело ответа
-		_, err = w.Write(jsonData)
-		require.NoError(t, err)
 	})
 
 	rr := httptest.NewRecorder()
