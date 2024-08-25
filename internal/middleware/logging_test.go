@@ -98,7 +98,7 @@ func TestLoggingRequestMiddleware(t *testing.T) {
 	handler := LoggingRequestMiddleware(next, zapLog)
 
 	// Создаем mock-запрос
-	req := httptest.NewRequest("GET", "/", http.NoBody)
+	req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	w := httptest.NewRecorder()
 
 	// Выполняем запрос через созданный handler
