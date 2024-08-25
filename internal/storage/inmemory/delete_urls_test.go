@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/models"
 	"sync"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
@@ -31,7 +32,7 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 			name: "some URLs do not exist",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: false},
 				},
 				userIndex: make(map[string][]string),
@@ -46,7 +47,7 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 			name: "empty list of URLs",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},
@@ -59,7 +60,7 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 			name: "all URLs are already deleted",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: true},
 					"short2": {ShortURL: "short2", OriginalURL: "http://example2.com", UserID: "user1", Deleted: true},
 				},

@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/models"
 	"sync"
 	"testing"
 
@@ -13,7 +14,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
@@ -31,7 +32,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 			name: "successful retrieval",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: false},
 				},
 				userIndex: make(map[string][]string),
@@ -48,7 +49,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 			name: "URL not found",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},
@@ -62,7 +63,7 @@ func TestInMemory_GetShortURL(t *testing.T) {
 			name: "URL is deleted",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: true},
 				},
 				userIndex: make(map[string][]string),

@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/models"
 	"sync"
 	"testing"
 
@@ -13,7 +14,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
@@ -30,7 +31,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 			name: "successful deletion",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: false},
 				},
 				userIndex: make(map[string][]string),
@@ -58,7 +59,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 			name: "repeated deletion",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: true},
 				},
 				userIndex: make(map[string][]string),

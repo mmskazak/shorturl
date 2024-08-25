@@ -46,7 +46,7 @@ func TestInMemory_SaveBatch(t *testing.T) {
 
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
@@ -67,7 +67,7 @@ func TestInMemory_SaveBatch(t *testing.T) {
 			name: "test 1",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},
@@ -84,7 +84,7 @@ func TestInMemory_SaveBatch(t *testing.T) {
 			name: "test 2",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},
@@ -101,7 +101,7 @@ func TestInMemory_SaveBatch(t *testing.T) {
 			name: "test 3",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},

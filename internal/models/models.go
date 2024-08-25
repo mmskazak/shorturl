@@ -33,3 +33,11 @@ type JSONRequest struct {
 type JSONResponse struct {
 	ShortURL string `json:"result"`
 }
+
+// URLRecord - структура для хранения URL с дополнительной информацией.
+type URLRecord struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"` // Оригинальный URL
+	UserID      string `json:"user_id"`      // Идентификатор пользователя
+	Deleted     bool   `json:"deleted"`      // Флаг, указывающий на удаление URL
+}

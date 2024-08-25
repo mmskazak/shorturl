@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/models"
 
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
@@ -30,7 +31,7 @@ func (m *InMemory) SetShortURL(_ context.Context, id string, originalURL string,
 	}
 
 	// Добавление записи.
-	m.data[id] = URLRecord{
+	m.data[id] = models.URLRecord{
 		OriginalURL: originalURL,
 		UserID:      userID,
 		Deleted:     deleted,
