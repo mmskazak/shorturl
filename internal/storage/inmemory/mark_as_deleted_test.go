@@ -46,7 +46,7 @@ func TestInMemory_MarkURLAsDeleted(t *testing.T) {
 			name: "URL not found",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord), // Пустое хранилище
+				data:      make(map[string]models.URLRecord), // Пустое хранилище
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},
