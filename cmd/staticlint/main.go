@@ -3,6 +3,10 @@ package staticlint
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"mmskazak/shorturl/cmd/staticlint/noosexit"
+	"os"
+
 	"github.com/alexkohler/nakedret"
 	"github.com/kisielk/errcheck/errcheck"
 	"golang.org/x/tools/go/analysis"
@@ -22,12 +26,9 @@ import (
 	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
 	"honnef.co/go/tools/stylecheck"
-	"log"
-	"mmskazak/shorturl/cmd/staticlint/noosexit"
-	"os"
 )
 
-// Допустимое количество строк в функции для возврата голого ответа
+// Допустимое количество строк в функции для возврата голого ответа.
 const countLinesNakedFunc = 25
 
 func main() {
@@ -48,7 +49,7 @@ func main() {
 	}
 
 	// определяем map подключаемых правил
-	//checks := map[string]bool{
+	// checks := map[string]bool{
 	//	"S1001":  true,
 	//	"ST1001": true,
 	//	"QF1002": true,
@@ -104,7 +105,7 @@ type Config struct {
 	Checks map[string]bool `json:"checks"`
 }
 
-// Считываем конфигурацию из файла
+// Считываем конфигурацию из файла.
 func loadConfig(path string) (map[string]bool, error) {
 	file, err := os.Open(path)
 	if err != nil {
