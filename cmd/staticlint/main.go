@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
+	"os"
+
+	"mmskazak/shorturl/cmd/staticlint/noosexit"
+
 	"github.com/alexkohler/nakedret"
 	"github.com/kisielk/errcheck/errcheck"
 	"golang.org/x/tools/go/analysis"
@@ -23,9 +28,6 @@ import (
 	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
 	"honnef.co/go/tools/stylecheck"
-	"log"
-	"mmskazak/shorturl/cmd/staticlint/noosexit"
-	"os"
 )
 
 // Допустимое количество строк в функции для возврата голого ответа.
@@ -86,29 +88,30 @@ func main() {
 		}
 	}
 
-	// Добавим внешний анализатор 1
-	analyzers = append(analyzers, errcheck.Analyzer)
+	// Добавим проверки statistic check
+	analyzers = append(analyzers, myChecks...)
 
-	// Добавим внешний анализатор 2 (проверка на голые возвраты)
-	analyzers = append(analyzers, nakedret.NakedReturnAnalyzer(countLinesNakedFunc))
-
-	// Добавим собственный анализатор
-	analyzers = append(analyzers, noosexit.Analyzer)
+	// Добавим внешний анализатор 1,2
+	analyzers = append(
+		analyzers, errcheck.Analyzer,
+		nakedret.NakedReturnAnalyzer(countLinesNakedFunc),
+		noosexit.Analyzer,
+	)
 
 	// Выполним проверку целевой директории
 	multichecker.Main(analyzers...)
 }
 
-// Config список проверок по honnef.co/go/tools
+// Config список проверок по honnef.co/go/tools.
 type Config struct {
 	Checks map[string]bool `json:"checks"`
 }
 
-// Считываем конфигурацию из файла
+// Считываем конфигурацию из файла.
 func loadConfig(path string) (map[string]bool, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("не удалось открыть файл конфигурации: %v", err)
+		return nil, fmt.Errorf("не удалось открыть файл конфигурации: %w", err)
 	}
 	defer func(file *os.File) {
 		err := file.Close()
@@ -120,7 +123,7 @@ func loadConfig(path string) (map[string]bool, error) {
 	var config Config
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&config); err != nil {
-		return nil, fmt.Errorf("не удалось декодировать файл конфигурации: %v", err)
+		return nil, fmt.Errorf("не удалось декодировать файл конфигурации: %w", err)
 	}
 
 	return config.Checks, nil
