@@ -34,7 +34,6 @@ const countLinesNakedFunc = 25
 func main() {
 	// Определяем флаги командной строки
 	configPath := flag.String("config", "staticlint.json", "путь к файлу конфигурации")
-	targetDir := flag.String("target", ".", "путь к директории для проверки")
 	flag.Parse()
 
 	// Загружаем конфигурацию
@@ -97,7 +96,6 @@ func main() {
 	analyzers = append(analyzers, noosexit.Analyzer)
 
 	// Выполним проверку целевой директории
-	fmt.Printf("Проверка директории: %s\n", *targetDir)
 	multichecker.Main(analyzers...)
 }
 
