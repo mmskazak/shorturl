@@ -2,11 +2,8 @@ package staticlint
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
-	"log"
-	"mmskazak/shorturl/cmd/staticlint/noosexit"
-	"os"
-
 	"github.com/alexkohler/nakedret"
 	"github.com/kisielk/errcheck/errcheck"
 	"golang.org/x/tools/go/analysis"
@@ -26,12 +23,27 @@ import (
 	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
 	"honnef.co/go/tools/stylecheck"
+	"log"
+	"mmskazak/shorturl/cmd/staticlint/noosexit"
+	"os"
 )
 
 // Допустимое количество строк в функции для возврата голого ответа.
 const countLinesNakedFunc = 25
 
 func main() {
+	// Определяем флаги командной строки
+	configPath := flag.String("config", "staticlint.json", "путь к файлу конфигурации")
+	targetDir := flag.String("target", ".", "путь к директории для проверки")
+	flag.Parse()
+
+	// Загружаем конфигурацию
+	checks, err := loadConfig(*configPath)
+	if err != nil {
+		fmt.Println("Ошибка загрузки конфигурации:", err)
+		return
+	}
+
 	// Соберем все стандартные анализаторы
 	analyzers := []*analysis.Analyzer{
 		buildtag.Analyzer,
@@ -46,20 +58,6 @@ func main() {
 		structtag.Analyzer,
 		testinggoroutine.Analyzer,
 		// ...другие анализаторы по необходимости
-	}
-
-	// определяем map подключаемых правил
-	// checks := map[string]bool{
-	//	"S1001":  true,
-	//	"ST1001": true,
-	//	"QF1002": true,
-	//}
-
-	// Загружаем конфигурацию
-	checks, err := loadConfig("config.json")
-	if err != nil {
-		fmt.Println("Ошибка загрузки конфигурации:", err)
-		return
 	}
 
 	var myChecks []*analysis.Analyzer
@@ -98,14 +96,17 @@ func main() {
 	// Добавим собственный анализатор
 	analyzers = append(analyzers, noosexit.Analyzer)
 
+	// Выполним проверку целевой директории
+	fmt.Printf("Проверка директории: %s\n", *targetDir)
 	multichecker.Main(analyzers...)
 }
 
+// Config список проверок по honnef.co/go/tools
 type Config struct {
 	Checks map[string]bool `json:"checks"`
 }
 
-// Считываем конфигурацию из файла.
+// Считываем конфигурацию из файла
 func loadConfig(path string) (map[string]bool, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -114,7 +115,7 @@ func loadConfig(path string) (map[string]bool, error) {
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			log.Printf("Error file config not close: %v", err)
+			log.Printf("Error close config file: %v", err)
 		}
 	}(file)
 
