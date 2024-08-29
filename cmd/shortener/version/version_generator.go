@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
@@ -16,7 +17,7 @@ func main() {
 	if buildCommit == "" {
 		buildCommit = "N/A"
 	}
-	buildDate := time.Now().Format("2006-01-02 15:04:05")
+	buildDate := time.Now().Format(time.DateTime)
 
 	code := fmt.Sprintf(`package main
 
@@ -32,7 +33,12 @@ var (
 		fmt.Println("Error creating file:", err)
 		return
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Println("Error closing file version.go")
+		}
+	}(file)
 
 	_, err = file.WriteString(code)
 	if err != nil {
