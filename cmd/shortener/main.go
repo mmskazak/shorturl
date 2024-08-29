@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -16,6 +17,8 @@ import (
 )
 
 // main инициализирует конфигурацию, логгер, хранилище и запускает приложение.
+//
+//go:generate go run version/version_generator.go
 func main() {
 	// Запуск pprof для профилирования производительности.
 	go func() {
@@ -66,6 +69,10 @@ func main() {
 		zapLog,
 		shortURLService,
 	)
+
+	fmt.Printf("Build version: %s\n", BuildVersion)
+	fmt.Printf("Build date: %s\n", BuildDate)
+	fmt.Printf("Build commit: %s\n", BuildCommit)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)
