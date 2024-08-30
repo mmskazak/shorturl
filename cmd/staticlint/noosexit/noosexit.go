@@ -16,6 +16,7 @@ var Analyzer = &analysis.Analyzer{
 // Run функция запускает анализ.
 func run(pass *analysis.Pass) (interface{}, error) {
 	if pass.Pkg.Name() != "main" {
+		//nolint:nilnil //для этой функции в нашем случае допустима
 		return nil, nil
 	}
 
@@ -45,5 +46,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		}
 	}
 
+	//nolint:nilnil //для этой функции в нашем случае допустима
 	return nil, nil
 }
