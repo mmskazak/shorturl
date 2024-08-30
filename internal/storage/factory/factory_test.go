@@ -15,10 +15,10 @@ import (
 
 func TestNewStorage(t *testing.T) {
 	tests := []struct {
-		name    string
 		cfg     *config.Config
-		wantErr bool
 		want    contracts.Storage
+		name    string
+		wantErr bool
 	}{
 		{
 			name: "InMemory storage",

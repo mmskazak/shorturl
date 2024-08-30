@@ -2,12 +2,11 @@ package app
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/contracts"
 	"testing"
 	"time"
 
 	"mmskazak/shorturl/internal/services/shorturlservice"
-
-	"mmskazak/shorturl/internal/contracts"
 
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/storage/inmemory"
@@ -18,17 +17,17 @@ import (
 func TestNewApp(t *testing.T) {
 	ctx := context.Background()
 	type args struct {
-		readTimeout     time.Duration              // 8 байт
-		writeTimeout    time.Duration              // 8 байт
 		store           contracts.Storage          // Зависит от реализации
 		shortURLService contracts.IShortURLService // Зависит от реализации
 		zapLog          *zap.SugaredLogger         // 8 байт
 		cfg             *config.Config             // 8 байт
+		readTimeout     time.Duration              // 8 байт
+		writeTimeout    time.Duration              // 8 байт
 	}
 	tests := []struct {
+		want *App
 		name string
 		args args
-		want *App
 	}{
 		{
 			name: "test 1",

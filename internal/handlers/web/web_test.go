@@ -105,8 +105,8 @@ func TestPingPostgreSQL(t *testing.T) {
 		zapLog *zap.SugaredLogger
 	}
 	tests := []struct {
-		name string
 		args args
+		name string
 	}{
 		{
 			name: "test 1",

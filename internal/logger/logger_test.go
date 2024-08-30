@@ -13,9 +13,9 @@ func TestInitWriteToOutput(t *testing.T) {
 		level zapcore.Level
 	}
 	tests := []struct {
+		wantErr assert.ErrorAssertionFunc
 		name    string
 		args    args
-		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "debug",

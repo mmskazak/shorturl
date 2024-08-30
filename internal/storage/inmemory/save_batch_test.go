@@ -52,10 +52,10 @@ func TestInMemory_SaveBatch(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	type args struct {
-		items     []models.Incoming
 		baseHost  string
 		userID    string
 		generator contracts.IGenIDForURL
+		items     []models.Incoming
 	}
 	tests := []struct {
 		name    string

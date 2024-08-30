@@ -73,9 +73,9 @@ func TestInMemory_GetCopyData(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	tests := []struct {
-		name   string
 		fields fields
 		want   map[string]models.URLRecord
+		name   string
 	}{
 		{
 			name: "empty data",
@@ -130,8 +130,8 @@ func TestInMemory_NumberOfEntries(t *testing.T) {
 		zapLog    *zap.SugaredLogger
 	}
 	tests := []struct {
-		name   string
 		fields fields
+		name   string
 		want   int
 	}{
 		{
