@@ -18,7 +18,7 @@ import (
 
 // main инициализирует конфигурацию, логгер, хранилище и запускает приложение.
 //
-//go:generate go run version/version_generator.go
+//go:generate go run ./../version/main.go
 func main() {
 	// Инициализация конфигурации.
 	cfg, err := config.InitConfig()
