@@ -2,10 +2,11 @@ package config
 
 import (
 	"flag"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zapcore"
@@ -43,18 +44,21 @@ func TestLogLevel_Value(t *testing.T) {
 	}
 }
 
-// Сброс всех флагов, в том числе от пакета testing
+// Сброс всех флагов, в том числе от пакета testing.
 func resetFlags() {
+	//nolint:reassign // переопределение флагов оправдано для тестов
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }
 
-// Инициализация конфига с флагами
+// Инициализация конфига с флагами.
 func TestInitConfigWithFlags(t *testing.T) {
 	// Сбрасываем флаги перед запуском теста.
 	resetFlags()
 
 	// Устанавливаем флаги как если бы они были переданы через командную строку.
-	os.Args = []string{"cmd", "-a", ":9090", "-b", "http://example.com", "-r", "5s", "-w", "5s", "-l", "debug", "-f", "/tmp/test-db.json", "-d", "postgres://user:password@localhost/db", "-secret", "newsecret"}
+	//nolint:reassign // переопределение флагов оправдано для тестов
+	os.Args = []string{"cmd", "-a", ":9090", "-b", "http://example.com", "-r", "5s", "-w", "5s", "-l", "debug",
+		"-f", "/tmp/test-db.json", "-d", "postgres://user:password@localhost/db", "-secret", "newsecret"}
 
 	// Инициализируем конфигурацию.
 	config, err := InitConfig()
@@ -131,6 +135,8 @@ func TestInitConfigWithEnvVars(t *testing.T) {
 }
 
 func verifyConfig(t *testing.T, config *Config) {
+	t.Helper() // Указывает, что это вспомогательная функция
+
 	if config.Address != ":7070" {
 		t.Errorf("Expected Address ':7070', got '%s'", config.Address)
 	}
