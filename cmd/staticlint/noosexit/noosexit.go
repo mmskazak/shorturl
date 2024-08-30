@@ -1,7 +1,6 @@
 package noosexit
 
 import (
-	"fmt"
 	"go/ast"
 
 	"golang.org/x/tools/go/analysis"
@@ -16,10 +15,8 @@ var Analyzer = &analysis.Analyzer{
 
 // Run функция запускает анализ.
 func run(pass *analysis.Pass) (interface{}, error) {
-	var issues []string
-
 	if pass.Pkg.Name() != "main" {
-		return issues, nil
+		return nil, nil
 	}
 
 	for _, file := range pass.Files {
@@ -40,8 +37,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				if ok {
 					ident, ok := sel.X.(*ast.Ident)
 					if ok && ident.Name == "os" && sel.Sel.Name == "Exit" {
-						issue := fmt.Sprintf("Direct call to os.Exit found at position %d", call.Pos())
-						issues = append(issues, issue)
 						pass.Reportf(call.Pos(), "direct call to os.Exit is not allowed in main package")
 					}
 				}
@@ -50,5 +45,5 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		}
 	}
 
-	return issues, nil // Возвращаем список найденных проблем
+	return nil, nil
 }
