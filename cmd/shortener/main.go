@@ -20,11 +20,6 @@ import (
 //
 //go:generate go run version/version_generator.go
 func main() {
-	// Запуск pprof для профилирования производительности.
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	// Инициализация конфигурации.
 	cfg, err := config.InitConfig()
 	if err != nil {
