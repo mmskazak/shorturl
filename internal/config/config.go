@@ -116,7 +116,7 @@ func InitConfig() (*Config, error) {
 		if err != nil {
 			log.Printf("env WRITE_TIMEOUT не получилось привести к типу \"Duration\": %v", err)
 		} else {
-			config.ReadTimeout = dwt
+			config.WriteTimeout = dwt
 		}
 	}
 
@@ -133,7 +133,7 @@ func InitConfig() (*Config, error) {
 	}
 
 	if secretKey, ok := os.LookupEnv("SECRET_KEY"); ok {
-		config.DataBaseDSN = secretKey
+		config.SecretKey = secretKey
 	}
 
 	if err := config.validate(); err != nil {
