@@ -44,9 +44,8 @@ func TestLogLevel_Value(t *testing.T) {
 }
 
 // Сброс всех флагов, в том числе от пакета testing
-func resetFlags() *flag.FlagSet {
-	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
-	return fs
+func resetFlags() {
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }
 
 // Инициализация конфига с флагами
