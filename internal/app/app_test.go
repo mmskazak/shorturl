@@ -18,12 +18,12 @@ import (
 func TestNewApp(t *testing.T) {
 	ctx := context.Background()
 	type args struct {
-		cfg             *config.Config
-		store           contracts.Storage
-		readTimeout     time.Duration
-		writeTimeout    time.Duration
-		zapLog          *zap.SugaredLogger
-		shortURLService contracts.IShortURLService
+		readTimeout     time.Duration              // 8 байт
+		writeTimeout    time.Duration              // 8 байт
+		store           contracts.Storage          // Зависит от реализации
+		shortURLService contracts.IShortURLService // Зависит от реализации
+		zapLog          *zap.SugaredLogger         // 8 байт
+		cfg             *config.Config             // 8 байт
 	}
 	tests := []struct {
 		name string
