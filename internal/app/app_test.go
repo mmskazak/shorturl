@@ -2,9 +2,10 @@ package app
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/contracts"
 	"testing"
 	"time"
+
+	"mmskazak/shorturl/internal/contracts"
 
 	"mmskazak/shorturl/internal/services/shorturlservice"
 
