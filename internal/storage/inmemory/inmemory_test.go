@@ -19,14 +19,14 @@ func TestNewInMemory(t *testing.T) {
 	zaplogSugar := zaptest.NewLogger(t).Sugar()
 
 	tests := []struct {
-		name    string
-		args    args
+		args    *args
 		want    *InMemory
+		name    string
 		wantErr bool
 	}{
 		{
 			name: "test 1",
-			args: args{
+			args: &args{
 				zapLog: zaplogSugar,
 			},
 			want: &InMemory{
@@ -39,7 +39,7 @@ func TestNewInMemory(t *testing.T) {
 		},
 		{
 			name: "test 2",
-			args: args{
+			args: &args{
 				zapLog: nil,
 			},
 			want: &InMemory{
