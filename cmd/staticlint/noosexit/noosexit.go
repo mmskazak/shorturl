@@ -34,13 +34,13 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				}
 
 				// Проверяем что это вызов os. Exit
-				sel, ok := call.Fun.(*ast.SelectorExpr)
-				if ok {
+				if sel, ok := call.Fun.(*ast.SelectorExpr); ok {
 					ident, ok := sel.X.(*ast.Ident)
 					if ok && ident.Name == "os" && sel.Sel.Name == "Exit" {
 						pass.Reportf(call.Pos(), "direct call to os.Exit is not allowed in main package")
 					}
 				}
+
 				return true
 			})
 		}

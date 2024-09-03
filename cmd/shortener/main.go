@@ -64,9 +64,9 @@ func main() {
 		shortURLService,
 	)
 
-	zapLog.Infof("Build version: %s\n", BuildVersion)
-	zapLog.Infof("Build date: %s\n", BuildDate)
-	zapLog.Infof("Build commit: %s\n", BuildCommit)
+	zapLog.Infof("Build version: %s\n", buildVersion)
+	zapLog.Infof("Build date: %s\n", buildDate)
+	zapLog.Infof("Build commit: %s\n", buildCommit)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)

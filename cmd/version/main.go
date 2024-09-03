@@ -30,18 +30,18 @@ var (
 
 	file, err := os.Create("version_gen.go")
 	if err != nil {
-		fmt.Println("Error creating file:", err)
+		log.Printf("Error creating file: %v \n", err)
 		return
 	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			log.Println("Error closing file version.go")
+			log.Printf("Error closing file version.go: %v \n", err)
 		}
 	}(file)
 
 	_, err = file.WriteString(code)
 	if err != nil {
-		fmt.Println("Error writing to file:", err)
+		log.Printf("Error writing to file: %v \n", err)
 	}
 }
