@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -65,9 +64,9 @@ func main() {
 		shortURLService,
 	)
 
-	fmt.Printf("Build version: %s\n", BuildVersion)
-	fmt.Printf("Build date: %s\n", BuildDate)
-	fmt.Printf("Build commit: %s\n", BuildCommit)
+	zapLog.Infof("Build version: %s\n", BuildVersion)
+	zapLog.Infof("Build date: %s\n", BuildDate)
+	zapLog.Infof("Build commit: %s\n", BuildCommit)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)
