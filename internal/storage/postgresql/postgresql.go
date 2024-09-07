@@ -5,8 +5,8 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-
 	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/storage/postgresql/interfaces"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,7 +17,7 @@ import (
 
 // PostgreSQL представляет собой структуру для работы с PostgreSQL.
 type PostgreSQL struct {
-	pool   *pgxpool.Pool
+	pool   interfaces.Database
 	zapLog *zap.SugaredLogger
 }
 
