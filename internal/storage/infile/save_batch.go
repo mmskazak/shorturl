@@ -3,7 +3,8 @@ package infile
 import (
 	"context"
 
-	"mmskazak/shorturl/internal/storage"
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/models"
 )
 
 // SaveBatch сохраняет пакет входящих данных в хранилище и обновляет файл хранения.
@@ -24,11 +25,11 @@ import (
 // Если при сохранении данных в памяти возникает ошибка, она возвращается без оборачивания.
 func (m *InFile) SaveBatch(
 	ctx context.Context,
-	items []storage.Incoming,
+	items []models.Incoming,
 	baseHost string,
 	userID string,
-	generator storage.IGenIDForURL,
-) ([]storage.Output, error) {
+	generator contracts.IGenIDForURL,
+) ([]models.Output, error) {
 	outputs, err := m.InMe.SaveBatch(ctx, items, baseHost, userID, generator)
 	if err != nil {
 		return nil, err //nolint:wrapcheck // прокидываем оригинальную ошибку

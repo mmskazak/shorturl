@@ -5,6 +5,8 @@ import (
 	"sync"
 	"testing"
 
+	"mmskazak/shorturl/internal/models"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
@@ -17,19 +19,19 @@ func TestNewInMemory(t *testing.T) {
 	zaplogSugar := zaptest.NewLogger(t).Sugar()
 
 	tests := []struct {
-		name    string
-		args    args
+		args    *args
 		want    *InMemory
+		name    string
 		wantErr bool
 	}{
 		{
 			name: "test 1",
-			args: args{
+			args: &args{
 				zapLog: zaplogSugar,
 			},
 			want: &InMemory{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zaplogSugar,
 			},
@@ -37,12 +39,12 @@ func TestNewInMemory(t *testing.T) {
 		},
 		{
 			name: "test 2",
-			args: args{
+			args: &args{
 				zapLog: nil,
 			},
 			want: &InMemory{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    nil,
 			},
@@ -66,37 +68,37 @@ func TestNewInMemory(t *testing.T) {
 func TestInMemory_GetCopyData(t *testing.T) {
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
 	tests := []struct {
-		name   string
 		fields fields
-		want   map[string]URLRecord
+		want   map[string]models.URLRecord
+		name   string
 	}{
 		{
 			name: "empty data",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
-			want: make(map[string]URLRecord),
+			want: make(map[string]models.URLRecord),
 		},
 		{
 			name: "non-empty data",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"1": {ShortURL: "short1", OriginalURL: "original1", UserID: "user1", Deleted: false},
 					"2": {ShortURL: "short2", OriginalURL: "original2", UserID: "user2", Deleted: true},
 				},
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
-			want: map[string]URLRecord{
+			want: map[string]models.URLRecord{
 				"1": {ShortURL: "short1", OriginalURL: "original1", UserID: "user1", Deleted: false},
 				"2": {ShortURL: "short2", OriginalURL: "original2", UserID: "user2", Deleted: true},
 			},
@@ -123,20 +125,20 @@ func TestInMemory_GetCopyData(t *testing.T) {
 func TestInMemory_NumberOfEntries(t *testing.T) {
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
 	tests := []struct {
-		name   string
 		fields fields
+		name   string
 		want   int
 	}{
 		{
 			name: "empty data",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
@@ -146,7 +148,7 @@ func TestInMemory_NumberOfEntries(t *testing.T) {
 			name: "non-empty data",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"1": {ShortURL: "short1", OriginalURL: "original1", UserID: "user1", Deleted: false},
 					"2": {ShortURL: "short2", OriginalURL: "original2", UserID: "user2", Deleted: true},
 					"3": {ShortURL: "short3", OriginalURL: "original3", UserID: "user3", Deleted: false},

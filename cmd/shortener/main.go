@@ -7,6 +7,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	"mmskazak/shorturl/internal/services/shorturlservice"
+
 	"mmskazak/shorturl/internal/app"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/logger"
@@ -14,12 +16,9 @@ import (
 )
 
 // main инициализирует конфигурацию, логгер, хранилище и запускает приложение.
+//
+//go:generate go run ./../version/main.go
 func main() {
-	// Запуск pprof для профилирования производительности.
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	// Инициализация конфигурации.
 	cfg, err := config.InitConfig()
 	if err != nil {
@@ -52,8 +51,22 @@ func main() {
 		}
 	}()
 
+	shortURLService := shorturlservice.NewShortURLService()
+
 	// Создание и запуск приложения.
-	newApp := app.NewApp(ctx, cfg, storage, cfg.ReadTimeout, cfg.WriteTimeout, zapLog)
+	newApp := app.NewApp(
+		ctx,
+		cfg,
+		storage,
+		cfg.ReadTimeout,
+		cfg.WriteTimeout,
+		zapLog,
+		shortURLService,
+	)
+
+	zapLog.Infof("Build version: %s\n", buildVersion)
+	zapLog.Infof("Build date: %s\n", buildDate)
+	zapLog.Infof("Build commit: %s\n", buildCommit)
 
 	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		zapLog.Fatalf("Ошибка сервера: %v", err)

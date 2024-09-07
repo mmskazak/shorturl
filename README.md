@@ -43,3 +43,20 @@ go tool cover -func profile.cov
 
 ##### Посмотреть покрытие в веб-браузере
 go tool cover -html=profile.cov
+
+## Запуск кастомного линтера
+Переходим в папку с линтером.
+``````
+cd .\cmd\staticlint\
+``````
+Запускаем билд линтера.
+``````
+go build -o mylint.exe
+``````
+Копируем сбилженый линт в корень проекта.
+Запускаем линтер.
+``````
+.\mylint.exe -config staticlint.json .\internal\...
+.\mylint.exe -config staticlint.json .\...
+``````
+Файл с конфигурацией есть в папку с линтером, а так же его копия в корне проекта.

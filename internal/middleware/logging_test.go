@@ -3,7 +3,11 @@ package middleware
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type ResponseWriterDummy struct{}
@@ -79,4 +83,27 @@ func Test_loggingResponseWriter_Write(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLoggingRequestMiddleware(t *testing.T) {
+	// Создаем тестовый http.Handler
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// Создаем mock-logger с помощью zap
+	zapLog := zap.NewNop().Sugar() // заменить на вашу реализацию mock-логгера
+
+	// Вызываем функцию LoggingRequestMiddleware
+	handler := LoggingRequestMiddleware(next, zapLog)
+
+	// Создаем mock-запрос
+	req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+	w := httptest.NewRecorder()
+
+	// Выполняем запрос через созданный handler
+	handler.ServeHTTP(w, req)
+
+	// Проверяем код ответа
+	assert.Equal(t, http.StatusOK, w.Code, "status code должен быть 200")
 }

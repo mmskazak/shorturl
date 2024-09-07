@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/url"
 
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/dtos"
+
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 )
 
@@ -19,35 +22,17 @@ var ErrServiceGenerateID = errors.New("generateID failed")
 // Эта ошибка возникает, если попытка сохранить короткий URL не удалась из-за конфликта с уже существующим URL.
 var ErrConflict = errors.New("error original url already exists")
 
-// IGenIDForURL описывает интерфейс для генерации идентификаторов коротких URL.
-type IGenIDForURL interface {
-	Generate() (string, error)
-}
-
-// DTOShortURL представляет данные, необходимые для создания короткого URL.
-type DTOShortURL struct {
-	OriginalURL string // Оригинальный URL
-	UserID      string // Идентификатор пользователя
-	BaseHost    string // Базовый хост для формирования короткого URL
-	Deleted     bool   // Флаг, указывающий, удален ли URL
-}
-
 // ShortURLService предоставляет услуги по созданию и управлению короткими URL.
 type ShortURLService struct {
 	maxIteration int // Максимальное количество попыток генерации короткого URL
 }
 
-// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
-type ISetShortURL interface {
-	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
-}
-
 // GenerateShortURL создает короткий URL, используя данные из DTO и генератор ID.
 func (s *ShortURLService) GenerateShortURL(
 	ctx context.Context,
-	dto DTOShortURL,
-	generator IGenIDForURL,
-	data ISetShortURL,
+	dto dtos.DTOShortURL,
+	generator contracts.IGenIDForURL,
+	data contracts.ISetShortURL,
 ) (string, error) {
 	var err error
 	// Разбираем базовый URL

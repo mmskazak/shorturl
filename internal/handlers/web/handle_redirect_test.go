@@ -7,12 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"mmskazak/shorturl/internal/contracts/mocks"
+
 	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
 	"github.com/go-chi/chi/v5"
 
 	"mmskazak/shorturl/internal/ctxkeys"
-	"mmskazak/shorturl/internal/handlers/web/mocks"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 
 	"github.com/golang/mock/gomock"

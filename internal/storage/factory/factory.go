@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"mmskazak/shorturl/internal/contracts"
+
 	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/infile"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"mmskazak/shorturl/internal/storage/postgresql"
@@ -22,7 +23,7 @@ import (
 // 3. InFile - если указано, но DSN не задан, создается файловое хранилище.
 //
 // Если инициализация хранилища завершается ошибкой, функция возвращает ошибку с пояснением.
-func NewStorage(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (storage.Storage, error) {
+func NewStorage(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (contracts.Storage, error) {
 	switch {
 	// Если задан DSN для базы данных PostgreSQL, создаем и возвращаем соединение с PostgreSQL.
 	case cfg.DataBaseDSN != "":

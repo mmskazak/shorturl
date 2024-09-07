@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"mmskazak/shorturl/internal/contracts"
+
 	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/storage"
 	"mmskazak/shorturl/internal/storage/inmemory"
 
 	"go.uber.org/zap"
@@ -14,10 +15,10 @@ import (
 
 func TestNewStorage(t *testing.T) {
 	tests := []struct {
-		name    string
 		cfg     *config.Config
+		want    contracts.Storage
+		name    string
 		wantErr bool
-		want    storage.Storage
 	}{
 		{
 			name: "InMemory storage",

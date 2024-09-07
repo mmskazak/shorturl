@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/models"
+
 	"github.com/jackc/pgerrcode"
 
 	"mmskazak/shorturl/internal/storage"
@@ -24,17 +27,17 @@ const batchSize = 5000
 // - ConflictError: оригинальный URL уже существует.
 func (s *PostgreSQL) SaveBatch(
 	ctx context.Context,
-	items []storage.Incoming,
+	items []models.Incoming,
 	baseHost string,
 	userID string,
-	generator storage.IGenIDForURL,
-) ([]storage.Output, error) {
+	generator contracts.IGenIDForURL,
+) ([]models.Output, error) {
 	lenItems := len(items)
 	if lenItems == 0 {
 		return nil, errors.New("batch with original URL is empty")
 	}
 
-	outputs := make([]storage.Output, 0, lenItems)
+	outputs := make([]models.Output, 0, lenItems)
 
 	// Начало транзакции
 	tx, err := s.pool.Begin(ctx)
@@ -92,7 +95,7 @@ func (s *PostgreSQL) SaveBatch(
 					return nil, fmt.Errorf("error getting full short URL: %w", err)
 				}
 
-				outputs = append(outputs, storage.Output{
+				outputs = append(outputs, models.Output{
 					CorrelationID: incomingMap[originalURL],
 					ShortURL:      fullShortURL,
 				})

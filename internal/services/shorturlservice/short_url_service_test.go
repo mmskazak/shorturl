@@ -5,9 +5,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"mmskazak/shorturl/internal/contracts/mocks"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
 
-	"mmskazak/shorturl/internal/services/shorturlservice/mocks"
+	"mmskazak/shorturl/internal/dtos"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/golang/mock/gomock"
 )
@@ -26,7 +29,7 @@ func TestShortURLService_GenerateShortURL_Success(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 10,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
@@ -72,7 +75,7 @@ func TestShortURLService_GenerateShortURL_ErrGenerate(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 1,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
@@ -100,7 +103,7 @@ func TestShortURLService_GenerateShortURL_ErrSetShortURL(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 2,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
@@ -135,7 +138,7 @@ func TestShortURLService_GenerateShortURL_ErrBaseHost(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 10,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "рtp://example.com",
@@ -147,18 +150,7 @@ func TestShortURLService_GenerateShortURL_ErrBaseHost(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// ConflictError должен реализовывать интерфейс error.
-type ConflictError struct {
-	Err      error
-	ShortURL string
-}
-
-func (e ConflictError) Error() string {
-	return e.Err.Error()
-}
-
-func TestShortURLService_GenerateShortURL_ErrConflictError(t *testing.T) {
-	// Создание нового контроллера
+func TestShortURLService_GenerateShortURL_ErrConflict(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -171,26 +163,30 @@ func TestShortURLService_GenerateShortURL_ErrConflictError(t *testing.T) {
 	s := &ShortURLService{
 		maxIteration: 2,
 	}
-	dto := DTOShortURL{
+	dto := dtos.DTOShortURL{
 		OriginalURL: "ya.ru",
 		UserID:      "1",
 		BaseHost:    "http://localhost",
 		Deleted:     false,
 	}
 
-	conflictError := ConflictError{
-		Err:      errors.New("test error set_short_url"),
-		ShortURL: "expectedID",
+	// Оригинальная ошибка
+	originalErr := errors.New("test error set_short_url")
+
+	// Создание объекта ConflictError
+	conflictErr := storageErrors.ConflictError{
+		Err:      originalErr,
+		ShortURL: "exampleX",
 	}
 
 	// Настройка ожиданий
-	generator.EXPECT().Generate().Return("expectedID", nil).Times(2)
+	generator.EXPECT().Generate().Return("expectedID", nil).Times(1)
 	data.EXPECT().SetShortURL(ctx,
 		"expectedID",
 		dto.OriginalURL,
 		dto.UserID,
 		false).
-		Return(conflictError).Times(2)
+		Return(conflictErr).Times(1)
 
 	// Вызов тестируемого метода
 	_, err := s.GenerateShortURL(ctx, dto, generator, data)

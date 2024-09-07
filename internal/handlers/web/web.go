@@ -6,6 +6,9 @@ import (
 	"io"
 	"net/http"
 
+	"mmskazak/shorturl/internal/contracts"
+	"mmskazak/shorturl/internal/dtos"
+
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
@@ -17,28 +20,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-//go:generate mockgen -source=web.go -destination=mocks/mock_web.go -package=mocks
-
-// IGenIDForURL определяет интерфейс для генерации идентификаторов URL.
-type IGenIDForURL interface {
-	Generate() (string, error)
-}
-
-// Pinger определяет интерфейс для проверки состояния базы данных.
-type Pinger interface {
-	Ping(ctx context.Context) error
-}
-
-// ISetShortURL устанавливает связь между коротким URL и оригинальным URL, сохраняет в хранилище.
-type ISetShortURL interface {
-	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
-}
-
-// IGetShortURL - получение оригинального URL по короткому идентификатору.
-type IGetShortURL interface {
-	GetShortURL(ctx context.Context, idShortPath string) (string, error)
-}
-
 // HandleCreateShortURL обрабатывает запрос на создание короткого URL.
 // Он извлекает оригинальный URL из тела запроса, генерирует короткий URL и сохраняет его в хранилище.
 // Возвращает HTTP-ответ с созданным коротким URL или ошибку в случае неудачи.
@@ -46,9 +27,10 @@ func HandleCreateShortURL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	data ISetShortURL,
+	data contracts.ISetShortURL,
 	baseHost string,
 	zapLog *zap.SugaredLogger,
+	shortURLService contracts.IShortURLService,
 ) {
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
@@ -74,8 +56,7 @@ func HandleCreateShortURL(
 
 	originalURL := string(body)
 	generator := genidurl.NewGenIDService()
-	shortURLService := shorturlservice.NewShortURLService()
-	dto := shorturlservice.DTOShortURL{
+	dto := dtos.DTOShortURL{
 		UserID:      userID,
 		OriginalURL: originalURL,
 		BaseHost:    baseHost,
@@ -116,7 +97,7 @@ func HandleRedirect(
 	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
-	data IGetShortURL,
+	data contracts.IGetShortURL,
 	zapLog *zap.SugaredLogger,
 ) {
 	// Получение значения id из URL-адреса.
@@ -155,7 +136,7 @@ func PingPostgreSQL(
 	ctx context.Context,
 	w http.ResponseWriter,
 	_ *http.Request,
-	data Pinger,
+	data contracts.Pinger,
 	zapLog *zap.SugaredLogger,
 ) {
 	err := data.Ping(ctx)

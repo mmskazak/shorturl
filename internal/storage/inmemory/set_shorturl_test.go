@@ -5,6 +5,8 @@ import (
 	"sync"
 	"testing"
 
+	"mmskazak/shorturl/internal/models"
+
 	"go.uber.org/zap"
 )
 
@@ -13,7 +15,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
@@ -33,7 +35,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 			name: "empty storage, add new URL",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},
@@ -50,7 +52,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 			name: "err key already exists",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://old.com", UserID: "user1", Deleted: false},
 				},
 				userIndex: map[string][]string{
@@ -70,7 +72,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 			name: "add URL for a new user",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com", UserID: "user1", Deleted: false},
 				},
 				userIndex: map[string][]string{
@@ -90,7 +92,7 @@ func TestInMemory_SetShortURL(t *testing.T) {
 			name: "add deleted URL",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
 			},

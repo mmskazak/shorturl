@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"mmskazak/shorturl/internal/storage"
+	"mmskazak/shorturl/internal/models"
 
 	"go.uber.org/zap"
 )
@@ -16,7 +16,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 
 	type fields struct {
 		mu        *sync.Mutex
-		data      map[string]URLRecord
+		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
@@ -28,14 +28,14 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []storage.URL
+		want    []models.URL
 		wantErr bool
 	}{
 		{
 			name: "empty data",
 			fields: fields{
 				mu:        &sync.Mutex{},
-				data:      make(map[string]URLRecord),
+				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(), // Используем no-op логгер для тестирования
 			},
@@ -51,7 +51,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 			name: "user with URLs",
 			fields: fields{
 				mu: &sync.Mutex{},
-				data: map[string]URLRecord{
+				data: map[string]models.URLRecord{
 					"short1": {ShortURL: "short1", OriginalURL: "http://example.com/1", UserID: "11111", Deleted: false},
 					"short2": {ShortURL: "short2", OriginalURL: "http://example.com/2", UserID: "11111", Deleted: false},
 				},
@@ -64,7 +64,7 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 				userID:   "11111",
 				baseHost: "http://localhost",
 			},
-			want: []storage.URL{
+			want: []models.URL{
 				{OriginalURL: "http://example.com/1", ShortURL: "http://localhost/short1"},
 				{OriginalURL: "http://example.com/2", ShortURL: "http://localhost/short2"},
 			},
@@ -81,10 +81,10 @@ func TestInMemory_GetUserURLs(t *testing.T) {
 			}
 			got, err := m.GetUserURLs(ctx, tt.args.userID, tt.args.baseHost)
 			if got == nil {
-				got = []storage.URL{}
+				got = []models.URL{}
 			}
 			if tt.want == nil {
-				tt.want = []storage.URL{}
+				tt.want = []models.URL{}
 			}
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUserURLs() error = %v, wantErr %v", err, tt.wantErr)
