@@ -42,12 +42,7 @@ func (m *MockRows) Next() bool {
 
 // Scan Реализация метода
 func (m *MockRows) Scan(dest ...interface{}) error {
-	args := m.Called(dest)
-	// Присвоение значений, если они были установлены через вызов Run
-	if len(args) > 1 && args.Get(0) == nil {
-		*(dest[0].(*string)) = args.String(1)
-		*(dest[1].(*string)) = args.String(2)
-	}
+	args := m.Called(dest...)
 	return args.Error(0)
 }
 

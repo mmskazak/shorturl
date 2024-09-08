@@ -46,8 +46,6 @@ func TestPostgreSQL_GetUserURLs_ErrorQuery(t *testing.T) {
 }
 
 func TestPostgreSQL_GetUserURLs(t *testing.T) {
-	t.Skip()
-	// Создаем моки
 	mockPool := new(mocks.MockDatabase)
 	mockTx := new(mocks.MockTx)
 	mockRows := new(mocks.MockRows)
@@ -68,8 +66,10 @@ func TestPostgreSQL_GetUserURLs(t *testing.T) {
 	mockTx.On("Rollback", ctx).Return(nil)
 	mockTx.On("Query", ctx, mock.Anything, []interface{}{userID}).
 		Return(mockRows, nil).Once()
-	mockRows.On("Next").Return(true)
-	mockRows.On("Scan", []interface{}{mock.Anything, mock.Anything}).
+	mockRows.On("Next").Return(true).Once()  // Первый вызов вернет true
+	mockRows.On("Next").Return(false).Once() // Второй вызов вернет false
+	mockRows.On("Err").Return(nil).Once()
+	mockRows.On("Scan", mock.AnythingOfType("*string"), mock.AnythingOfType("*string")).
 		Run(func(args mock.Arguments) {
 			shortURL, ok := args.Get(0).(*string)
 			if ok {
@@ -80,10 +80,20 @@ func TestPostgreSQL_GetUserURLs(t *testing.T) {
 				*originalURL = "http://google.com"
 			}
 		}).Return(nil)
+	mockTx.On("Commit", ctx).Return(nil).Once()
+	mockRows.On("Close").Return(nil).Once()
+
+	expected := []models.URL{
+		{
+			ShortURL:    "http://localhost/testtest",
+			OriginalURL: "http://google.com",
+		},
+	}
 
 	// Вызываем тестируемую функцию
-	_, err := s.GetUserURLs(ctx, userID, baseHost)
+	got, err := s.GetUserURLs(ctx, userID, baseHost)
 	assert.NoError(t, err)
+	assert.Equal(t, expected, got)
 
 	// Проверяем вызовы методов моков
 	mockPool.AssertExpectations(t)
