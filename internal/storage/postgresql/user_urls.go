@@ -48,9 +48,16 @@ func (s *PostgreSQL) GetUserURLs(ctx context.Context, userID string, baseHost st
 	hasRows := false
 	for rows.Next() {
 		hasRows = true
-		var storageURL models.URL
-		if err := rows.Scan(&storageURL.ShortURL, &storageURL.OriginalURL); err != nil {
+
+		var sURL string
+		var oURL string
+		if err := rows.Scan(&sURL, &oURL); err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+
+		storageURL := models.URL{
+			ShortURL:    sURL,
+			OriginalURL: oURL,
 		}
 
 		// Парсим базовый хост
