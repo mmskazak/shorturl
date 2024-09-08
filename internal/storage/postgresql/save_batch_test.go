@@ -43,3 +43,22 @@ func TestPostgreSQL_SaveBatch_BeginTxError(t *testing.T) {
 
 	mockPool.AssertExpectations(t)
 }
+
+func TestPostgreSQL_SaveBatch_ErrIncoming(t *testing.T) {
+	ctx := context.Background()
+	var incoming []models.Incoming
+	baseHost := "http://localhost"
+	userID := "1"
+	generator := genidurl.NewGenIDService()
+
+	mockPool := new(mocks.MockDatabase)
+
+	s := &PostgreSQL{
+		pool:   mockPool,
+		zapLog: zap.NewNop().Sugar(),
+	}
+
+	got, err := s.SaveBatch(ctx, incoming, baseHost, userID, generator)
+	assert.Error(t, err)
+	assert.Equal(t, []models.Output(nil), got)
+}
