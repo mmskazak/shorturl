@@ -13,26 +13,32 @@ type MockTx struct {
 	mock.Mock
 }
 
-// Реализация метода Begin
+// Begin Реализация метода
 func (m *MockTx) Begin(ctx context.Context) (pgx.Tx, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(pgx.Tx), args.Error(1)
 }
 
-// Реализация метода Commit
+// Commit Реализация метода
 func (m *MockTx) Commit(ctx context.Context) error {
 	args := m.Called(ctx)
 	return args.Error(0)
 }
 
-// Реализация метода Rollback
+// Rollback Реализация метода
 func (m *MockTx) Rollback(ctx context.Context) error {
 	args := m.Called(ctx)
 	return args.Error(0)
 }
 
-// / Реализация метода Exec
+// Exec Реализация метода
 func (m *MockTx) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
 	args := m.Called(ctx, sql, arguments)
 	return args.Get(0).(pgconn.CommandTag), args.Error(1)
+}
+
+// Query Реализация метода
+func (m *MockTx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
+	callArgs := m.Called(ctx, sql, args)
+	return callArgs.Get(0).(pgx.Rows), callArgs.Error(1)
 }
