@@ -42,3 +42,9 @@ func (m *MockTx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, 
 	callArgs := m.Called(ctx, sql, args)
 	return callArgs.Get(0).(pgx.Rows), callArgs.Error(1)
 }
+
+// SendBatch Реализация метода
+func (m *MockTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+	args := m.Called(ctx, b)
+	return args.Get(0).(pgx.BatchResults)
+}
