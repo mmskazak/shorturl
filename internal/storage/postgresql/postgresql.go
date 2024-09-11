@@ -65,7 +65,7 @@ func (s *PostgreSQL) Ping(ctx context.Context) error {
 // Close закрывает пул соединений с PostgreSQL.
 func (s *PostgreSQL) Close() error {
 	if s.pool == nil {
-		return nil
+		return errors.New("postgreSQL pool is nil")
 	}
 	s.pool.Close()
 	return nil

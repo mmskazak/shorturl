@@ -37,3 +37,8 @@ func (m *MockDatabase) Begin(ctx context.Context) (pgx.Tx, error) {
 	a := m.Called(ctx)
 	return a.Get(0).(pgx.Tx), a.Error(1)
 }
+
+// Close - мок для метода Close
+func (m *MockDatabase) Close() {
+	m.Called()
+}
