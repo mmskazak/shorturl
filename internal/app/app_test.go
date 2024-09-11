@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"net/http"
 	"testing"
 	"time"
 
@@ -57,4 +60,17 @@ func TestNewApp(t *testing.T) {
 		// Проверка типа через утверждение типа
 		var _ *App = got
 	}
+}
+
+func TestApp_Start(t *testing.T) {
+	ctx := context.Background()
+	srv := &http.Server{}
+	err := srv.Shutdown(ctx)
+	require.NoError(t, err)
+	a := &App{
+		server: srv,
+		zapLog: zap.NewNop().Sugar(),
+	}
+	err = a.Start()
+	assert.NoError(t, err)
 }
