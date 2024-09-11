@@ -17,10 +17,13 @@ func TestMainFunction(t *testing.T) {
 	// Сохранить текущие переменные окружения
 	oldBuildVersion := os.Getenv("BUILD_VERSION")
 	oldBuildCommit := os.Getenv("BUILD_COMMIT")
+	oldBuildDate := os.Getenv("BUILD_Date")
 
 	// Установить тестовые переменные окружения
 	os.Setenv("BUILD_VERSION", "v1.0.0")
 	os.Setenv("BUILD_COMMIT", "abcdef1234")
+	expectedBuildDate := time.Now().Format(time.DateTime)
+	os.Setenv("BUILD_DATE", expectedBuildDate)
 
 	// Запустить функцию main
 	main()
@@ -31,7 +34,6 @@ func TestMainFunction(t *testing.T) {
 		t.Fatalf("Error reading file: %v", err)
 	}
 
-	expectedBuildDate := time.Now().Format(time.DateTime)
 	expectedCode := fmt.Sprintf(`package main
 
 var (
@@ -52,4 +54,5 @@ var (
 	// Восстановить старые переменные окружения
 	os.Setenv("BUILD_VERSION", oldBuildVersion)
 	os.Setenv("BUILD_COMMIT", oldBuildCommit)
+	os.Setenv("BUILD_DATE", oldBuildDate)
 }

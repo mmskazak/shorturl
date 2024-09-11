@@ -1,9 +1,13 @@
 package mocks
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/mock"
+)
 
 // MockRow — структура, представляющая мок для интерфейса Row
 type MockRow struct {
+	pgx.Row
 	mock.Mock
 }
 

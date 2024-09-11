@@ -13,12 +13,6 @@ type MockTx struct {
 	mock.Mock
 }
 
-// Begin Реализация метода
-func (m *MockTx) Begin(ctx context.Context) (pgx.Tx, error) {
-	args := m.Called(ctx)
-	return args.Get(0).(pgx.Tx), args.Error(1)
-}
-
 // Commit Реализация метода
 func (m *MockTx) Commit(ctx context.Context) error {
 	args := m.Called(ctx)

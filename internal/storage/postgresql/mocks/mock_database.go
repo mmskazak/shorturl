@@ -4,18 +4,14 @@ import (
 	"context"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/mock"
 )
 
 // MockDatabase - это структура для мока интерфейса Database
 type MockDatabase struct {
+	pgxpool.Pool
 	mock.Mock
-}
-
-// Query - мок для метода Query
-func (m *MockDatabase) Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error) {
-	a := m.Called(ctx, sql, args)
-	return a.Get(0).(pgx.Rows), a.Error(1)
 }
 
 // Exec - мок для метода Exec
@@ -34,11 +30,6 @@ func (m *MockDatabase) QueryRow(ctx context.Context, sql string, args ...interfa
 func (m *MockDatabase) Ping(ctx context.Context) error {
 	args := m.Called(ctx)
 	return args.Error(0)
-}
-
-// Close - мок для метода Close
-func (m *MockDatabase) Close() {
-	m.Called()
 }
 
 // Begin - мок для метода Begin
