@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"time"
 
@@ -103,12 +104,19 @@ func NewApp(
 		api.DeleteUserURLs(ctx, w, r, store, zapLog)
 	})
 
+	manager := &autocert.Manager{
+		// перечень доменов, для которых будут поддерживаться сертификаты
+		HostPolicy: autocert.HostWhitelist("localhost"),
+	}
+
 	return &App{
 		server: &http.Server{
 			Addr:         cfg.Address,
 			Handler:      router,
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,
+			// для TLS-конфигурации используем менеджер сертификатов
+			TLSConfig: manager.TLSConfig(),
 		},
 		zapLog: zapLog,
 	}
