@@ -133,3 +133,17 @@ func (a *App) Start() error {
 	}
 	return nil
 }
+
+// Stop корректно завершает работу приложения.
+func (a *App) Stop(ctx context.Context) error {
+	// Закрытие сервера с учетом переданного контекста.
+	if err := a.server.Shutdown(ctx); err != nil {
+		a.zapLog.Errorf("Ошибка при остановке сервера: %v", err)
+		return err
+	}
+
+	a.zapLog.Infoln("Сервер успешно остановлен.")
+
+	// Дополнительные действия по завершению работы (например, закрытие подключений к БД и т.д.)
+	return nil
+}

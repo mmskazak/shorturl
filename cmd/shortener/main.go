@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"log"
+	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net/http"
 	_ "net/http/pprof"
-
-	"mmskazak/shorturl/internal/services/shorturlservice"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"mmskazak/shorturl/internal/app"
 	"mmskazak/shorturl/internal/config"
@@ -39,6 +42,7 @@ func main() {
 
 	// Создание контекста.
 	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
 
 	// Инициализация хранилища.
 	storage, err := factory.NewStorage(ctx, cfg, zapLog)
@@ -64,12 +68,30 @@ func main() {
 		shortURLService,
 	)
 
-	zapLog.Infof("Build version: %s\n", buildVersion)
-	zapLog.Infof("Build date: %s\n", buildDate)
-	zapLog.Infof("Build commit: %s\n", buildCommit)
+	zapLog.Infof("Build version: %s", buildVersion)
+	zapLog.Infof("Build date: %s", buildDate)
+	zapLog.Infof("Build commit: %s", buildCommit)
 
-	if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		zapLog.Fatalf("Ошибка сервера: %v", err)
+	// Создаем канал для получения системных сигналов.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	// Запуск сервера в отдельной горутине.
+	go func() {
+		if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			zapLog.Fatalf("Ошибка сервера: %v", err)
+		}
+	}()
+
+	// Ожидаем сигнал завершения.
+	<-quit
+	zapLog.Infoln("Получен сигнал завершения, остановка сервера...")
+
+	ctxShutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := newApp.Stop(ctxShutdown); err != nil {
+		zapLog.Fatalf("Ошибка при остановке сервера: %v", err)
 	}
 
 	zapLog.Infoln("Приложение завершило работу.")
