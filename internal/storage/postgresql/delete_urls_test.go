@@ -119,5 +119,5 @@ func TestPostgreSQL_DeleteURLs_CloseError(t *testing.T) {
 
 	err := s.DeleteURLs(ctx, urlIDs)
 	require.Error(t, err)
-	assert.EqualError(t, err, "failed to delete URLs in batch: test error")
+	assert.EqualError(t, err, "failed to delete URLs in batch: failed to close mock batch results: test error")
 }
