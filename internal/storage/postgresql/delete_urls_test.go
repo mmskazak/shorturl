@@ -42,7 +42,8 @@ func TestPostgreSQL_DeleteURLs_ErrBegin(t *testing.T) {
 	}
 	mockPool.On("Begin", ctx).Return(mockTx, errors.New("test error"))
 	err := s.DeleteURLs(ctx, urlIDs)
-	assert.Equal(t, "failed to begin transaction: test error", err.Error())
+	assert.Error(t, err)
+	assert.Equal(t, "failed to begin transaction: failed to begin transaction: test error", err.Error())
 }
 
 func TestPostgreSQL_DeleteURLs_Success(t *testing.T) {
