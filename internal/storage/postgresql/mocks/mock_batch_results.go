@@ -13,6 +13,7 @@ type MockBatchResults struct {
 	mock.Mock
 }
 
+// QueryRow - запрос строки из mock базы данных.
 func (m *MockBatchResults) QueryRow() pgx.Row {
 	args := m.Called()
 	row, ok := args.Get(0).(pgx.Row)
@@ -22,6 +23,7 @@ func (m *MockBatchResults) QueryRow() pgx.Row {
 	return row
 }
 
+// Close - закрытие соединения с mock базой данных.
 func (m *MockBatchResults) Close() error {
 	args := m.Called()
 	err := args.Error(0)
