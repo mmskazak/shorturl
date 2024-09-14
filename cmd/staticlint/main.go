@@ -35,7 +35,7 @@ const countLinesNakedFunc = 25
 
 func main() {
 	// Определяем флаги командной строки
-	configPath := flag.String("config", "staticlint.json", "путь к файлу конфигурации")
+	configPath := flag.String("config", "staticlint.json", "Путь к файлу конфигурации")
 	flag.Parse()
 
 	// Загружаем конфигурацию
