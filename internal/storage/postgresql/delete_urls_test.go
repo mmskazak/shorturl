@@ -93,7 +93,7 @@ func TestPostgreSQL_DeleteURLs_CommitError(t *testing.T) {
 	mockTx.On("Commit", ctx).Return(errors.New("test error"))
 	err := s.DeleteURLs(ctx, urlIDs)
 	require.Error(t, err)
-	assert.EqualError(t, err, "failed to commit transaction: test error")
+	assert.EqualError(t, err, "failed to commit transaction: error MockTx func Commit: test error")
 }
 
 func TestPostgreSQL_DeleteURLs_CloseError(t *testing.T) {
