@@ -2,10 +2,11 @@ package infile
 
 import (
 	"context"
+	"testing"
+
 	"mmskazak/shorturl/internal/models"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/storage/inmemory"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

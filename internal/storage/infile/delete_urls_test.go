@@ -2,8 +2,9 @@ package infile
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
+
+	"mmskazak/shorturl/internal/storage/inmemory"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"

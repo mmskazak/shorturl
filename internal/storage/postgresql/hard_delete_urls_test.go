@@ -3,9 +3,10 @@ package postgresql
 import (
 	"context"
 	"errors"
-	"mmskazak/shorturl/internal/storage/postgresql/mocks"
 	"testing"
 	"time"
+
+	"mmskazak/shorturl/internal/storage/postgresql/mocks"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/mock"

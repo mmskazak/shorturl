@@ -2,8 +2,9 @@ package postgresql
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/storage/postgresql/interfaces"
 	"time"
+
+	"mmskazak/shorturl/internal/storage/postgresql/interfaces"
 
 	"go.uber.org/zap"
 )
