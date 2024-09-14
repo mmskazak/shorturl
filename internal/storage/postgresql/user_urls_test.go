@@ -77,7 +77,7 @@ func TestPostgreSQL_GetUserURLs_ErrScan(t *testing.T) {
 
 	// Вызываем тестируемую функцию
 	got, err := s.GetUserURLs(ctx, userID, baseHost)
-	assert.EqualError(t, err, "error scanning row: test error")
+	assert.EqualError(t, err, "error scanning row: error MockRows func Scan: test error")
 	assert.Equal(t, expected, got)
 
 	// Проверяем вызовы методов моков
