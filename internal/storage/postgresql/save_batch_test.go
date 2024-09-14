@@ -3,14 +3,15 @@ package postgresql
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/models"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/storage/postgresql/mocks"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 )
 
 func TestPostgreSQL_SaveBatch_BeginTxError(t *testing.T) {

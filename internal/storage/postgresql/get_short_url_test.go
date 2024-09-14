@@ -3,14 +3,15 @@ package postgresql
 import (
 	"context"
 	"errors"
+	storageErrors "mmskazak/shorturl/internal/storage/errors"
+	"mmskazak/shorturl/internal/storage/postgresql/mocks"
+	"testing"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	storageErrors "mmskazak/shorturl/internal/storage/errors"
-	"mmskazak/shorturl/internal/storage/postgresql/mocks"
-	"testing"
 )
 
 func TestPostgreSQL_GetShortURL_Success(t *testing.T) {

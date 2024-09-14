@@ -18,6 +18,8 @@ import (
 	"mmskazak/shorturl/internal/storage/factory"
 )
 
+const shutdownDuration = 5 * time.Second
+
 // main инициализирует конфигурацию, логгер, хранилище и запускает приложение.
 //
 //go:generate go run ./../version/main.go
@@ -42,7 +44,6 @@ func main() {
 
 	// Создание контекста.
 	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
 
 	// Инициализация хранилища.
 	storage, err := factory.NewStorage(ctx, cfg, zapLog)
@@ -87,7 +88,7 @@ func main() {
 	<-quit
 	zapLog.Infoln("Получен сигнал завершения, остановка сервера...")
 
-	ctxShutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctxShutdown, cancel := context.WithTimeout(context.Background(), shutdownDuration)
 	defer cancel()
 
 	if err := newApp.Stop(ctxShutdown); err != nil {

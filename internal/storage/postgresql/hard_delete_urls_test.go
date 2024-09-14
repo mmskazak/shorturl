@@ -3,12 +3,13 @@ package postgresql
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/stretchr/testify/mock"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/storage/postgresql/mocks"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 )
 
 func Test_hardDeleteSoftDeletedURLs_Success(t *testing.T) {

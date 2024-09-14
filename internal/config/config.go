@@ -21,11 +21,11 @@ type Config struct {
 	BaseHost        string        `json:"base_host" validate:"required"`          // Базовый URL
 	FileStoragePath string        `json:"file_storage_path" validate:"omitempty"` // Путь к файлу хранилища
 	DataBaseDSN     string        `json:"database_dsn" validate:"omitempty"`      // Строка подключения к базе данных
-	SecretKey       string        `json:"secret_key" validate:"omitempty"`        // Секретный ключ для авторизации JWT токена
+	SecretKey       string        `json:"secret_key" validate:"omitempty"`        // Секретный ключ JWT токена
+	ConfigPath      string        `json:"config_path" validate:"omitempty"`       // Путь к конфигурационному файлу
 	LogLevel        LogLevel      `json:"log_level" validate:"required"`          // Уровень логирования
 	ReadTimeout     time.Duration `json:"read_timeout" validate:"required"`       // Таймаут чтения HTTP-запросов
 	WriteTimeout    time.Duration `json:"write_timeout" validate:"required"`      // Таймаут записи HTTP-ответов
-	ConfigPath      string        `json:"config_path" validate:"omitempty"`       // Путь к конфигурационному файлу
 }
 
 // validate проверяет правильность заполнения полей конфигурации.
@@ -174,7 +174,8 @@ func InitConfig() (*Config, error) {
 	return config, nil
 }
 
-// assignConfigDefaults - функция для переноса значений из второго конфига в основной, если в основном они равны значениям по умолчанию
+// assignConfigDefaults - функция для переноса значений из второго конфига в основной,
+// если в основном они равны значениям по умолчанию.
 func assignConfigDefaults(config *Config, configFromFile map[string]interface{}) {
 	if config.Address == ":8080" {
 		if addr, ok := configFromFile["address"].(string); ok && addr != "" {
@@ -202,7 +203,6 @@ func assignConfigDefaults(config *Config, configFromFile map[string]interface{})
 			// Обработка числа (в секундах)
 			config.ReadTimeout = time.Duration(readTimeoutNum) * time.Second
 		}
-
 	}
 	// Если значение write_timeout в конфигурации по умолчанию
 	if config.WriteTimeout == 10*time.Second {

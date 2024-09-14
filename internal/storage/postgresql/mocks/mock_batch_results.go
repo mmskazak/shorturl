@@ -1,11 +1,13 @@
 package mocks
 
 import (
+	"fmt"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockBatchResults - это мок для интерфейса BatchResults
+// MockBatchResults - это мок для интерфейса BatchResults.
 type MockBatchResults struct {
 	pgx.BatchResults
 	mock.Mock
@@ -13,10 +15,18 @@ type MockBatchResults struct {
 
 func (m *MockBatchResults) QueryRow() pgx.Row {
 	args := m.Called()
-	return args.Get(0).(pgx.Row)
+	row, ok := args.Get(0).(pgx.Row)
+	if !ok {
+		return nil
+	}
+	return row
 }
 
 func (m *MockBatchResults) Close() error {
 	args := m.Called()
-	return args.Error(0)
+	err := args.Error(0)
+	if err != nil {
+		return fmt.Errorf("failed to close mock batch results: %w", err)
+	}
+	return nil
 }

@@ -2,11 +2,12 @@ package infile
 
 import (
 	"context"
+	"mmskazak/shorturl/internal/storage/inmemory"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"mmskazak/shorturl/internal/storage/inmemory"
-	"testing"
 )
 
 func TestInFile_GetUserURLs(t *testing.T) {

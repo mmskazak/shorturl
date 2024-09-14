@@ -2,13 +2,14 @@ package infile
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/models"
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/storage/inmemory"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestInFile_SaveBatch(t *testing.T) {

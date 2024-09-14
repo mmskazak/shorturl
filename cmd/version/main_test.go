@@ -6,24 +6,21 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
-// Функция для очистки отступов и пробелов
+// Функция для очистки отступов и пробелов.
 func normalizeWhitespace(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
 
 func TestMainFunction(t *testing.T) {
-	// Сохранить текущие переменные окружения
-	oldBuildVersion := os.Getenv("BUILD_VERSION")
-	oldBuildCommit := os.Getenv("BUILD_COMMIT")
-	oldBuildDate := os.Getenv("BUILD_Date")
-
 	// Установить тестовые переменные окружения
-	os.Setenv("BUILD_VERSION", "v1.0.0")
-	os.Setenv("BUILD_COMMIT", "abcdef1234")
+	t.Setenv("BUILD_VERSION", "v1.0.0")
+	t.Setenv("BUILD_COMMIT", "abcdef1234")
 	expectedBuildDate := time.Now().Format(time.DateTime)
-	os.Setenv("BUILD_DATE", expectedBuildDate)
+	t.Setenv("BUILD_DATE", expectedBuildDate)
 
 	// Запустить функцию main
 	main()
@@ -49,10 +46,6 @@ var (
 	}
 
 	// Удалить файл после тестирования
-	os.Remove("version_gen.go")
-
-	// Восстановить старые переменные окружения
-	os.Setenv("BUILD_VERSION", oldBuildVersion)
-	os.Setenv("BUILD_COMMIT", oldBuildCommit)
-	os.Setenv("BUILD_DATE", oldBuildDate)
+	err = os.Remove("version_gen.go")
+	require.NoError(t, err)
 }

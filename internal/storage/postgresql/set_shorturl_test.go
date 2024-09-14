@@ -3,14 +3,15 @@ package postgresql
 import (
 	"context"
 	"errors"
+	"mmskazak/shorturl/internal/storage/postgresql/mocks"
+	"testing"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"mmskazak/shorturl/internal/storage/postgresql/mocks"
-	"testing"
 )
 
 func TestPostgreSQL_SetShortURL_ErrBeginTx(t *testing.T) {

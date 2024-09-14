@@ -3,12 +3,13 @@ package postgresql
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/models"
 	"mmskazak/shorturl/internal/storage/postgresql/mocks"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 )
 
 func TestPostgreSQL_GetUserURLs_ErrorQuery(t *testing.T) {

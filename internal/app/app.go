@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"time"
+
+	"golang.org/x/crypto/acme/autocert"
 
 	"mmskazak/shorturl/internal/contracts"
 
@@ -139,7 +140,7 @@ func (a *App) Stop(ctx context.Context) error {
 	// Закрытие сервера с учетом переданного контекста.
 	if err := a.server.Shutdown(ctx); err != nil {
 		a.zapLog.Errorf("Ошибка при остановке сервера: %v", err)
-		return err
+		return fmt.Errorf("err Shutdown server: %w", err)
 	}
 
 	a.zapLog.Infoln("Сервер успешно остановлен.")

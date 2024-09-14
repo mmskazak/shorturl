@@ -3,12 +3,13 @@ package postgresql
 import (
 	"context"
 	"errors"
+	"mmskazak/shorturl/internal/storage/postgresql/mocks"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"mmskazak/shorturl/internal/storage/postgresql/mocks"
-	"testing"
 )
 
 func TestPostgreSQL_DeleteURLs_EmptyURLs(t *testing.T) {
