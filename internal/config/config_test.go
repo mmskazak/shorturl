@@ -93,6 +93,8 @@ func TestInitConfigWithFlags(t *testing.T) {
 	}
 }
 
+// Тест работает только из консоли
+// из-за особенностей сброса флагов
 func TestInitConfigWithEnvVars(t *testing.T) {
 	resetFlags() // Сбрасываем флаги командной строки.
 

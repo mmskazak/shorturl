@@ -151,23 +151,25 @@ func InitConfig() (*Config, error) {
 
 	// Конфигурационный файл имеет наименьший приоритет
 
-	// Читаем конфиг
-	data, err := os.ReadFile(config.ConfigPath)
-	if err != nil {
-		log.Fatalf("Ошибка при чтении файла: %v", err)
+	if config.ConfigPath != "" {
+		// Читаем конфиг
+		data, err := os.ReadFile(config.ConfigPath)
+		if err != nil {
+			log.Fatalf("Ошибка при чтении файла: %v", err)
+		}
+
+		// Инициализируем структуру конфигурации
+		var configFromFile map[string]interface{}
+
+		// Декодируем JSON данные в структуру
+		err = json.Unmarshal(data, &configFromFile)
+		if err != nil {
+			log.Fatalf("Ошибка при парсинге JSON: %v", err)
+		}
+
+		// Переносим значения из файла в основную конфигурацию, если они не установлены
+		assignConfigDefaults(config, configFromFile)
 	}
-
-	// Инициализируем структуру конфигурации
-	var configFromFile map[string]interface{}
-
-	// Декодируем JSON данные в структуру
-	err = json.Unmarshal(data, &configFromFile)
-	if err != nil {
-		log.Fatalf("Ошибка при парсинге JSON: %v", err)
-	}
-
-	// Переносим значения из файла в основную конфигурацию, если они не установлены
-	assignConfigDefaults(config, configFromFile)
 
 	return config, nil
 }
