@@ -31,7 +31,7 @@ func TestPostgreSQL_SetShortURL_ErrBeginTx(t *testing.T) {
 	mockPool.On("Begin", ctx).Return(mockTx, errors.New("test error")).Once()
 
 	err := s.SetShortURL(ctx, shortURL, targetURL, userID, deleted)
-	assert.EqualError(t, err, "error beginning transaction: test error")
+	assert.EqualError(t, err, "error beginning transaction: failed to begin transaction: test error")
 
 	mockPool.AssertExpectations(t)
 	mockTx.AssertExpectations(t)
