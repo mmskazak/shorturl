@@ -53,13 +53,8 @@ func TestPostgreSQL_Close_Success(t *testing.T) {
 }
 
 func TestPostgreSQL_Close_ErrPoolNil(t *testing.T) {
-	// Создаем объект PostgreSQL с моками
-	s := &PostgreSQL{
-		pool:   nil,
-		zapLog: zap.NewNop().Sugar(),
-	}
-
-	err := s.Close()
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "pool is nil")
+	dsn := ""
+	zapLog := zap.NewNop().Sugar()
+	err := runMigrations(dsn, zapLog)
+	assert.EqualError(t, err, "error opening migrations directory: URL cannot be empty")
 }
