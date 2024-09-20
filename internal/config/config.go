@@ -199,9 +199,6 @@ func assignConfigDefaults(config *Config, configFromFile map[string]interface{})
 			if duration, err := time.ParseDuration(readTimeoutStr); err == nil {
 				config.ReadTimeout = duration
 			}
-		} else if readTimeoutNum, ok := configFromFile["read_timeout"].(float64); ok {
-			// Обработка числа (в секундах)
-			config.ReadTimeout = time.Duration(readTimeoutNum) * time.Second
 		}
 	}
 	// Если значение write_timeout в конфигурации по умолчанию
@@ -211,9 +208,6 @@ func assignConfigDefaults(config *Config, configFromFile map[string]interface{})
 			if duration, err := time.ParseDuration(writeTimeoutStr); err == nil {
 				config.WriteTimeout = duration
 			}
-		} else if writeTimeoutNum, ok := configFromFile["write_timeout"].(float64); ok {
-			// Обработка, если значение write_timeout представлено как число
-			config.WriteTimeout = time.Duration(writeTimeoutNum) * time.Second
 		}
 	}
 	if config.FileStoragePath == "/tmp/short-url-db.json" {
