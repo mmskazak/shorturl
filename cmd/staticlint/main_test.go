@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -83,4 +84,9 @@ func TestLoadConfig_FileDoesNotExist(t *testing.T) {
 	actual, err := loadConfig(filePath)
 	require.Error(t, err)
 	require.Nil(t, actual)
+}
+
+func Test_getAnalyzers(t *testing.T) {
+	got := getAnalyzers()
+	assert.NotNil(t, got)
 }
