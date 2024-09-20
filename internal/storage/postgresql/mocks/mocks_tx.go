@@ -38,11 +38,7 @@ func (m *MockTx) Rollback(ctx context.Context) error {
 // Exec Реализация метода.
 func (m *MockTx) Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error) {
 	args := m.Called(ctx, sql, arguments)
-	commandTag, ok := args.Get(0).(pgconn.CommandTag)
-	if !ok {
-		return pgconn.NewCommandTag("ERROR 1"),
-			fmt.Errorf("error casting pgconn.CommandTag got %T", args.Get(0))
-	}
+	commandTag, _ := args.Get(0).(pgconn.CommandTag)
 	if err := args.Error(1); err != nil {
 		return commandTag, fmt.Errorf("error MockTx func Exec: %w", err)
 	}
@@ -53,24 +49,16 @@ func (m *MockTx) Exec(ctx context.Context, sql string, arguments ...any) (pgconn
 // Query Реализация метода.
 func (m *MockTx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
 	callArgs := m.Called(ctx, sql, args)
-	rows, ok := callArgs.Get(0).(pgx.Rows)
-	if !ok {
-		return rows, fmt.Errorf("error MockTx func Query: %w", pgx.ErrNoRows)
-	}
-
+	rows, _ := callArgs.Get(0).(pgx.Rows)
 	if err := callArgs.Error(1); err != nil {
 		return rows, fmt.Errorf("error MockTx func Query: %w", err)
 	}
-
 	return rows, nil
 }
 
 // SendBatch Реализация метода.
 func (m *MockTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
 	args := m.Called(ctx, b)
-	batchResults, ok := args.Get(0).(pgx.BatchResults)
-	if !ok {
-		return nil
-	}
+	batchResults, _ := args.Get(0).(pgx.BatchResults)
 	return batchResults
 }

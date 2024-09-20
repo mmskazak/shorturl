@@ -140,7 +140,7 @@ func TestPostgreSQL_DeleteURLs_batchSize5000(t *testing.T) {
 		zapLog: zap.NewNop().Sugar(),
 	}
 	mockPool.On("Begin", ctx).Return(mockTx, nil)
-	mockTx.On("Rollback", ctx).Return(nil)
+	mockTx.On("Rollback", ctx).Return(errors.New("test failed rollback"))
 	mockTx.On("SendBatch", ctx, mock.Anything).Return(mockBatchResults)
 	mockBatchResults.On("Close").Return(errors.New("test error"))
 
