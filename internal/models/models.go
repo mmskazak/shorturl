@@ -41,3 +41,11 @@ type URLRecord struct {
 	UserID      string `json:"user_id"`      // Идентификатор пользователя
 	Deleted     bool   `json:"deleted"`      // Флаг, указывающий на удаление URL
 }
+
+// Stats - структура содержит статистику]
+// "urls": <int> количество сокращённых URL в сервисе
+// "users": <int>  количество пользователей в сервисе
+type Stats struct {
+	Urls  string `json:"urls"`
+	Users string `json:"users"`
+}

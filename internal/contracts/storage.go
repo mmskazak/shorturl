@@ -25,4 +25,5 @@ type Storage interface {
 	) ([]models.Output, error)
 	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error)
 	DeleteURLs(ctx context.Context, urlIDs []string) error
+	InternalStats(ctx context.Context) (models.Stats, error)
 }

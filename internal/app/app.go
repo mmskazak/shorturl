@@ -105,6 +105,10 @@ func NewApp(
 		api.DeleteUserURLs(ctx, w, r, store, zapLog)
 	})
 
+	router.Delete("/api/internal/stats", func(w http.ResponseWriter, r *http.Request) {
+		api.InternalStats(ctx, w, r, store, zapLog)
+	})
+
 	manager := &autocert.Manager{
 		// перечень доменов, для которых будут поддерживаться сертификаты
 		HostPolicy: autocert.HostWhitelist("localhost"),

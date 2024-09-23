@@ -2,7 +2,6 @@ package contracts
 
 import (
 	"context"
-
 	"mmskazak/shorturl/internal/dtos"
 
 	"mmskazak/shorturl/internal/models"
@@ -60,4 +59,8 @@ type IShortURLService interface {
 		generator IGenIDForURL,
 		data ISetShortURL,
 	) (string, error)
+}
+
+type IInternalStats interface {
+	InternalStats(ctx context.Context) (models.Stats, error)
 }
