@@ -8,6 +8,7 @@ import (
 
 // InternalStats - count users and urls in inmemory storage
 func (m *InMemory) InternalStats(_ context.Context) (models.Stats, error) {
+	m.zapLog.Info("Getting internal stats from InMemory store.")
 	countUrls := len(m.data)
 	countUsers := len(m.userIndex)
 

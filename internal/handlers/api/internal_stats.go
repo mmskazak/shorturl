@@ -15,10 +15,12 @@ func InternalStats(
 	store contracts.IInternalStats,
 	zapLog *zap.SugaredLogger,
 ) {
+	zapLog.Info("Getting request by internal stats.")
 	stats, err := store.InternalStats(ctx)
 	if err != nil {
 		zapLog.Errorf("Error getting internal stats: %v", err)
 	}
+	zapLog.Info("Getting internal stats from store.")
 
 	// Преобразуем данные в JSON
 	response, err := json.Marshal(stats)

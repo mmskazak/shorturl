@@ -105,7 +105,7 @@ func NewApp(
 		api.DeleteUserURLs(ctx, w, r, store, zapLog)
 	})
 
-	router.Delete("/api/internal/stats", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/api/internal/stats", func(w http.ResponseWriter, r *http.Request) {
 		api.InternalStats(ctx, w, r, store, zapLog)
 	})
 
