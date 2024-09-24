@@ -42,7 +42,7 @@ type shortURLStruct struct {
 //   - error: Ошибка, если она произошла при создании объекта InFile.
 //
 // Примечание:
-// Функция сначала создает хранилище в памяти с помощью inmemory.NewInMemory, а затем читает данные из файла,
+// Функция сначала создает хранилище в памяти с помощью inmemory. NewInMemory, а затем читает данные из файла,
 // если он существует.
 func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*InFile, error) {
 	inm, err := inmemory.NewInMemory(zapLog)

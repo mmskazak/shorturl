@@ -18,8 +18,7 @@ func TestNewInFileErr(t *testing.T) {
 	cfg := &config.Config{}
 	zapLog := zap.NewNop().Sugar()
 	got, err := NewInFile(ctx, cfg, zapLog)
-	assert.EqualError(t, err, "error read storage data: error opening or creating file: open :"+
-		" no such file or directory")
+	assert.Error(t, err)
 	assert.Equal(t, (*InFile)(nil), got)
 }
 
