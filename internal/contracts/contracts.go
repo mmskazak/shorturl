@@ -62,6 +62,7 @@ type IShortURLService interface {
 	) (string, error)
 }
 
+// IInternalStats - внутренняя статистика по приложению
 type IInternalStats interface {
 	InternalStats(ctx context.Context) (models.Stats, error)
 }
