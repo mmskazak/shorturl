@@ -64,7 +64,8 @@ func (s *PostgreSQL) handleError(ctx context.Context, err error, targetURL strin
 			return storageErrors.ErrKeyAlreadyExists
 		case "unique_original_url":
 			var shortURL string
-			err := s.pool.QueryRow(ctx, "SELECT short_url FROM urls WHERE original_url = $1", targetURL).Scan(&shortURL)
+			err := s.pool.QueryRow(ctx, "SELECT short_url FROM urls WHERE original_url = $1", targetURL).
+				Scan(&shortURL)
 			if err != nil {
 				return fmt.Errorf("error recive short URL by original: %w", err)
 			}
@@ -74,5 +75,5 @@ func (s *PostgreSQL) handleError(ctx context.Context, err error, targetURL strin
 			}
 		}
 	}
-	return fmt.Errorf("failed to insert record: %w", err)
+	return fmt.Errorf("failed to insert record %w", err)
 }

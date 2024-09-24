@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"go.uber.org/zap"
+	"mmskazak/shorturl/internal/storage/postgresql/interfaces"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 // timeSleep определяет интервал времени между запусками удаления URL.
@@ -21,16 +21,27 @@ var timeSleep = 24 * time.Hour
 //
 // Параметры:
 // - ctx: контекст выполнения запроса.
-// - db: пул соединений с базой данных pgxpool.Pool.
+// - db: пул соединений с базой данных db interfaces.Database.
 // - zapLog: логгер для записи ошибок и информационных сообщений.
-func hardDeleteSoftDeletedURLs(ctx context.Context, db *pgxpool.Pool, zapLog *zap.SugaredLogger) {
+func hardDeleteSoftDeletedURLs(ctx context.Context, db interfaces.Database, zapLog *zap.SugaredLogger) {
 	for {
-		query := `DELETE FROM urls WHERE deleted=true`
-		_, err := db.Exec(ctx, query)
-		if err != nil {
-			zapLog.Errorf("error deleting urls: %v", err)
-		}
+		select {
+		case <-ctx.Done():
+			// Завершаем работу при отмене контекста
+			zapLog.Info("Context done, stopping hard delete operation.")
+			return
+		default:
+			query := `DELETE FROM urls WHERE deleted = true`
+			_, err := db.Exec(ctx, query)
+			if err != nil {
+				zapLog.Errorf("Error deleting URLs: %v", err)
+				// Возможно, стоит добавить логику для обработки ошибок или увеличить время ожидания
+			} else {
+				zapLog.Info("Successfully deleted soft-deleted URLs.")
+			}
 
-		time.Sleep(timeSleep)
+			// Пауза между попытками
+			time.Sleep(timeSleep)
+		}
 	}
 }

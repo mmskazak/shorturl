@@ -34,7 +34,8 @@ func (m *InMemory) GetUserURLs(ctx context.Context, userID string, baseHost stri
 
 	// Парсим базовый хост
 	baseURL, err := url.Parse(baseHost)
-	if err != nil {
+
+	if err != nil || baseURL.String() == "" {
 		return nil, fmt.Errorf("error parsing baseHost: %w", err)
 	}
 

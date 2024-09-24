@@ -17,7 +17,10 @@ func main() {
 	if buildCommit == "" {
 		buildCommit = "N/A"
 	}
-	buildDate := time.Now().Format(time.DateTime)
+	buildDate := os.Getenv("BUILD_DATE")
+	if buildDate == "" {
+		buildDate = time.Now().Format(time.DateTime)
+	}
 
 	code := fmt.Sprintf(`package main
 

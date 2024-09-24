@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/storage/postgresql/interfaces"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,7 +18,7 @@ import (
 
 // PostgreSQL представляет собой структуру для работы с PostgreSQL.
 type PostgreSQL struct {
-	pool   *pgxpool.Pool
+	pool   interfaces.Database
 	zapLog *zap.SugaredLogger
 }
 
@@ -65,7 +66,7 @@ func (s *PostgreSQL) Ping(ctx context.Context) error {
 // Close закрывает пул соединений с PostgreSQL.
 func (s *PostgreSQL) Close() error {
 	if s.pool == nil {
-		return nil
+		return errors.New("postgreSQL pool is nil")
 	}
 	s.pool.Close()
 	return nil

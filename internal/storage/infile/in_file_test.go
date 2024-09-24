@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"mmskazak/shorturl/internal/config"
 
 	"go.uber.org/zap"
@@ -73,4 +76,34 @@ func TestNewInFile(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_parseShortURLStruct_Success(t *testing.T) {
+	validJSON := `{
+    "id": "1",
+    "short_url": "testtest",
+    "original_url": "http://original.url",
+    "user_id": "user123",
+    "deleted": false
+	}`
+	sURL := shortURLStruct{
+		ID:          "1",
+		ShortURL:    "testtest",
+		OriginalURL: "http://original.url",
+		UserID:      "user123",
+		Deleted:     false,
+	}
+
+	got, err := parseShortURLStruct(validJSON)
+	require.NoError(t, err)
+	assert.Equal(t, sURL, got)
+}
+
+func Test_parseShortURLStruct_Err(t *testing.T) {
+	validJSON := `{"id": "1",`
+	sURL := shortURLStruct{}
+
+	got, err := parseShortURLStruct(validJSON)
+	assert.Error(t, err)
+	assert.Equal(t, sURL, got)
 }

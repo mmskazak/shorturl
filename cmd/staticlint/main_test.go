@@ -20,6 +20,9 @@ func TestLoadConfig_ValidFile(t *testing.T) {
 	_, err = file.WriteString(content)
 	require.NoError(t, err)
 
+	// Закрываем файл после записи
+	require.NoError(t, file.Close())
+
 	// Считываем конфигурацию из файла
 	actual, err := loadConfig(file.Name())
 	require.NoError(t, err)
@@ -41,6 +44,9 @@ func TestLoadConfig_InvalidJSON(t *testing.T) {
 	_, err = file.WriteString(content)
 	require.NoError(t, err)
 
+	// Закрываем файл после записи
+	require.NoError(t, file.Close())
+
 	// Считываем конфигурацию из файла
 	actual, err := loadConfig(file.Name())
 	require.Error(t, err)
@@ -59,6 +65,9 @@ func TestLoadConfig_EmptyFile(t *testing.T) {
 	// Создаем пустой файл
 	_, err = file.WriteString("")
 	require.NoError(t, err)
+
+	// Закрываем файл после записи
+	require.NoError(t, file.Close())
 
 	// Считываем конфигурацию из файла
 	actual, err := loadConfig(file.Name())

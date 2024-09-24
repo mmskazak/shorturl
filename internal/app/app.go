@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/crypto/acme/autocert"
+
 	"mmskazak/shorturl/internal/contracts"
 
 	"mmskazak/shorturl/internal/config"
@@ -103,12 +105,19 @@ func NewApp(
 		api.DeleteUserURLs(ctx, w, r, store, zapLog)
 	})
 
+	manager := &autocert.Manager{
+		// перечень доменов, для которых будут поддерживаться сертификаты
+		HostPolicy: autocert.HostWhitelist("localhost"),
+	}
+
 	return &App{
 		server: &http.Server{
 			Addr:         cfg.Address,
 			Handler:      router,
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,
+			// для TLS-конфигурации используем менеджер сертификатов
+			TLSConfig: manager.TLSConfig(),
 		},
 		zapLog: zapLog,
 	}
@@ -123,5 +132,19 @@ func (a *App) Start() error {
 		a.zapLog.Infof("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
+	return nil
+}
+
+// Stop корректно завершает работу приложения.
+func (a *App) Stop(ctx context.Context) error {
+	// Закрытие сервера с учетом переданного контекста.
+	if err := a.server.Shutdown(ctx); err != nil {
+		a.zapLog.Errorf("Ошибка при остановке сервера: %v", err)
+		return fmt.Errorf("err Shutdown server: %w", err)
+	}
+
+	a.zapLog.Infoln("Сервер успешно остановлен.")
+
+	// Дополнительные действия по завершению работы (например, закрытие подключений к БД и т.д.)
 	return nil
 }
