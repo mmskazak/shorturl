@@ -3,9 +3,10 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/contracts"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 func InternalStats(

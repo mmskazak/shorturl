@@ -44,7 +44,7 @@ type URLRecord struct {
 
 // Stats - структура содержит статистику]
 // "urls": <int> количество сокращённых URL в сервисе
-// "users": <int>  количество пользователей в сервисе
+// "users": <int>  количество пользователей в сервисе.
 type Stats struct {
 	Urls  string `json:"urls"`
 	Users string `json:"users"`

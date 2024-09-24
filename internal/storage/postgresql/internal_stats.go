@@ -3,11 +3,12 @@ package postgresql
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"mmskazak/shorturl/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
-// InternalStats - count users and urls in a database
+// InternalStats - count users and urls in a database.
 func (s *PostgreSQL) InternalStats(ctx context.Context) (models.Stats, error) {
 	queryCountUrls := "SELECT COUNT(original_url) FORM urls WHERE 1"
 	queryCountUsers := "SELECT COUNT(user_id) FORM urls WHERE 1 ORDER BY (user_id)"

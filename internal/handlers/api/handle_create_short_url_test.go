@@ -233,7 +233,7 @@ func TestHandleCreateShortURL_ErrIoReadAll(t *testing.T) {
 	// Создание HTTP-запроса и ResponseRecorder
 	w := httptest.NewRecorder()
 	// Создание HTTP-запроса с телом запроса
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	req := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
 	req = req.WithContext(ctx)
 
 	// Создание мока для ISetShortURL

@@ -6,7 +6,7 @@ import (
 	"mmskazak/shorturl/internal/models"
 )
 
-// InternalStats - count users and urls in inmemory storage
+// InternalStats - count users and urls in inmemory storage.
 func (f *InFile) InternalStats(ctx context.Context) (models.Stats, error) {
 	f.zapLog.Info("Getting internal stats from InFile store.")
 	stats, err := f.InMe.InternalStats(ctx)

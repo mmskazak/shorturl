@@ -3,10 +3,11 @@ package inmemory
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"mmskazak/shorturl/internal/contracts"
 	"mmskazak/shorturl/internal/contracts/mocks"

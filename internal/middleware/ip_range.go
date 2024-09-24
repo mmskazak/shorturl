@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"net"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 // IPRangeMiddleware мидлвар для проверки IP адреса по CIDR маске.

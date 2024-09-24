@@ -167,8 +167,8 @@ func verifyConfig(t *testing.T, config *Config) {
 
 func Test_assignConfigDefaults(t *testing.T) {
 	// Инициализируем конфигурацию.
-	baseDurationReadTimeout := 10 * time.Second  //nolint:gomnd  // 10 секунд.
-	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // 10 секунд.
+	baseDurationReadTimeout := 10 * time.Second
+	baseDurationWriteTimeout := 10 * time.Second
 
 	config := &Config{
 		Address:         ":8080",

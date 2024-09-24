@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"log"
 	"mmskazak/shorturl/internal/contracts"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"go.uber.org/zap"
 
 	"mmskazak/shorturl/internal/services/shorturlservice"
 
