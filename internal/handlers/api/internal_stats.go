@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// InternalStats - внутренняя статистика.
 func InternalStats(
 	ctx context.Context,
 	w http.ResponseWriter,
