@@ -10,7 +10,7 @@ import (
 // IPRangeMiddleware мидлвар для проверки IP адреса по CIDR маске.
 func IPRangeMiddleware(cidr string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/user/urls" {
+		if r.URL.Path != "/api/internal/stats" {
 			next.ServeHTTP(w, r)
 			return
 		}
