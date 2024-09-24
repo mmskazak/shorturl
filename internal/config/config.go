@@ -89,7 +89,6 @@ func InitConfig() (*Config, error) {
 	flag.StringVar(&config.TrustedSubnet, "t", config.TrustedSubnet, "Trusted subnet")
 	flag.StringVar(&config.ConfigPath, "c", config.ConfigPath, "Path to configuration file")
 	flag.StringVar(&config.ConfigPath, "config", config.ConfigPath, "Path to configuration file")
-	flag.StringVar(&config.SecretKey, "secret", config.SecretKey, "Secret key for authorization JWT token")
 	flag.StringVar(&config.Address, "a", config.Address, "IP-адрес сервера")
 	flag.StringVar(&config.BaseHost, "b", config.BaseHost, "Базовый URL")
 	flag.DurationVar(&config.ReadTimeout, "r", config.ReadTimeout, "ReadTimeout duration")
