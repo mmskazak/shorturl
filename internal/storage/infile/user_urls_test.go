@@ -2,8 +2,9 @@ package infile
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/models"
 	"testing"
+
+	"mmskazak/shorturl/internal/models"
 
 	"mmskazak/shorturl/internal/storage/inmemory"
 

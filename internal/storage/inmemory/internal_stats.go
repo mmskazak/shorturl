@@ -2,8 +2,9 @@ package inmemory
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/models"
 	"strconv"
+
+	"mmskazak/shorturl/internal/models"
 )
 
 // InternalStats - count users and urls in inmemory storage.

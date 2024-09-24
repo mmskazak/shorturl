@@ -17,6 +17,7 @@ import (
 
 // Config содержит поля конфигурации.
 type Config struct {
+	TrustedSubnet   string        `json:"trusted_subnet" validate:"omitempty"`    // Подсеть для получения статистики
 	Address         string        `json:"address" validate:"required"`            // Адрес сервера
 	BaseHost        string        `json:"base_host" validate:"required"`          // Базовый URL
 	FileStoragePath string        `json:"file_storage_path" validate:"omitempty"` // Путь к файлу хранилища
@@ -26,7 +27,6 @@ type Config struct {
 	LogLevel        LogLevel      `json:"log_level" validate:"required"`          // Уровень логирования
 	ReadTimeout     time.Duration `json:"read_timeout" validate:"required"`       // Таймаут чтения HTTP-запросов
 	WriteTimeout    time.Duration `json:"write_timeout" validate:"required"`      // Таймаут записи HTTP-ответов
-	TrustedSubnet   string        `json:"trusted_subnet" validate:"omitempty"`    // Подсеть для получения статистики
 }
 
 // validate проверяет правильность заполнения полей конфигурации.

@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"log"
-	"mmskazak/shorturl/internal/contracts"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"mmskazak/shorturl/internal/contracts"
 
 	"go.uber.org/zap"
 
