@@ -50,7 +50,7 @@ func NewApp(
 
 	// Блок проверки IP адреса по CIDR маске
 	router.Use(func(next http.Handler) http.Handler {
-		return middleware.IPRangeMiddleware(cfg.TrustedSubnet, next)
+		return middleware.IPRangeMiddleware(next, cfg.TrustedSubnet, zapLog)
 	})
 	// Блок middleware
 	router.Use(func(next http.Handler) http.Handler {

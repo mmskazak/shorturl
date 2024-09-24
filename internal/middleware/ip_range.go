@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"fmt"
-	"log"
+	"go.uber.org/zap"
 	"net"
 	"net/http"
 )
 
 // IPRangeMiddleware мидлвар для проверки IP адреса по CIDR маске.
-func IPRangeMiddleware(cidr string, next http.Handler) http.Handler {
+func IPRangeMiddleware(next http.Handler, cidr string, logger *zap.SugaredLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/api/internal/stats" {
 			next.ServeHTTP(w, r)
@@ -17,7 +17,7 @@ func IPRangeMiddleware(cidr string, next http.Handler) http.Handler {
 
 		ipNet, err := parseCIDR(cidr)
 		if err != nil {
-			log.Printf("error parsing cidr %q: %v", cidr, err)
+			logger.Infof("error parsing cidr %q: %v", cidr, err)
 			http.Error(w, "", http.StatusForbidden)
 			return
 		}
