@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -19,12 +21,15 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
+	"google.golang.org/grpc"
 )
 
 // App представляет приложение с HTTP сервером и логгером.
 type App struct {
-	server *http.Server
-	zapLog *zap.SugaredLogger
+	server         *http.Server
+	zapLog         *zap.SugaredLogger
+	grpcServer     *grpc.Server
+	grpcServerAddr string
 }
 
 // ErrStartingServer - ошибка старта сервера.
@@ -127,11 +132,13 @@ func NewApp(
 			// для TLS-конфигурации используем менеджер сертификатов
 			TLSConfig: manager.TLSConfig(),
 		},
-		zapLog: zapLog,
+		zapLog:         zapLog,
+		grpcServer:     newGRPCServer(),
+		grpcServerAddr: ":50052",
 	}
 }
 
-// Start запускает сервер приложения.
+// Start запускает HTTP сервер.
 func (a *App) Start() error {
 	a.zapLog.Infof("Server is running on %v\n", a.server.Addr)
 
@@ -139,6 +146,33 @@ func (a *App) Start() error {
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		a.zapLog.Infof("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
+	}
+	return nil
+}
+
+func newGRPCServer() *grpc.Server {
+	// Создаем gRPC сервер
+	grpcServer := grpc.NewServer()
+
+	// Регистрируем сервисы
+
+	return grpcServer
+}
+
+// StartGRPC запускает GRPC сервер.
+func (a *App) StartGRPC() error {
+	a.zapLog.Infof("gRPC Server is running on %v\n", a.grpcServerAddr)
+
+	lis, err := net.Listen("tcp", a.grpcServerAddr)
+	if err != nil {
+		a.zapLog.Errorf("Failed to listen on %v: %v", a.grpcServerAddr, err)
+		return fmt.Errorf("failed to listen on %v: %w", a.grpcServerAddr, err)
+	}
+
+	err = a.grpcServer.Serve(lis)
+	if err != nil {
+		a.zapLog.Errorf("Error starting gRPC server: %v", err)
+		return fmt.Errorf("error starting gRPC server: %w", err)
 	}
 	return nil
 }
@@ -151,8 +185,34 @@ func (a *App) Stop(ctx context.Context) error {
 		return fmt.Errorf("err Shutdown server: %w", err)
 	}
 
-	a.zapLog.Infoln("Сервер успешно остановлен.")
+	a.zapLog.Infoln("HTTP сервер успешно остановлен.")
+
+	// Остановка gRPC сервера.
+	a.grpcServer.GracefulStop() // gRPC не поддерживает Shutdown с контекстом, поэтому используем GracefulStop
+	a.zapLog.Infoln("gRPC сервер успешно остановлен.")
 
 	// Дополнительные действия по завершению работы (например, закрытие подключений к БД и т.д.)
+	return nil
+}
+
+func (a *App) StartAll() error {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		if err := a.Start(); err != nil {
+			a.zapLog.Errorf("HTTP server error: %v", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := a.StartGRPC(); err != nil {
+			a.zapLog.Errorf("gRPC server error: %v", err)
+		}
+	}()
+
+	wg.Wait()
 	return nil
 }
