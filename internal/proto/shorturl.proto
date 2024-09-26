@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package internal.proto;
+package proto;
+
+option go_package = "/";
 
 message InternalStatsRequest {
 }
