@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package internal.proto;
+
+message MainPageRequest {
+}
+
+message MainPageRequestResponse {
+  string info = 1;
+}
+
+message HandleRedirectRequest {
+
+}
+
+message HandleRedirectResponse {
+
+}
+
+service ShortURLService {
+  rpc MainPage(MainPageRequest) returns (MainPageRequestResponse);
+  rpc HandleRedirect(HandleRedirectRequest) returns (HandleRedirectResponse);
+}
