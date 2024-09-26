@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mmskazak/shorturl/internal/middleware"
 	"net/http"
 	"time"
 
@@ -11,12 +12,10 @@ import (
 
 	"mmskazak/shorturl/internal/contracts"
 
+	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/handlers/api"
 	"mmskazak/shorturl/internal/handlers/web"
-	"mmskazak/shorturl/internal/middleware"
-
-	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -49,7 +48,16 @@ func NewApp(
 	router := chi.NewRouter()
 
 	router = registrationMiddleware(router, cfg, zapLog)
-	router = registrationRoutes(
+	router = registrationWEBRoutes(
+		ctx,
+		router,
+		cfg,
+		zapLog,
+		store,
+		shortURLService,
+	)
+
+	router = registrationAPIRoutes(
 		ctx,
 		router,
 		cfg,
@@ -102,29 +110,7 @@ func (a *App) Stop(ctx context.Context) error {
 	return nil
 }
 
-// registrationMiddleware регистрация мидлваров
-func registrationMiddleware(router *chi.Mux, cfg *config.Config, zapLog *zap.SugaredLogger) *chi.Mux {
-	// Блок проверки IP адреса по CIDR маске
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.IPRangeMiddleware(next, cfg.TrustedSubnet, zapLog)
-	})
-	// Блок middleware
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.GetUserURLsForAuth(next, cfg)
-	})
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.AuthMiddleware(next, cfg, zapLog)
-	})
-	router.Use(middleware.CheckUserID)
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.LoggingRequestMiddleware(next, zapLog)
-	})
-	router.Use(middleware.GzipMiddleware)
-
-	return router
-}
-
-func registrationRoutes(
+func registrationWEBRoutes(
 	ctx context.Context,
 	router *chi.Mux,
 	cfg *config.Config,
@@ -149,15 +135,8 @@ func registrationRoutes(
 		web.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
 	})
 
-	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		api.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
-	})
-
-	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
-		api.SaveShortenURLsBatch(ctx, w, r, store, cfg.BaseHost, zapLog)
-	})
-
-	pingPostgreSQL := func(w http.ResponseWriter, r *http.Request) {
+	// Пинг PostgreSQL
+	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		pinger, ok := store.(contracts.Pinger)
 		if !ok {
 			zapLog.Infoln("The storage does not support Ping")
@@ -165,8 +144,28 @@ func registrationRoutes(
 		}
 
 		web.PingPostgreSQL(ctx, w, r, pinger, zapLog)
-	}
-	router.Get("/ping", pingPostgreSQL)
+	})
+
+	return router
+}
+
+func registrationAPIRoutes(
+	ctx context.Context,
+	router *chi.Mux,
+	cfg *config.Config,
+	zapLog *zap.SugaredLogger,
+	store contracts.Storage,
+	shortURLService contracts.IShortURLService,
+) *chi.Mux {
+	baseHost := cfg.BaseHost // Получаем значение из конфига
+
+	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
+		api.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
+	})
+
+	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
+		api.SaveShortenURLsBatch(ctx, w, r, store, cfg.BaseHost, zapLog)
+	})
 
 	router.Get("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
 		api.FindUserURLs(ctx, w, r, store, cfg.BaseHost, zapLog)
@@ -179,6 +178,28 @@ func registrationRoutes(
 	router.Get("/api/internal/stats", func(w http.ResponseWriter, r *http.Request) {
 		api.InternalStats(ctx, w, r, store, zapLog)
 	})
+
+	return router
+}
+
+// registrationMiddleware регистрация мидлваров
+func registrationMiddleware(router *chi.Mux, cfg *config.Config, zapLog *zap.SugaredLogger) *chi.Mux {
+	// Блок проверки IP адреса по CIDR маске
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.IPRangeMiddleware(next, cfg.TrustedSubnet, zapLog)
+	})
+	// Блок middleware
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.GetUserURLsForAuth(next, cfg)
+	})
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.AuthMiddleware(next, cfg, zapLog)
+	})
+	router.Use(middleware.CheckUserID)
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.LoggingRequestMiddleware(next, zapLog)
+	})
+	router.Use(middleware.GzipMiddleware)
 
 	return router
 }

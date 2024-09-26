@@ -2,22 +2,14 @@ syntax = "proto3";
 
 package internal.proto;
 
-message MainPageRequest {
+message InternalStatsRequest {
 }
 
-message MainPageRequestResponse {
-  string info = 1;
-}
-
-message HandleRedirectRequest {
-
-}
-
-message HandleRedirectResponse {
-
+message InternalStatsResponse {
+  string urls = 1;
+  string users = 2;
 }
 
 service ShortURLService {
-  rpc MainPage(MainPageRequest) returns (MainPageRequestResponse);
-  rpc HandleRedirect(HandleRedirectRequest) returns (HandleRedirectResponse);
+  rpc InternalStats(InternalStatsRequest) returns (InternalStatsResponse);
 }
