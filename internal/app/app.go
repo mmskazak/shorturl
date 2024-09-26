@@ -48,6 +48,62 @@ func NewApp(
 ) *App {
 	router := chi.NewRouter()
 
+	router = registrationMiddleware(router, cfg, zapLog)
+	router = registrationRoutes(
+		ctx,
+		router,
+		cfg,
+		zapLog,
+		store,
+		shortURLService,
+	)
+
+	manager := &autocert.Manager{
+		// перечень доменов, для которых будут поддерживаться сертификаты
+		HostPolicy: autocert.HostWhitelist("localhost"),
+	}
+
+	return &App{
+		server: &http.Server{
+			Addr:         cfg.Address,
+			Handler:      router,
+			ReadTimeout:  readTimeout,
+			WriteTimeout: writeTimeout,
+			// для TLS-конфигурации используем менеджер сертификатов
+			TLSConfig: manager.TLSConfig(),
+		},
+		zapLog: zapLog,
+	}
+}
+
+// Start запускает сервер приложения.
+func (a *App) Start() error {
+	a.zapLog.Infof("Server is running on %v\n", a.server.Addr)
+
+	err := a.server.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		a.zapLog.Infof("%v: %v", ErrStartingServer, err)
+		return fmt.Errorf(ErrStartingServer+": %w", err)
+	}
+	return nil
+}
+
+// Stop корректно завершает работу приложения.
+func (a *App) Stop(ctx context.Context) error {
+	// Закрытие сервера с учетом переданного контекста.
+	if err := a.server.Shutdown(ctx); err != nil {
+		a.zapLog.Errorf("Ошибка при остановке сервера: %v", err)
+		return fmt.Errorf("err Shutdown server: %w", err)
+	}
+
+	a.zapLog.Infoln("Сервер успешно остановлен.")
+
+	// Дополнительные действия по завершению работы (например, закрытие подключений к БД и т.д.)
+	return nil
+}
+
+// registrationMiddleware регистрация мидлваров
+func registrationMiddleware(router *chi.Mux, cfg *config.Config, zapLog *zap.SugaredLogger) *chi.Mux {
 	// Блок проверки IP адреса по CIDR маске
 	router.Use(func(next http.Handler) http.Handler {
 		return middleware.IPRangeMiddleware(next, cfg.TrustedSubnet, zapLog)
@@ -65,6 +121,17 @@ func NewApp(
 	})
 	router.Use(middleware.GzipMiddleware)
 
+	return router
+}
+
+func registrationRoutes(
+	ctx context.Context,
+	router *chi.Mux,
+	cfg *config.Config,
+	zapLog *zap.SugaredLogger,
+	store contracts.Storage,
+	shortURLService contracts.IShortURLService,
+) *chi.Mux {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		web.MainPage(w, r, zapLog)
 	})
@@ -113,46 +180,5 @@ func NewApp(
 		api.InternalStats(ctx, w, r, store, zapLog)
 	})
 
-	manager := &autocert.Manager{
-		// перечень доменов, для которых будут поддерживаться сертификаты
-		HostPolicy: autocert.HostWhitelist("localhost"),
-	}
-
-	return &App{
-		server: &http.Server{
-			Addr:         cfg.Address,
-			Handler:      router,
-			ReadTimeout:  readTimeout,
-			WriteTimeout: writeTimeout,
-			// для TLS-конфигурации используем менеджер сертификатов
-			TLSConfig: manager.TLSConfig(),
-		},
-		zapLog: zapLog,
-	}
-}
-
-// Start запускает сервер приложения.
-func (a *App) Start() error {
-	a.zapLog.Infof("Server is running on %v\n", a.server.Addr)
-
-	err := a.server.ListenAndServe()
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.zapLog.Infof("%v: %v", ErrStartingServer, err)
-		return fmt.Errorf(ErrStartingServer+": %w", err)
-	}
-	return nil
-}
-
-// Stop корректно завершает работу приложения.
-func (a *App) Stop(ctx context.Context) error {
-	// Закрытие сервера с учетом переданного контекста.
-	if err := a.server.Shutdown(ctx); err != nil {
-		a.zapLog.Errorf("Ошибка при остановке сервера: %v", err)
-		return fmt.Errorf("err Shutdown server: %w", err)
-	}
-
-	a.zapLog.Infoln("Сервер успешно остановлен.")
-
-	// Дополнительные действия по завершению работы (например, закрытие подключений к БД и т.д.)
-	return nil
+	return router
 }
