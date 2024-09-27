@@ -112,6 +112,9 @@ func newGRPCServer() *grpc.Server {
 	return grpcServer
 }
 
+type APIService struct {
+}
+
 // StartGRPC запускает GRPC сервер.
 func (a *App) StartGRPC() error {
 	a.zapLog.Infof("gRPC Server is running on %v\n", a.grpcServerAddr)
