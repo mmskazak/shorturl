@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"mmskazak/shorturl/internal/middleware"
+	"mmskazak/shorturl/internal/proto"
 	"net"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -108,11 +110,20 @@ func newGRPCServer() *grpc.Server {
 	grpcServer := grpc.NewServer()
 
 	// Регистрируем сервисы
+	proto.RegisterShortURLServiceServer(grpcServer, &ShortURLService{})
 
 	return grpcServer
 }
 
-type APIService struct {
+type ShortURLService struct {
+	proto.UnimplementedShortURLServiceServer
+}
+
+func (sh *ShortURLService) InternalStats(ctx context.Context, in *proto.InternalStatsRequest) (*proto.InternalStatsResponse, error) {
+	var responseStats proto.InternalStatsResponse
+	responseStats.Users = strconv.Itoa(10)
+	responseStats.Urls = strconv.Itoa(100)
+	return &responseStats, nil
 }
 
 // StartGRPC запускает GRPC сервер.
