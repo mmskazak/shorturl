@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"mmskazak/shorturl/internal/services/checkip"
 	"net"
 	"net/http"
 
@@ -16,22 +17,19 @@ func IPRangeMiddleware(next http.Handler, cidr string, logger *zap.SugaredLogger
 			return
 		}
 
-		ipNet, err := parseCIDR(cidr)
+		ip := realIP(r)
+		ok, err := checkip.CheckIPByCIDR(ip, cidr)
 		if err != nil {
-			logger.Infof("error parsing cidr %q: %v", cidr, err)
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+
+		if !ok {
 			http.Error(w, "", http.StatusForbidden)
 			return
 		}
 
-		ip := realIP(r)
-		if ip != "" {
-			clientIP := net.ParseIP(ip)
-			if clientIP != nil && ipNet.Contains(clientIP) {
-				next.ServeHTTP(w, r)
-				return
-			}
-		}
-		http.Error(w, "", http.StatusForbidden)
+		next.ServeHTTP(w, r)
 	})
 }
 
