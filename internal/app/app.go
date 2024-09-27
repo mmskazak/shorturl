@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mmskazak/shorturl/internal/middleware"
 	"mmskazak/shorturl/internal/proto"
 	"net"
 	"net/http"
@@ -15,13 +14,10 @@ import (
 
 	"mmskazak/shorturl/internal/contracts"
 
-	"go.uber.org/zap"
-	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/handlers/api"
-	"mmskazak/shorturl/internal/handlers/web"
-
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"mmskazak/shorturl/internal/config"
 )
 
 // App представляет приложение с HTTP сервером и логгером.
@@ -104,7 +100,7 @@ func (a *App) Start() error {
 	return nil
 }
 
-func newGRPCServer(store contracts.IInternalStats, zapLog *zap.SugaredLogger) *grpc.Server {
+func newGRPCServer(store contracts.Storage, zapLog *zap.SugaredLogger) *grpc.Server {
 	// Создаем gRPC сервер
 	grpcServer := grpc.NewServer()
 
@@ -112,33 +108,6 @@ func newGRPCServer(store contracts.IInternalStats, zapLog *zap.SugaredLogger) *g
 	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(store, zapLog))
 
 	return grpcServer
-}
-
-type ShortURLService struct {
-	proto.UnimplementedShortURLServiceServer
-	store  contracts.IInternalStats
-	zapLog *zap.SugaredLogger
-}
-
-func NewShortURLService(store contracts.IInternalStats, zapLog *zap.SugaredLogger) *ShortURLService {
-	return &ShortURLService{
-		store:  store,
-		zapLog: zapLog,
-	}
-}
-
-func (sh *ShortURLService) InternalStats(ctx context.Context,
-	_ *proto.InternalStatsRequest,
-) (*proto.InternalStatsResponse, error) {
-	sh.zapLog.Infoln("GRPC InternalStats called")
-	var responseStats proto.InternalStatsResponse
-	stats, err := sh.store.InternalStats(ctx)
-	if err != nil {
-		responseStats.Error = err.Error()
-	}
-	responseStats.Users = stats.Users
-	responseStats.Urls = stats.Urls
-	return &responseStats, nil
 }
 
 // StartGRPC запускает GRPC сервер.
@@ -197,98 +166,4 @@ func (a *App) StartAll() error {
 
 	wg.Wait()
 	return nil
-}
-
-func registrationWEBRoutes(
-	ctx context.Context,
-	router *chi.Mux,
-	cfg *config.Config,
-	zapLog *zap.SugaredLogger,
-	store contracts.Storage,
-	shortURLService contracts.IShortURLService,
-) *chi.Mux {
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		web.MainPage(w, r, zapLog)
-	})
-
-	baseHost := cfg.BaseHost // Получаем значение из конфига
-
-	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-		zapLog.Infoln("Запрос получен handleRedirectHandler")
-		web.HandleRedirect(ctx, w, r, store, zapLog)
-	})
-
-	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
-	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		web.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
-	})
-
-	// Пинг PostgreSQL
-	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		pinger, ok := store.(contracts.Pinger)
-		if !ok {
-			zapLog.Infoln("The storage does not support Ping")
-			return
-		}
-
-		web.PingPostgreSQL(ctx, w, r, pinger, zapLog)
-	})
-
-	return router
-}
-
-func registrationAPIRoutes(
-	ctx context.Context,
-	router *chi.Mux,
-	cfg *config.Config,
-	zapLog *zap.SugaredLogger,
-	store contracts.Storage,
-	shortURLService contracts.IShortURLService,
-) *chi.Mux {
-	baseHost := cfg.BaseHost // Получаем значение из конфига
-
-	router.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		api.HandleCreateShortURL(ctx, w, r, store, baseHost, zapLog, shortURLService)
-	})
-
-	router.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
-		api.SaveShortenURLsBatch(ctx, w, r, store, cfg.BaseHost, zapLog)
-	})
-
-	router.Get("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
-		api.FindUserURLs(ctx, w, r, store, cfg.BaseHost, zapLog)
-	})
-
-	router.Delete("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
-		api.DeleteUserURLs(ctx, w, r, store, zapLog)
-	})
-
-	router.Get("/api/internal/stats", func(w http.ResponseWriter, r *http.Request) {
-		api.InternalStats(ctx, w, r, store, zapLog)
-	})
-
-	return router
-}
-
-// registrationMiddleware регистрация мидлваров
-func registrationMiddleware(router *chi.Mux, cfg *config.Config, zapLog *zap.SugaredLogger) *chi.Mux {
-	// Блок проверки IP адреса по CIDR маске
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.IPRangeMiddleware(next, cfg.TrustedSubnet, zapLog)
-	})
-	// Блок middleware
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.GetUserURLsForAuth(next, cfg)
-	})
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.AuthMiddleware(next, cfg, zapLog)
-	})
-	router.Use(middleware.CheckUserID)
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.LoggingRequestMiddleware(next, zapLog)
-	})
-	router.Use(middleware.GzipMiddleware)
-
-	return router
 }

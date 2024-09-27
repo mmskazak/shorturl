@@ -13,6 +13,16 @@ message InternalStatsResponse {
   string error = 3;
 }
 
+message DeleteUserURLsRequest {
+  repeated string urls = 1;
+}
+
+message DeleteUserURLsResponse {
+  string error = 1;
+  string status = 2;
+}
+
 service ShortURLService {
   rpc InternalStats(InternalStatsRequest) returns (InternalStatsResponse);
+  rpc DeleteUserURLs(DeleteUserURLsRequest) returns (DeleteUserURLsResponse);
 }
