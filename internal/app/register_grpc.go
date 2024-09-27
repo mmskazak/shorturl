@@ -101,8 +101,8 @@ func (sh *ShortURLService) FindUserURLs(
 	// Преобразуем результаты в слайс структур UserURLs
 	for _, url := range urls {
 		userURL := &proto.UserURLs{
-			ShortUrl:    url.ShortURL,    // предполагается, что url.ShortURL содержит сокращенный URL
-			OriginalUrl: url.OriginalURL, // предполагается, что url.OriginalURL содержит оригинальный URL
+			ShortUrl:    url.ShortURL,
+			OriginalUrl: url.OriginalURL,
 		}
 		response.UserUrls = append(response.UserUrls, userURL)
 	}
