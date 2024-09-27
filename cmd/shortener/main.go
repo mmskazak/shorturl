@@ -62,7 +62,7 @@ func main() {
 
 	// Запуск сервера в отдельной горутине.
 	go func() {
-		if err := newApp.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := newApp.StartAll(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zapLog.Fatalf("Ошибка сервера: %v", err)
 		}
 	}()

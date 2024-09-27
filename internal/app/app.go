@@ -8,7 +8,6 @@ import (
 	"mmskazak/shorturl/internal/proto"
 	"net"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -88,8 +87,8 @@ func NewApp(
 			TLSConfig: manager.TLSConfig(),
 		},
 		zapLog:         zapLog,
-		grpcServer:     newGRPCServer(),
-		grpcServerAddr: ":3200",
+		grpcServer:     newGRPCServer(store, zapLog),
+		grpcServerAddr: ":50051",
 	}
 }
 
@@ -105,24 +104,40 @@ func (a *App) Start() error {
 	return nil
 }
 
-func newGRPCServer() *grpc.Server {
+func newGRPCServer(store contracts.IInternalStats, zapLog *zap.SugaredLogger) *grpc.Server {
 	// Создаем gRPC сервер
 	grpcServer := grpc.NewServer()
 
 	// Регистрируем сервисы
-	proto.RegisterShortURLServiceServer(grpcServer, &ShortURLService{})
+	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(store, zapLog))
 
 	return grpcServer
 }
 
 type ShortURLService struct {
 	proto.UnimplementedShortURLServiceServer
+	store  contracts.IInternalStats
+	zapLog *zap.SugaredLogger
 }
 
-func (sh *ShortURLService) InternalStats(ctx context.Context, in *proto.InternalStatsRequest) (*proto.InternalStatsResponse, error) {
+func NewShortURLService(store contracts.IInternalStats, zapLog *zap.SugaredLogger) *ShortURLService {
+	return &ShortURLService{
+		store:  store,
+		zapLog: zapLog,
+	}
+}
+
+func (sh *ShortURLService) InternalStats(ctx context.Context,
+	_ *proto.InternalStatsRequest,
+) (*proto.InternalStatsResponse, error) {
+	sh.zapLog.Infoln("GRPC InternalStats called")
 	var responseStats proto.InternalStatsResponse
-	responseStats.Users = strconv.Itoa(10)
-	responseStats.Urls = strconv.Itoa(100)
+	stats, err := sh.store.InternalStats(ctx)
+	if err != nil {
+		responseStats.Error = err.Error()
+	}
+	responseStats.Users = stats.Users
+	responseStats.Urls = stats.Urls
 	return &responseStats, nil
 }
 

@@ -10,6 +10,7 @@ message InternalStatsRequest {
 message InternalStatsResponse {
   string urls = 1;
   string users = 2;
+  string error = 3;
 }
 
 service ShortURLService {

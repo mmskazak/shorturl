@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"mmskazak/shorturl/internal/contracts"
@@ -40,4 +41,22 @@ func InternalStats(
 	if err != nil {
 		zapLog.Errorf("error writing response: %v", err)
 	}
+}
+
+// InternalStatsFacade - внутренняя статистика.
+func InternalStatsFacade(
+	ctx context.Context,
+	store contracts.IInternalStats,
+	zapLog *zap.SugaredLogger,
+) ([]byte, error) {
+	zapLog.Info("Getting request by internal stats.")
+	stats, err := store.InternalStats(ctx)
+
+	// Преобразуем данные в JSON
+	response, err := json.Marshal(stats)
+	if err != nil {
+		return []byte{}, fmt.Errorf("error marshalling internal stats: %w", err)
+	}
+
+	return response, nil
 }
