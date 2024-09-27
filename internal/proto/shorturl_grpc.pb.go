@@ -19,8 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ShortURLService_InternalStats_FullMethodName  = "/proto.ShortURLService/InternalStats"
-	ShortURLService_DeleteUserURLs_FullMethodName = "/proto.ShortURLService/DeleteUserURLs"
+	ShortURLService_InternalStats_FullMethodName        = "/proto.ShortURLService/InternalStats"
+	ShortURLService_DeleteUserURLs_FullMethodName       = "/proto.ShortURLService/DeleteUserURLs"
+	ShortURLService_FindUserURLs_FullMethodName         = "/proto.ShortURLService/FindUserURLs"
+	ShortURLService_SaveShortenURLsBatch_FullMethodName = "/proto.ShortURLService/SaveShortenURLsBatch"
+	ShortURLService_HandleCreateShortURL_FullMethodName = "/proto.ShortURLService/HandleCreateShortURL"
 )
 
 // ShortURLServiceClient is the client API for ShortURLService service.
@@ -29,6 +32,9 @@ const (
 type ShortURLServiceClient interface {
 	InternalStats(ctx context.Context, in *InternalStatsRequest, opts ...grpc.CallOption) (*InternalStatsResponse, error)
 	DeleteUserURLs(ctx context.Context, in *DeleteUserURLsRequest, opts ...grpc.CallOption) (*DeleteUserURLsResponse, error)
+	FindUserURLs(ctx context.Context, in *FindUserURLsRequest, opts ...grpc.CallOption) (*FindUserURLsResponse, error)
+	SaveShortenURLsBatch(ctx context.Context, in *SaveShortenURLsBatchRequest, opts ...grpc.CallOption) (*SaveShortenURLsBatchResponse, error)
+	HandleCreateShortURL(ctx context.Context, in *HandleCreateShortURLRequest, opts ...grpc.CallOption) (*HandleCreateShortURLResponse, error)
 }
 
 type shortURLServiceClient struct {
@@ -59,12 +65,45 @@ func (c *shortURLServiceClient) DeleteUserURLs(ctx context.Context, in *DeleteUs
 	return out, nil
 }
 
+func (c *shortURLServiceClient) FindUserURLs(ctx context.Context, in *FindUserURLsRequest, opts ...grpc.CallOption) (*FindUserURLsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FindUserURLsResponse)
+	err := c.cc.Invoke(ctx, ShortURLService_FindUserURLs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shortURLServiceClient) SaveShortenURLsBatch(ctx context.Context, in *SaveShortenURLsBatchRequest, opts ...grpc.CallOption) (*SaveShortenURLsBatchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SaveShortenURLsBatchResponse)
+	err := c.cc.Invoke(ctx, ShortURLService_SaveShortenURLsBatch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shortURLServiceClient) HandleCreateShortURL(ctx context.Context, in *HandleCreateShortURLRequest, opts ...grpc.CallOption) (*HandleCreateShortURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HandleCreateShortURLResponse)
+	err := c.cc.Invoke(ctx, ShortURLService_HandleCreateShortURL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ShortURLServiceServer is the server API for ShortURLService service.
 // All implementations must embed UnimplementedShortURLServiceServer
 // for forward compatibility.
 type ShortURLServiceServer interface {
 	InternalStats(context.Context, *InternalStatsRequest) (*InternalStatsResponse, error)
 	DeleteUserURLs(context.Context, *DeleteUserURLsRequest) (*DeleteUserURLsResponse, error)
+	FindUserURLs(context.Context, *FindUserURLsRequest) (*FindUserURLsResponse, error)
+	SaveShortenURLsBatch(context.Context, *SaveShortenURLsBatchRequest) (*SaveShortenURLsBatchResponse, error)
+	HandleCreateShortURL(context.Context, *HandleCreateShortURLRequest) (*HandleCreateShortURLResponse, error)
 	mustEmbedUnimplementedShortURLServiceServer()
 }
 
@@ -80,6 +119,15 @@ func (UnimplementedShortURLServiceServer) InternalStats(context.Context, *Intern
 }
 func (UnimplementedShortURLServiceServer) DeleteUserURLs(context.Context, *DeleteUserURLsRequest) (*DeleteUserURLsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserURLs not implemented")
+}
+func (UnimplementedShortURLServiceServer) FindUserURLs(context.Context, *FindUserURLsRequest) (*FindUserURLsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindUserURLs not implemented")
+}
+func (UnimplementedShortURLServiceServer) SaveShortenURLsBatch(context.Context, *SaveShortenURLsBatchRequest) (*SaveShortenURLsBatchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveShortenURLsBatch not implemented")
+}
+func (UnimplementedShortURLServiceServer) HandleCreateShortURL(context.Context, *HandleCreateShortURLRequest) (*HandleCreateShortURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HandleCreateShortURL not implemented")
 }
 func (UnimplementedShortURLServiceServer) mustEmbedUnimplementedShortURLServiceServer() {}
 func (UnimplementedShortURLServiceServer) testEmbeddedByValue()                         {}
@@ -138,6 +186,60 @@ func _ShortURLService_DeleteUserURLs_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ShortURLService_FindUserURLs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindUserURLsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortURLServiceServer).FindUserURLs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortURLService_FindUserURLs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortURLServiceServer).FindUserURLs(ctx, req.(*FindUserURLsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShortURLService_SaveShortenURLsBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveShortenURLsBatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortURLServiceServer).SaveShortenURLsBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortURLService_SaveShortenURLsBatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortURLServiceServer).SaveShortenURLsBatch(ctx, req.(*SaveShortenURLsBatchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShortURLService_HandleCreateShortURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HandleCreateShortURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortURLServiceServer).HandleCreateShortURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortURLService_HandleCreateShortURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortURLServiceServer).HandleCreateShortURL(ctx, req.(*HandleCreateShortURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ShortURLService_ServiceDesc is the grpc.ServiceDesc for ShortURLService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +254,18 @@ var ShortURLService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUserURLs",
 			Handler:    _ShortURLService_DeleteUserURLs_Handler,
+		},
+		{
+			MethodName: "FindUserURLs",
+			Handler:    _ShortURLService_FindUserURLs_Handler,
+		},
+		{
+			MethodName: "SaveShortenURLsBatch",
+			Handler:    _ShortURLService_SaveShortenURLsBatch_Handler,
+		},
+		{
+			MethodName: "HandleCreateShortURL",
+			Handler:    _ShortURLService_HandleCreateShortURL_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

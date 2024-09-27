@@ -83,7 +83,7 @@ func NewApp(
 			TLSConfig: manager.TLSConfig(),
 		},
 		zapLog:         zapLog,
-		grpcServer:     newGRPCServer(store, zapLog),
+		grpcServer:     newGRPCServer(cfg, store, zapLog),
 		grpcServerAddr: ":50051",
 	}
 }
@@ -100,12 +100,12 @@ func (a *App) Start() error {
 	return nil
 }
 
-func newGRPCServer(store contracts.Storage, zapLog *zap.SugaredLogger) *grpc.Server {
+func newGRPCServer(cfg *config.Config, store contracts.Storage, zapLog *zap.SugaredLogger) *grpc.Server {
 	// Создаем gRPC сервер
 	grpcServer := grpc.NewServer()
 
 	// Регистрируем сервисы
-	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(store, zapLog))
+	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(cfg, store, zapLog))
 
 	return grpcServer
 }

@@ -18,11 +18,55 @@ message DeleteUserURLsRequest {
 }
 
 message DeleteUserURLsResponse {
-  string error = 1;
-  string status = 2;
+  string status = 1;
+}
+
+message FindUserURLsRequest {
+  string user_id = 1;
+}
+
+message UserURLs {
+  string short_url = 1;
+  string original_url = 2;
+}
+
+message FindUserURLsResponse {
+  repeated UserURLs user_urls = 1;
+}
+
+message  Incoming  {
+  string correlation_id = 1;
+  string original_url = 2;
+}
+message Output {
+  string correlation_id = 1;
+  string short_url = 2;
+}
+
+message SaveShortenURLsBatchRequest {
+  string user_id = 1;
+  repeated Incoming incoming = 2;
+}
+
+message SaveShortenURLsBatchResponse {
+  repeated Output incoming = 1;
+}
+
+
+message HandleCreateShortURLRequest {
+  string user_id = 1;
+  string original_url = 2;
+
+}
+
+message HandleCreateShortURLResponse {
+    string result = 1;
 }
 
 service ShortURLService {
   rpc InternalStats(InternalStatsRequest) returns (InternalStatsResponse);
   rpc DeleteUserURLs(DeleteUserURLsRequest) returns (DeleteUserURLsResponse);
+  rpc FindUserURLs(FindUserURLsRequest) returns (FindUserURLsResponse);
+  rpc SaveShortenURLsBatch(SaveShortenURLsBatchRequest) returns (SaveShortenURLsBatchResponse);
+  rpc HandleCreateShortURL(HandleCreateShortURLRequest) returns (HandleCreateShortURLResponse);
 }
