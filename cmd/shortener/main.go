@@ -11,6 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"mmskazak/shorturl/internal/contracts"
+
+	"go.uber.org/zap"
+
 	"mmskazak/shorturl/internal/services/shorturlservice"
 
 	"mmskazak/shorturl/internal/app"
@@ -25,32 +29,11 @@ const shutdownDuration = 5 * time.Second
 //
 //go:generate go run ./../version/main.go
 func main() {
-	// Инициализация конфигурации.
-	cfg, err := config.InitConfig()
-	if err != nil {
-		log.Fatalf("Ошибка инициализации конфигурации: %v", err)
-	}
-
-	// Получение уровня логирования из конфигурации.
-	level, err := cfg.LogLevel.Value()
-	if err != nil {
-		log.Printf("Ошибка получения уровня логирования: %v", err)
-	}
-
-	// Инициализация логгера.
-	zapLog, err := logger.Init(level)
-	if err != nil {
-		log.Printf("ошибка инициализации логера output: %v", err)
-	}
-
 	// Создание контекста.
 	ctx := context.Background()
 
-	// Инициализация хранилища.
-	storage, err := factory.NewStorage(ctx, cfg, zapLog)
-	if err != nil {
-		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
-	}
+	cfg, zapLog, storage := prepareParamsForApp(ctx)
+
 	defer func() {
 		if err := storage.Close(); err != nil {
 			zapLog.Warn("Error closing storage: %v\n", err)
@@ -70,9 +53,8 @@ func main() {
 		shortURLService,
 	)
 
-	zapLog.Infof("Build version: %s", buildVersion)
-	zapLog.Infof("Build date: %s", buildDate)
-	zapLog.Infof("Build commit: %s", buildCommit)
+	// Логирование Build параметров
+	loggingBuildParams(zapLog)
 
 	// Создаем канал для получения системных сигналов.
 	quit := make(chan os.Signal, 1)
@@ -97,4 +79,38 @@ func main() {
 	}
 
 	zapLog.Infoln("Приложение завершило работу.")
+}
+
+func prepareParamsForApp(ctx context.Context) (*config.Config, *zap.SugaredLogger, contracts.Storage) {
+	// Инициализация конфигурации.
+	cfg, err := config.InitConfig()
+	if err != nil {
+		log.Fatalf("Ошибка инициализации конфигурации: %v", err)
+	}
+
+	// Получение уровня логирования из конфигурации.
+	level, err := cfg.LogLevel.Value()
+	if err != nil {
+		log.Printf("Ошибка получения уровня логирования: %v", err)
+	}
+
+	// Инициализация логгера.
+	zapLog, err := logger.Init(level)
+	if err != nil {
+		log.Printf("ошибка инициализации логера output: %v", err)
+	}
+
+	// Инициализация хранилища.
+	storage, err := factory.NewStorage(ctx, cfg, zapLog)
+	if err != nil {
+		zapLog.Fatalf("Ошибка инициализации хранилища: %v", err)
+	}
+
+	return cfg, zapLog, storage
+}
+
+func loggingBuildParams(zapLog *zap.SugaredLogger) {
+	zapLog.Infof("Build version: %s", buildVersion)
+	zapLog.Infof("Build date: %s", buildDate)
+	zapLog.Infof("Build commit: %s", buildCommit)
 }

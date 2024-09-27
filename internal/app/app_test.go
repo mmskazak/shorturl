@@ -19,6 +19,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const shutdownDuration = 1 * time.Second
+
 func TestNewApp(t *testing.T) {
 	ctx := context.Background()
 	type args struct {
@@ -73,5 +75,22 @@ func TestApp_Start(t *testing.T) {
 		zapLog: zap.NewNop().Sugar(),
 	}
 	err = a.Start()
+	assert.NoError(t, err)
+}
+
+func TestApp_Stop(t *testing.T) {
+	ctx := context.Background()
+	srv := &http.Server{}
+	err := srv.Shutdown(ctx)
+	require.NoError(t, err)
+	a := &App{
+		server: srv,
+		zapLog: zap.NewNop().Sugar(),
+	}
+	err = a.Start()
+	assert.NoError(t, err)
+	ctxShutdown, cancel := context.WithTimeout(context.Background(), shutdownDuration)
+	defer cancel()
+	err = a.Stop(ctxShutdown)
 	assert.NoError(t, err)
 }

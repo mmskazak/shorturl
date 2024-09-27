@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"mmskazak/shorturl/internal/models"
 
 	"go.uber.org/zap"
@@ -100,4 +102,21 @@ func TestInMemory_DeleteURLs(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_splitSlice_chunkSize(t *testing.T) {
+	input := []string{
+		"one",
+		"two",
+	}
+	chunkSize := 0
+	got := splitSlice(input, chunkSize)
+	assert.Nil(t, got)
+}
+
+func Test_splitSlice_input(t *testing.T) {
+	var input []string
+	chunkSize := 5000
+	got := splitSlice(input, chunkSize)
+	assert.Equal(t, [][]string{}, got)
 }

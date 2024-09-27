@@ -19,17 +19,17 @@ import (
 //
 // Возвращает:
 //   - error: Ошибка, если она произошла во время удаления, иначе nil.
-func (m *InFile) DeleteURLs(ctx context.Context, urlIDs []string) error {
+func (f *InFile) DeleteURLs(ctx context.Context, urlIDs []string) error {
 	// Вызов метода удаления URL из внутреннего хранилища в памяти
-	err := m.InMe.DeleteURLs(ctx, urlIDs)
+	err := f.InMe.DeleteURLs(ctx, urlIDs)
 	if err != nil {
 		// Логирование ошибки удаления и возвращение обернутой ошибки
-		m.zapLog.Errorf("failed to delete urls: %v", err)
+		f.zapLog.Errorf("failed to delete urls: %v", err)
 		return fmt.Errorf("delete urls: %w", err)
 	}
 	// Сохранение изменений в файл
-	m.saveToFile()
+	f.saveToFile()
 	// Логирование успешного удаления
-	m.zapLog.Infof("deleted %d urls", len(urlIDs))
+	f.zapLog.Infof("deleted %d urls", len(urlIDs))
 	return nil
 }

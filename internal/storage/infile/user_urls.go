@@ -24,8 +24,8 @@ import (
 //
 // Примечания:
 // - Ошибка пробрасывается дальше без обёртывания, чтобы сохранить оригинальное сообщение об ошибке.
-func (m *InFile) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error) {
-	urls, err := m.InMe.GetUserURLs(ctx, userID, baseHost)
+func (f *InFile) GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error) {
+	urls, err := f.InMe.GetUserURLs(ctx, userID, baseHost)
 	if err != nil {
 		return nil, err //nolint:wrapcheck // пробрасываем дальше ошибку
 	}
