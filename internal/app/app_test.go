@@ -83,9 +83,17 @@ func TestApp_Stop(t *testing.T) {
 	srv := &http.Server{}
 	err := srv.Shutdown(ctx)
 	require.NoError(t, err)
+	zapLog := zap.NewNop().Sugar()
+	cfg, err := config.InitConfig()
+	require.NoError(t, err)
+	store, err := inmemory.NewInMemory(zapLog)
+	require.NoError(t, err)
+
 	a := &App{
-		server: srv,
-		zapLog: zap.NewNop().Sugar(),
+		server:         srv,
+		zapLog:         zap.NewNop().Sugar(),
+		grpcServer:     newGRPCServer(cfg, store, zapLog),
+		grpcServerAddr: ":50051",
 	}
 	err = a.Start()
 	assert.NoError(t, err)
