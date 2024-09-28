@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/peer"
 	"mmskazak/shorturl/internal/config"
@@ -12,6 +13,7 @@ import (
 	"mmskazak/shorturl/internal/proto"
 	"mmskazak/shorturl/internal/services/checkip"
 	"mmskazak/shorturl/internal/services/genidurl"
+	"mmskazak/shorturl/internal/services/jwttoken"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net"
 )
@@ -117,6 +119,16 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	sh.zapLog.Infoln("GRPC SaveShortenURLsBatch called")
 	var response proto.SaveShortenURLsBatchResponse
 
+	jwtString, err := sh.getOrCreateJWTToken(*in.Jwt)
+	if err != nil {
+		return nil, fmt.Errorf("error getting jwt token: %w", err)
+	}
+
+	UserID, err := jwttoken.GetUserIDFromJWT(jwtString, sh.cfg.SecretKey)
+	if err != nil {
+		return nil, fmt.Errorf("user id not found: %w", err)
+	}
+
 	// Преобразуем []*Incoming в []models.Incoming
 	incomingModels := make([]models.Incoming, len(in.Incoming))
 
@@ -129,7 +141,7 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 		}
 	}
 	generator := genidurl.NewGenIDService()
-	outputs, err := sh.store.SaveBatch(ctx, incomingModels, sh.cfg.BaseHost, in.UserId, generator)
+	outputs, err := sh.store.SaveBatch(ctx, incomingModels, sh.cfg.BaseHost, UserID, generator)
 	if err != nil {
 		return nil, fmt.Errorf("error saving shorten urls: %w", err)
 	}
@@ -143,6 +155,10 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 		response.Incoming = append(response.Incoming, out)
 	}
 
+	if in.Jwt == nil {
+		*response.Jwt = jwtString
+	}
+
 	return &response, nil
 }
 
@@ -153,9 +169,19 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	sh.zapLog.Infoln("GRPC HandleCreateShortURL called")
 	var response proto.HandleCreateShortURLResponse
 
+	jwtString, err := sh.getOrCreateJWTToken(*in.Jwt)
+	if err != nil {
+		return nil, fmt.Errorf("error getting jwt token: %w", err)
+	}
+
+	UserID, err := jwttoken.GetUserIDFromJWT(jwtString, sh.cfg.SecretKey)
+	if err != nil {
+		return nil, fmt.Errorf("user id not found: %w", err)
+	}
+
 	generator := genidurl.NewGenIDService()
 	dto := dtos.DTOShortURL{
-		UserID:      in.UserId,
+		UserID:      UserID,
 		OriginalURL: in.OriginalUrl,
 		BaseHost:    sh.cfg.BaseHost,
 		Deleted:     false,
@@ -166,6 +192,27 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	if err != nil {
 		return nil, fmt.Errorf("error creating shorten url: %w", err)
 	}
+
 	response.Result = shortURL
+	if in.Jwt == nil {
+		*response.Jwt = jwtString
+	}
 	return &response, nil
+}
+
+func (sh *ShortURLService) getOrCreateJWTToken(jwt string) (string, error) {
+	var err error
+	var jwtString string
+	if jwt == "" {
+		// Создаем новый userID
+		userID := uuid.New().String()
+		jwtString, err = jwttoken.CreateNewJWTToken(userID, sh.cfg.SecretKey)
+		if err != nil {
+			return "", fmt.Errorf("error creating jwt token: %w", err)
+		}
+	} else {
+		jwtString = jwt
+	}
+
+	return jwtString, err
 }

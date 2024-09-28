@@ -3,26 +3,22 @@ package jwttoken
 import (
 	"crypto/hmac"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
 	"mmskazak/shorturl/internal/services/jwtbuilder"
-
-	"github.com/google/uuid"
 )
 
 // CreateNewJWTToken - создает новый JWT токен с новым id пользователя
-func CreateNewJWTToken(secretKey string) (string, error) {
+func CreateNewJWTToken(userID, secretKey string) (string, error) {
 	// Используем jwtbuilder для создания нового токена
 	jwt := jwtbuilder.New()
 	header := jwtbuilder.HeaderJWT{
 		Alg: "HS256", // Укажите используемый вами алгоритм
 		Typ: "JWT",
 	}
-
-	// Создаем новый JWT токен
-	userID := uuid.New().String()
 
 	payloadStruct := jwtbuilder.PayloadJWT{
 		UserID: userID,
@@ -78,4 +74,18 @@ func compareHMAC(sig1, sig2 string) bool {
 	}
 
 	return hmac.Equal(decodedSig1, decodedSig2)
+}
+
+func GetUserIDFromJWT(jwt string, secretKey string) (string, error) {
+	payloadString, err := GetSignedPayloadJWT(jwt, secretKey)
+	if err != nil {
+		return "", fmt.Errorf("error GetUserIDFromJWT: %w", err)
+	}
+	payloadStruct := jwtbuilder.PayloadJWT{}
+	err = json.Unmarshal([]byte(payloadString), &payloadStruct)
+	if err != nil {
+		return "", fmt.Errorf("error Unmarshal payload: %w", err)
+	}
+
+	return payloadStruct.UserID, nil
 }

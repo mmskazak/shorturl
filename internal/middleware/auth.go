@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
@@ -39,7 +40,10 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 			// Логируем ошибку при получении или проверке JWT
 			zapLog.Warnf("Failed to get signed payloadString of JWT: %v", err)
 
-			token, err := jwttoken.CreateNewJWTToken(secretKey)
+			// Создаем новый userID
+			userID := uuid.New().String()
+
+			token, err := jwttoken.CreateNewJWTToken(userID, secretKey)
 			if err != nil {
 				zapLog.Errorf("Failed to create JWT: %v", err)
 				http.Error(w, "Failed to create new authorization token", http.StatusInternalServerError)

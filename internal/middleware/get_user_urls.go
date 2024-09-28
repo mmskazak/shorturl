@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"mmskazak/shorturl/internal/services/jwttoken"
 	"net/http"
 
 	"mmskazak/shorturl/internal/config"
@@ -13,8 +14,9 @@ import (
 func GetUserURLsForAuth(next http.Handler, cfg *config.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		secretKey := cfg.SecretKey
-		// Попытка извлечения полезной нагрузки JWT из куки
-		_, err := getSignedPayloadJWT(r, authorizationCookieName, secretKey)
+		cookie, err := r.Cookie(authorizationCookieName)
+		jwt := cookie.Value
+		_, err = jwttoken.GetSignedPayloadJWT(jwt, secretKey)
 		// Проверка валидности токена для специфического пути
 		if err != nil && r.URL.Path == "/api/user/urls" {
 			// Возвращаем ошибку 401 Unauthorized, если токен недействителен

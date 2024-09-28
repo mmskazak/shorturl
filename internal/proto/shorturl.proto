@@ -44,23 +44,24 @@ message Output {
 }
 
 message SaveShortenURLsBatchRequest {
-  string user_id = 1;
+  optional string jwt = 1;
   repeated Incoming incoming = 2;
 }
 
 message SaveShortenURLsBatchResponse {
   repeated Output incoming = 1;
+  optional string jwt = 2;
 }
 
 
 message HandleCreateShortURLRequest {
-  string user_id = 1;
+  optional string jwt = 1;
   string original_url = 2;
-
 }
 
 message HandleCreateShortURLResponse {
-    string result = 1;
+  string result = 1;
+  optional string jwt = 2;
 }
 
 service ShortURLService {
