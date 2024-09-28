@@ -60,3 +60,8 @@ go build -o mylint.exe
 .\mylint.exe -config staticlint.json .\...
 ``````
 Файл с конфигурацией есть в папку с линтером, а так же его копия в корне проекта.
+
+## Генерация protoc
+``````
+ protoc --proto_path=internal/proto --go_out=internal/proto --go_opt=paths=source_relative --go-grpc_out=internal/proto --go-grpc_opt=paths=source_relative shorturl.proto
+``````
