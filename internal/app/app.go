@@ -149,7 +149,7 @@ func (a *App) Stop(ctx context.Context) error {
 
 func (a *App) StartAll() error {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(2) //nolint:gomnd //для двух горутин, которые запускают два сервера
 
 	go func() {
 		defer wg.Done()

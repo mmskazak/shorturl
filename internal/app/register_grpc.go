@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/contracts"
@@ -42,7 +43,7 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 	// Извлечение информации о peer (клиенте)
 	p, ok := peer.FromContext(ctx)
 	if !ok {
-		return nil, fmt.Errorf("access forbiden")
+		return nil, errors.New("access forbidden")
 	}
 
 	addr := p.Addr
@@ -51,7 +52,7 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 	// извлекаем только IP-адрес
 	tcpAddr, ok := addr.(*net.TCPAddr)
 	if !ok {
-		return nil, fmt.Errorf("invalid tcp address")
+		return nil, errors.New("invalid tcp address")
 	}
 	clientIP := tcpAddr.IP.String()
 	sh.zapLog.Infof("Client IP: %s", clientIP)
@@ -61,7 +62,7 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 		return nil, fmt.Errorf("error checking ip address: %w", err)
 	}
 	if !ok {
-		return nil, fmt.Errorf("access forbiden")
+		return nil, errors.New("access forbidden")
 	}
 
 	stats, err := sh.store.InternalStats(ctx)
@@ -215,5 +216,5 @@ func (sh *ShortURLService) getOrCreateJWTToken(jwt string) (string, error) {
 		jwtString = jwt
 	}
 
-	return jwtString, err
+	return jwtString, nil
 }

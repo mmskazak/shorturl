@@ -51,11 +51,14 @@ func InternalStatsFacade(
 ) ([]byte, error) {
 	zapLog.Info("Getting request by internal stats.")
 	stats, err := store.InternalStats(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting internal stats: %w", err)
+	}
 
 	// Преобразуем данные в JSON
 	response, err := json.Marshal(stats)
 	if err != nil {
-		return []byte{}, fmt.Errorf("error marshalling internal stats: %w", err)
+		return nil, fmt.Errorf("error marshalling internal stats: %w", err)
 	}
 
 	return response, nil
