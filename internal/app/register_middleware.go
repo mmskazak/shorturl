@@ -1,9 +1,10 @@
 package app
 
 import (
+	"net/http"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/middleware"
-	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"

@@ -1,10 +1,9 @@
 package middleware
 
 import (
-	"fmt"
-	"mmskazak/shorturl/internal/services/checkip"
-	"net"
 	"net/http"
+
+	"mmskazak/shorturl/internal/services/checkip"
 
 	"go.uber.org/zap"
 )
@@ -31,15 +30,6 @@ func IPRangeMiddleware(next http.Handler, cidr string, logger *zap.SugaredLogger
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-// parseCIDR парсит CIDR строку и возвращает объект net.IPNet.
-func parseCIDR(cidr string) (*net.IPNet, error) {
-	_, ipNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return nil, fmt.Errorf("parse cidr %s error: %w", cidr, err)
-	}
-	return ipNet, nil
 }
 
 // realIP возвращает реальный IP адрес из заголовка X-Real-IP.

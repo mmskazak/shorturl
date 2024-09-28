@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mmskazak/shorturl/internal/proto"
 	"net"
 	"net/http"
 	"sync"
 	"time"
+
+	"mmskazak/shorturl/internal/proto"
 
 	"golang.org/x/crypto/acme/autocert"
 

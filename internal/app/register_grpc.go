@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/contracts"
 	"mmskazak/shorturl/internal/dtos"
@@ -13,7 +15,6 @@ import (
 	"mmskazak/shorturl/internal/services/genidurl"
 	"mmskazak/shorturl/internal/services/jwttoken"
 	"mmskazak/shorturl/internal/services/shorturlservice"
-	"net"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"

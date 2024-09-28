@@ -3,10 +3,11 @@ package middleware
 import (
 	"encoding/base64"
 	"encoding/json"
-	"mmskazak/shorturl/internal/services/jwttoken"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"mmskazak/shorturl/internal/services/jwttoken"
 
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"

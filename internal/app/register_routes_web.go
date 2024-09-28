@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
+	"net/http"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/contracts"
 	"mmskazak/shorturl/internal/handlers/web"
-	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
