@@ -75,12 +75,12 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 func getSignedJWTPayloadFromCookie(r *http.Request, secretKey string) (string, error) {
 	cookie, err := r.Cookie(authorizationCookieName)
 	if err != nil {
-		return "", fmt.Errorf("no authorization cookie")
+		return "", fmt.Errorf("no authorization cookie: %w", err)
 	}
 	jwt := cookie.Value
 	payloadString, err := jwttoken.GetSignedPayloadJWT(jwt, secretKey)
 	if err != nil {
-		return "", fmt.Errorf("error getting signed payloadString of JWT: %v", err)
+		return "", fmt.Errorf("error getting signed payloadString of JWT: %w", err)
 	}
 
 	return payloadString, nil
