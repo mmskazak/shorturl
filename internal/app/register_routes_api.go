@@ -2,12 +2,13 @@ package app
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/contracts"
 	"mmskazak/shorturl/internal/handlers/api"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
 func registrationAPIRoutes(

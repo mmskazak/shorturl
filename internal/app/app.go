@@ -14,10 +14,11 @@ import (
 
 	"mmskazak/shorturl/internal/contracts"
 
+	"mmskazak/shorturl/internal/config"
+
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"mmskazak/shorturl/internal/config"
 )
 
 // App представляет приложение с HTTP сервером и логгером.

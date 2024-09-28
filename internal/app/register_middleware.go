@@ -1,14 +1,15 @@
 package app
 
 import (
-	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/middleware"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
-// registrationMiddleware регистрация мидлваров
+// registrationMiddleware регистрация мидлваров.
 func registrationMiddleware(router *chi.Mux, cfg *config.Config, zapLog *zap.SugaredLogger) *chi.Mux {
 	// Блок проверки IP адреса по CIDR маске
 	router.Use(func(next http.Handler) http.Handler {

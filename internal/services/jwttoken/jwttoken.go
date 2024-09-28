@@ -11,7 +11,7 @@ import (
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 )
 
-// CreateNewJWTToken - создает новый JWT токен с новым id пользователя
+// CreateNewJWTToken - создает новый JWT токен с новым id пользователя.
 func CreateNewJWTToken(userID, secretKey string) (string, error) {
 	// Используем jwtbuilder для создания нового токена
 	jwt := jwtbuilder.New()

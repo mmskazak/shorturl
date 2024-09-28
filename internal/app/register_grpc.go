@@ -3,9 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"go.uber.org/zap"
-	"google.golang.org/grpc/peer"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/contracts"
 	"mmskazak/shorturl/internal/dtos"
@@ -16,6 +13,10 @@ import (
 	"mmskazak/shorturl/internal/services/jwttoken"
 	"mmskazak/shorturl/internal/services/shorturlservice"
 	"net"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/peer"
 )
 
 type ShortURLService struct {
@@ -78,7 +79,7 @@ func (sh *ShortURLService) DeleteUserURLs(
 ) (*proto.DeleteUserURLsResponse, error) {
 	sh.zapLog.Infoln("GRPC DeleteUserURLs called")
 	var response proto.DeleteUserURLsResponse
-	err := sh.store.DeleteURLs(ctx, in.Urls)
+	err := sh.store.DeleteURLs(ctx, in.GetUrls())
 	if err != nil {
 		response.Status = "not accepted"
 		return nil, fmt.Errorf("error deleting urls: %w", err)
@@ -95,7 +96,7 @@ func (sh *ShortURLService) FindUserURLs(
 	sh.zapLog.Infoln("GRPC FindUserURLs called")
 	var response proto.FindUserURLsResponse
 
-	urls, err := sh.store.GetUserURLs(ctx, in.UserId, sh.cfg.BaseHost)
+	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId(), sh.cfg.BaseHost)
 	if err != nil {
 		return nil, fmt.Errorf("error getting user urls: %w", err)
 	}
@@ -119,7 +120,7 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	sh.zapLog.Infoln("GRPC SaveShortenURLsBatch called")
 	var response proto.SaveShortenURLsBatchResponse
 
-	jwtString, err := sh.getOrCreateJWTToken(*in.Jwt)
+	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
 	}
@@ -130,14 +131,14 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	}
 
 	// Преобразуем []*Incoming в []models.Incoming
-	incomingModels := make([]models.Incoming, len(in.Incoming))
+	incomingModels := make([]models.Incoming, len(in.GetIncoming()))
 
 	// Сохранение пакета коротких URL
-	for i, inc := range in.Incoming {
+	for i, inc := range in.GetIncoming() {
 		incomingModels[i] = models.Incoming{
 			// Здесь копируем поля структуры
-			CorrelationID: inc.CorrelationId,
-			OriginalURL:   inc.OriginalUrl,
+			CorrelationID: inc.GetCorrelationId(),
+			OriginalURL:   inc.GetOriginalUrl(),
 		}
 	}
 	generator := genidurl.NewGenIDService()
@@ -169,7 +170,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	sh.zapLog.Infoln("GRPC HandleCreateShortURL called")
 	var response proto.HandleCreateShortURLResponse
 
-	jwtString, err := sh.getOrCreateJWTToken(*in.Jwt)
+	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
 	}
@@ -182,7 +183,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	generator := genidurl.NewGenIDService()
 	dto := dtos.DTOShortURL{
 		UserID:      UserID,
-		OriginalURL: in.OriginalUrl,
+		OriginalURL: in.GetOriginalUrl(),
 		BaseHost:    sh.cfg.BaseHost,
 		Deleted:     false,
 	}
