@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 	"mmskazak/shorturl/internal/services/jwttoken"
 	"net/http"
+
+	"github.com/google/uuid"
 
 	"go.uber.org/zap"
 )
@@ -49,8 +50,13 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 				return
 			}
 			payloadString, err = jwttoken.GetSignedPayloadJWT(token, secretKey)
+			if err != nil {
+				zapLog.Errorf("Failed to get signed payloadString of JWT: %v", err)
+				http.Error(w, "Failed to create new authorization token", http.StatusInternalServerError)
+				return
+			}
 
-			//устанавливаем в куку новый jwt
+			// Устанавливаем в куку новый jwt
 			setSignedCookie(w, authorizationCookieName, token)
 		}
 
