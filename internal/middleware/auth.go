@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
@@ -33,9 +34,7 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 	secretKey := cfg.SecretKey
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var payloadStruct jwtbuilder.PayloadJWT
-		cookie, err := r.Cookie(authorizationCookieName)
-		jwt := cookie.Value
-		payloadString, err := jwttoken.GetSignedPayloadJWT(jwt, secretKey)
+		payloadString, err := getSignedJWTPayloadFromCookie(r, secretKey)
 		if err != nil {
 			// Логируем ошибку при получении или проверке JWT
 			zapLog.Warnf("Failed to get signed payloadString of JWT: %v", err)
@@ -49,21 +48,19 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 				http.Error(w, "Failed to create new authorization token", http.StatusInternalServerError)
 				return
 			}
+			payloadString, err = jwttoken.GetSignedPayloadJWT(token, secretKey)
 
 			//устанавливаем в куку новый jwt
 			setSignedCookie(w, authorizationCookieName, token)
-
-			zapLog.Infof("Payload new: %s", payloadStruct)
-		} else {
-			payloadStruct = jwtbuilder.PayloadJWT{}
-			err = json.Unmarshal([]byte(payloadString), &payloadStruct)
-			if err != nil {
-				zapLog.Errorf("error unmarshalling payloadString: %v", err)
-				http.Error(w, "", http.StatusInternalServerError)
-				return
-			}
-			zapLog.Infof("Payload isset: %s", payloadStruct)
 		}
+
+		err = json.Unmarshal([]byte(payloadString), &payloadStruct)
+		if err != nil {
+			zapLog.Errorf("error unmarshalling payloadString: %v", err)
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+		zapLog.Infof("Payload isset: %s", payloadStruct)
 
 		zapLog.Infof("Payload to context before install: %s", payloadStruct)
 		// Добавляем payloadString в контекст
@@ -73,4 +70,18 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 		// Передаем запрос следующему обработчику
 		next.ServeHTTP(w, r)
 	})
+}
+
+func getSignedJWTPayloadFromCookie(r *http.Request, secretKey string) (string, error) {
+	cookie, err := r.Cookie(authorizationCookieName)
+	if err != nil {
+		return "", fmt.Errorf("no authorization cookie")
+	}
+	jwt := cookie.Value
+	payloadString, err := jwttoken.GetSignedPayloadJWT(jwt, secretKey)
+	if err != nil {
+		return "", fmt.Errorf("error getting signed payloadString of JWT: %v", err)
+	}
+
+	return payloadString, nil
 }

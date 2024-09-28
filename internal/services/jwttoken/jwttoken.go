@@ -58,11 +58,11 @@ func GetSignedPayloadJWT(jwt string, secretKey string) (string, error) {
 // verifyHMAC проверяет, соответствует ли предоставленная подпись ожидаемому значению HMAC.
 func verifyHMAC(value, signature, key string) bool {
 	expectedSignature := jwtbuilder.GenerateHMAC(value, key)
-	return compareHMAC(expectedSignature, signature)
+	return CompareHMAC(expectedSignature, signature)
 }
 
-// compareHMAC сравнивает два HMAC значения, возвращая true, если они идентичны.
-func compareHMAC(sig1, sig2 string) bool {
+// CompareHMAC сравнивает два HMAC значения, возвращая true, если они идентичны.
+func CompareHMAC(sig1, sig2 string) bool {
 	decodedSig1, err := base64.RawURLEncoding.DecodeString(sig1)
 	if err != nil {
 		return false

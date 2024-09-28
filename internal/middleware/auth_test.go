@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/base64"
 	"encoding/json"
+	"mmskazak/shorturl/internal/services/jwttoken"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -71,7 +72,7 @@ func Test_compareHMAC(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, compareHMAC(tt.args.sig1, tt.args.sig2), "compareHMAC(%v, %v)", tt.args.sig1, tt.args.sig2)
+			assert.Equalf(t, tt.want, jwttoken.CompareHMAC(tt.args.sig1, tt.args.sig2), "compareHMAC(%v, %v)", tt.args.sig1, tt.args.sig2)
 		})
 	}
 }
