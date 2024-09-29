@@ -46,13 +46,11 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 
 			token, err := jwttoken.CreateNewJWTToken(userID, secretKey)
 			if err != nil {
-				zapLog.Errorf("Failed to create JWT: %v", err)
 				http.Error(w, "Failed to create new authorization token", http.StatusInternalServerError)
 				return
 			}
 			payloadString, err = jwttoken.GetSignedPayloadJWT(token, secretKey)
 			if err != nil {
-				zapLog.Errorf("Failed to get signed payloadString of JWT: %v", err)
 				http.Error(w, "Failed to create new authorization token", http.StatusInternalServerError)
 				return
 			}
@@ -63,7 +61,6 @@ func AuthMiddleware(next http.Handler, cfg *config.Config, zapLog *zap.SugaredLo
 
 		err = json.Unmarshal([]byte(payloadString), &payloadStruct)
 		if err != nil {
-			zapLog.Errorf("error unmarshalling payloadString: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}

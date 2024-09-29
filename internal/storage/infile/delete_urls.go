@@ -23,8 +23,6 @@ func (f *InFile) DeleteURLs(ctx context.Context, urlIDs []string) error {
 	// Вызов метода удаления URL из внутреннего хранилища в памяти
 	err := f.InMe.DeleteURLs(ctx, urlIDs)
 	if err != nil {
-		// Логирование ошибки удаления и возвращение обернутой ошибки
-		f.zapLog.Errorf("failed to delete urls: %v", err)
 		return fmt.Errorf("delete urls: %w", err)
 	}
 	// Сохранение изменений в файл
