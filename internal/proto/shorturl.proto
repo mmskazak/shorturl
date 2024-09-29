@@ -49,10 +49,9 @@ message SaveShortenURLsBatchRequest {
 }
 
 message SaveShortenURLsBatchResponse {
-  repeated Output incoming = 1;
+  repeated Output output = 1;
   optional string jwt = 2;
 }
-
 
 message HandleCreateShortURLRequest {
   optional string jwt = 1;

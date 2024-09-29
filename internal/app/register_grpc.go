@@ -121,7 +121,6 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 ) (*proto.SaveShortenURLsBatchResponse, error) {
 	sh.zapLog.Infoln("GRPC SaveShortenURLsBatch called")
 	var response proto.SaveShortenURLsBatchResponse
-
 	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
@@ -155,11 +154,15 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 			CorrelationId: output.CorrelationID,
 			ShortUrl:      output.ShortURL,
 		}
-		response.Incoming = append(response.Incoming, out)
+		response.Output = append(response.Output, out)
 	}
 
 	if in.Jwt == nil {
-		*response.Jwt = jwtString
+		if response.Jwt == nil {
+			// Инициализируем указатель, если он равен nil
+			response.Jwt = new(string)
+		}
+		*response.Jwt = jwtString // Присваиваем значение
 	}
 
 	return &response, nil
