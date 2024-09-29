@@ -72,7 +72,13 @@ func loggingBuildParams(zapLog *zap.SugaredLogger) {
 	zapLog.Infof("Build commit: %s", buildCommit)
 }
 
-func runApp(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger, store contracts.Storage, shutdownDuration time.Duration) error {
+func runApp(
+	ctx context.Context,
+	cfg *config.Config,
+	zapLog *zap.SugaredLogger,
+	store contracts.Storage,
+	shutdownDuration time.Duration,
+) error {
 	defer func() {
 
 		if err := store.Close(); err != nil {
@@ -103,7 +109,14 @@ func runApp(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger, 
 		}
 	}()
 
-	<-quit
+	// Ожидание завершения
+	select {
+	case <-quit: // Ожидание сигнала завершения
+		zapLog.Infoln("Получен сигнал завершения, остановка сервера...")
+	case <-ctx.Done(): // Завершение по контексту
+		zapLog.Infoln("Контекст завершён, остановка сервера...")
+	}
+
 	zapLog.Infoln("Получен сигнал завершения, остановка сервера...")
 
 	ctxShutdown, cancel := context.WithTimeout(context.Background(), shutdownDuration)
