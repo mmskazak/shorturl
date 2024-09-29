@@ -3,29 +3,28 @@ package inmemory
 import (
 	"context"
 	"fmt"
-	"mmskazak/shorturl/internal/models"
 	"strconv"
 	"sync"
 	"testing"
+
+	"mmskazak/shorturl/internal/models"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
 func TestInMemory_InternalStats(t *testing.T) {
+	ctx := context.Background()
+
 	type fields struct {
 		mu        *sync.Mutex
 		data      map[string]models.URLRecord
 		userIndex map[string][]string
 		zapLog    *zap.SugaredLogger
 	}
-	type args struct {
-		in0 context.Context
-	}
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
 		want    models.Stats
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -36,9 +35,6 @@ func TestInMemory_InternalStats(t *testing.T) {
 				data:      make(map[string]models.URLRecord),
 				userIndex: make(map[string][]string),
 				zapLog:    zap.NewNop().Sugar(),
-			},
-			args: args{
-				in0: context.Background(),
 			},
 			want:    models.Stats{Urls: strconv.Itoa(0), Users: strconv.Itoa(0)},
 			wantErr: assert.NoError, // Ожидаем, что ошибки не будет
@@ -58,9 +54,6 @@ func TestInMemory_InternalStats(t *testing.T) {
 				},
 				zapLog: zap.NewNop().Sugar(),
 			},
-			args: args{
-				in0: context.Background(),
-			},
 			want:    models.Stats{Urls: strconv.Itoa(3), Users: strconv.Itoa(2)},
 			wantErr: assert.NoError,
 		},
@@ -73,11 +66,11 @@ func TestInMemory_InternalStats(t *testing.T) {
 				userIndex: tt.fields.userIndex,
 				zapLog:    tt.fields.zapLog,
 			}
-			got, err := m.InternalStats(tt.args.in0)
-			if !tt.wantErr(t, err, fmt.Sprintf("InternalStats(%v)", tt.args.in0)) {
+			got, err := m.InternalStats(ctx)
+			if !tt.wantErr(t, err, fmt.Sprintf("InternalStats(%v)", ctx)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "InternalStats(%v)", tt.args.in0)
+			assert.Equalf(t, tt.want, got, "InternalStats(%v)", ctx)
 		})
 	}
 }

@@ -2,12 +2,13 @@ package api
 
 import (
 	"context"
-	"mmskazak/shorturl/internal/contracts/mocks"
-	"mmskazak/shorturl/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"mmskazak/shorturl/internal/contracts/mocks"
+	"mmskazak/shorturl/internal/models"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

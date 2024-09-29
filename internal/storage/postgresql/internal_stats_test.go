@@ -2,9 +2,10 @@ package postgresql
 
 import (
 	"context"
+	"testing"
+
 	"mmskazak/shorturl/internal/models"
 	"mmskazak/shorturl/internal/storage/postgresql/mocks"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
