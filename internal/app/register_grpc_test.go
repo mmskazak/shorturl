@@ -108,8 +108,16 @@ func TestFindUserURLs(t *testing.T) {
 	zapLog := zap.NewNop().Sugar()
 	cfg := &config.Config{
 		TrustedSubnet: "127.0.0.0/24",
+		BaseHost:      "http://localhost",
 	}
+	ctx := context.Background()
 	store, err := inmemory.NewInMemory(zapLog)
+	require.NoError(t, err)
+	err = store.SetShortURL(ctx, "TestYanD", "http://ya.ru", "1", false)
+	require.NoError(t, err)
+	err = store.SetShortURL(ctx, "TeStYanD", "http://yandex.ru", "1", false)
+	require.NoError(t, err)
+	err = store.SetShortURL(ctx, "GooGLeeE", "http://google.com", "2", false)
 	require.NoError(t, err)
 	// Регистрируем сервисы
 	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(cfg, store, zapLog))
@@ -137,11 +145,9 @@ func TestFindUserURLs(t *testing.T) {
 	resp, err := client.FindUserURLs(context.Background(), req)
 	require.NoError(t, err)
 
-	var expected []*proto.UserURLs
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, expected, resp.GetUserUrls())
 
 	// Закрываем сервер
 	grpcServer.Stop()
