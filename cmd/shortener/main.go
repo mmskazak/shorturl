@@ -29,7 +29,6 @@ const shutdownDuration = 5 * time.Second
 //
 //go:generate go run ./../version/main.go
 func main() {
-	// Создание контекста.
 	ctx := context.Background()
 
 	cfg, zapLog, storage := prepareParamsForApp(ctx)
@@ -42,7 +41,6 @@ func main() {
 
 	shortURLService := shorturlservice.NewShortURLService()
 
-	// Создание и запуск приложения.
 	newApp := app.NewApp(
 		ctx,
 		cfg,
@@ -53,21 +51,17 @@ func main() {
 		shortURLService,
 	)
 
-	// Логирование Build параметров
 	loggingBuildParams(zapLog)
 
-	// Создаем канал для получения системных сигналов.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	// Запуск сервера в отдельной горутине.
 	go func() {
 		if err := newApp.StartAll(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zapLog.Fatalf("Ошибка сервера: %v", err)
 		}
 	}()
 
-	// Ожидаем сигнал завершения.
 	<-quit
 	zapLog.Infoln("Получен сигнал завершения, остановка сервера...")
 

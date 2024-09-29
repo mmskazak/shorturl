@@ -96,7 +96,6 @@ func (a *App) Start() error {
 
 	err := a.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.zapLog.Infof("%v: %v", ErrStartingServer, err)
 		return fmt.Errorf(ErrStartingServer+": %w", err)
 	}
 	return nil
@@ -118,13 +117,11 @@ func (a *App) StartGRPC() error {
 
 	lis, err := net.Listen("tcp", a.grpcServerAddr)
 	if err != nil {
-		a.zapLog.Errorf("Failed to listen on %v: %v", a.grpcServerAddr, err)
 		return fmt.Errorf("failed to listen on %v: %w", a.grpcServerAddr, err)
 	}
 
 	err = a.grpcServer.Serve(lis)
 	if err != nil {
-		a.zapLog.Errorf("Error starting gRPC server: %v", err)
 		return fmt.Errorf("error starting gRPC server: %w", err)
 	}
 	return nil
@@ -134,7 +131,6 @@ func (a *App) StartGRPC() error {
 func (a *App) Stop(ctx context.Context) error {
 	// Закрытие сервера с учетом переданного контекста.
 	if err := a.server.Shutdown(ctx); err != nil {
-		a.zapLog.Errorf("Ошибка при остановке сервера: %v", err)
 		return fmt.Errorf("err Shutdown server: %w", err)
 	}
 
