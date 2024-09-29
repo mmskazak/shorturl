@@ -2,15 +2,16 @@ package api
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap/zaptest"
 	"mmskazak/shorturl/internal/contracts/mocks"
 	"mmskazak/shorturl/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestInternalStats(t *testing.T) {

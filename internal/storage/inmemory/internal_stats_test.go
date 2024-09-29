@@ -3,12 +3,13 @@ package inmemory
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"mmskazak/shorturl/internal/models"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestInMemory_InternalStats(t *testing.T) {

@@ -1,9 +1,10 @@
 package checkip
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCheckIPByCIDR_ValidIPInRange(t *testing.T) {
