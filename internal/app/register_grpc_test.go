@@ -197,3 +197,45 @@ func TestSaveShortenURLsBatch(t *testing.T) {
 	// Закрываем сервер
 	grpcServer.Stop()
 }
+
+func TestHandleCreateShortURL(t *testing.T) {
+	// Создаем тестовый сервер
+	grpcServer := grpc.NewServer()
+	zapLog := zap.NewNop().Sugar()
+	cfg := &config.Config{
+		TrustedSubnet: "127.0.0.0/24",
+	}
+	store, err := inmemory.NewInMemory(zapLog)
+	require.NoError(t, err)
+	// Регистрируем сервисы
+	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(cfg, store, zapLog))
+
+	// Запускаем сервер в отдельной горутине
+	listener, err := net.Listen("tcp", ":0") // Слушаем на случайном порту
+	require.NoError(t, err)
+	go func() {
+		err := grpcServer.Serve(listener)
+		require.NoError(t, err)
+	}()
+
+	// Создаем клиент для обращения к серверу
+	conn, err := grpc.NewClient(listener.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	require.NoError(t, err)
+	defer conn.Close() //nolint:errcheck //пренебрежем этим в тесте
+
+	client := proto.NewShortURLServiceClient(conn)
+	req := &proto.HandleCreateShortURLRequest{
+		OriginalUrl: "http://example.com/1",
+	}
+
+	// Вызов метода
+	resp, err := client.HandleCreateShortURL(context.Background(), req)
+	require.NoError(t, err)
+
+	// Проверка результата
+	assert.NoError(t, err)
+	assert.NotNil(t, resp) // Проверка, что ответ не nil
+
+	// Закрываем сервер
+	grpcServer.Stop()
+}

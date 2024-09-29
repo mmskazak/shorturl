@@ -199,10 +199,15 @@ func (sh *ShortURLService) HandleCreateShortURL(
 		return nil, fmt.Errorf("error creating shorten url: %w", err)
 	}
 
-	response.Result = shortURL
 	if in.Jwt == nil {
-		*response.Jwt = jwtString
+		if response.Jwt == nil {
+			// Инициализируем указатель, если он равен nil
+			response.Jwt = new(string)
+		}
+		*response.Jwt = jwtString // Присваиваем значение
 	}
+
+	response.Result = shortURL
 	return &response, nil
 }
 
