@@ -28,6 +28,7 @@ func (f *InFile) SetShortURL(
 	userID string,
 	deleted bool,
 ) error {
+	f.zapLog.Infof("Setting short url for user %s to %s", userID, originalURL)
 	err := f.InMe.SetShortURL(ctx, idShortPath, originalURL, userID, deleted)
 	if err != nil {
 		return err //nolint:wrapcheck // пробрасываем дальше оригинальную ошибку

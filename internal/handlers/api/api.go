@@ -55,6 +55,7 @@ func HandleCreateShortURL(
 	// Получаем userID из контекста
 	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
 	userID := payload.UserID
+	zapLog.Infof("User ID: %d", userID)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusUnauthorized)
@@ -93,6 +94,7 @@ func HandleCreateShortURL(
 		}
 		return
 	}
+	zapLog.Infoln("Short URL: ", shortURL)
 
 	if err != nil {
 		zapLog.Errorf("Ошибка saveUniqueShortURL: %v", err)
@@ -108,6 +110,7 @@ func HandleCreateShortURL(
 		return
 	}
 
+	zapLog.Infoln("Short URL JSON: ", string(shortURLAsJSON))
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(shortURLAsJSON)
 	if err != nil {

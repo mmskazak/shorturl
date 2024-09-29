@@ -20,6 +20,7 @@ import (
 // - Ошибки при создании файла или записи данных логируются, но не останавливают выполнение.
 // - Файл закрывается после завершения записи, и возможные ошибки при закрытии также логируются.
 func (f *InFile) saveToFile() {
+	f.zapLog.Infoln("Save urls to file")
 	go func() {
 		f.zapLog.Info("Starting to save storage data to file")
 

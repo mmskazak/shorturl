@@ -21,6 +21,7 @@ import (
 //   - error: Ошибка, если она произошла во время удаления, иначе nil.
 func (f *InFile) DeleteURLs(ctx context.Context, urlIDs []string) error {
 	// Вызов метода удаления URL из внутреннего хранилища в памяти
+	f.zapLog.Infof("Start to delete %d urls", len(urlIDs))
 	err := f.InMe.DeleteURLs(ctx, urlIDs)
 	if err != nil {
 		return fmt.Errorf("delete urls: %w", err)

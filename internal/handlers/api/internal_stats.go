@@ -32,6 +32,7 @@ func InternalStats(
 		return
 	}
 
+	zapLog.Infoln(string(response))
 	// Записываем JSON-ответ в ResponseWriter
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(response)

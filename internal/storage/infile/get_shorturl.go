@@ -17,5 +17,6 @@ import "context"
 // Примечание:
 // Ошибка обрабатывается вызовом метода InMemory и будет передана вызывающему коду для дальнейшего управления.
 func (f *InFile) GetShortURL(ctx context.Context, id string) (string, error) {
+	f.zapLog.Infoln("Start to get short url")
 	return f.InMe.GetShortURL(ctx, id) //nolint:wrapcheck // Ошибка обрабатывается далее
 }

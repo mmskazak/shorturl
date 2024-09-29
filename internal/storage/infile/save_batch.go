@@ -30,6 +30,7 @@ func (f *InFile) SaveBatch(
 	userID string,
 	generator contracts.IGenIDForURL,
 ) ([]models.Output, error) {
+	f.zapLog.Infof("Adding %d items", len(items))
 	outputs, err := f.InMe.SaveBatch(ctx, items, baseHost, userID, generator)
 	if err != nil {
 		return nil, err //nolint:wrapcheck // прокидываем оригинальную ошибку
