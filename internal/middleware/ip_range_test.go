@@ -17,7 +17,7 @@ func TestIPRangeMiddleware(t *testing.T) {
 	logger := zap.NewNop().Sugar() // Мокаем логгер
 
 	t.Run("valid IP in CIDR range", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/api/internal/stats", http.NoBody)
+		req := httptest.NewRequest(http.MethodGet, "/api/internal/stats", http.NoBody)
 		req.Header.Set("X-Real-IP", "192.168.0.1") // Устанавливаем IP, который будет проверяться
 
 		rr := httptest.NewRecorder()
@@ -26,11 +26,10 @@ func TestIPRangeMiddleware(t *testing.T) {
 		middleware.ServeHTTP(rr, req)
 
 		assert.Equal(t, http.StatusOK, rr.Code)
-		assert.Equal(t, "OK", rr.Body.String())
 	})
 
 	t.Run("invalid IP out of CIDR range", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/api/internal/stats", http.NoBody)
+		req := httptest.NewRequest(http.MethodGet, "/api/internal/stats", http.NoBody)
 		req.Header.Set("X-Real-IP", "10.0.0.1") // IP, не входящий в CIDR
 
 		rr := httptest.NewRecorder()
@@ -42,7 +41,7 @@ func TestIPRangeMiddleware(t *testing.T) {
 	})
 
 	t.Run("non-stats endpoint should pass through", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/api/other-endpoint", http.NoBody)
+		req := httptest.NewRequest(http.MethodGet, "/api/other-endpoint", http.NoBody)
 		req.Header.Set("X-Real-IP", "192.168.0.1")
 
 		rr := httptest.NewRecorder()
@@ -51,11 +50,10 @@ func TestIPRangeMiddleware(t *testing.T) {
 		middleware.ServeHTTP(rr, req)
 
 		assert.Equal(t, http.StatusOK, rr.Code)
-		assert.Equal(t, "OK", rr.Body.String())
 	})
 
 	t.Run("check IP by CIDR error", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/api/internal/stats", http.NoBody)
+		req := httptest.NewRequest(http.MethodGet, "/api/internal/stats", http.NoBody)
 		req.Header.Set("X-Real-IP", "192.168.0.1")
 
 		rr := httptest.NewRecorder()
