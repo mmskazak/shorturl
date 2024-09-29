@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
+	"testing"
 )
 
 func Test_prepareParamsForApp(t *testing.T) {
