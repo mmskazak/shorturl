@@ -35,7 +35,6 @@ func SaveShortenURLsBatch(
 	var requestData []models.Incoming
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
-		zapLog.Errorf("error decoding request: %v", err)
 		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
 		return
 	}
@@ -66,7 +65,6 @@ func SaveShortenURLsBatch(
 	// Преобразование результата в JSON
 	responseData, err := json.Marshal(outputs)
 	if err != nil {
-		zapLog.Errorw("error marshalling shorten URLs batch", "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

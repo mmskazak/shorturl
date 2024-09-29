@@ -28,8 +28,6 @@ func InternalStats(
 	// Преобразуем данные в JSON
 	response, err := json.Marshal(stats)
 	if err != nil {
-		// Обработка ошибок, связанных с сериализацией JSON
-		zapLog.Errorf("error marshalling internal stats: %v", err)
 		http.Error(w, "Ошибка при формировании ответа", http.StatusInternalServerError)
 		return
 	}

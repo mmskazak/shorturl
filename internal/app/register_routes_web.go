@@ -28,7 +28,6 @@ func registrationWEBRoutes(
 
 	// Создаем замыкание, которое передает значение конфига в обработчик CreateShortURL
 	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-		zapLog.Infoln("Запрос получен handleRedirectHandler")
 		web.HandleRedirect(ctx, w, r, store, zapLog)
 	})
 
