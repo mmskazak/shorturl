@@ -62,3 +62,20 @@ func (m *MockTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
 	batchResults, _ := args.Get(0).(pgx.BatchResults)
 	return batchResults
 }
+
+// QueryRow Реализация метода.
+func (m *MockTx) QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row {
+	// Получаем аргументы вызова
+	call := m.Called(ctx, sql)
+	// Извлекаем результат
+	row := call.Get(0)
+	// Возвращаем результат как pgx. Row
+	if row == nil {
+		return nil
+	}
+	r, ok := row.(pgx.Row)
+	if !ok {
+		return nil
+	}
+	return r
+}

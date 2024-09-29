@@ -11,8 +11,8 @@ import (
 
 // InternalStats - count users and urls in a database.
 func (s *PostgreSQL) InternalStats(ctx context.Context) (models.Stats, error) {
-	queryCountUrls := "SELECT COUNT(original_url) FORM urls WHERE 1"
-	queryCountUsers := "SELECT COUNT(user_id) FORM urls WHERE 1 ORDER BY (user_id)"
+	queryCountUrls := "SELECT COUNT(original_url) FROM urls WHERE 1"
+	queryCountUsers := "SELECT COUNT(DISTINCT user_id) FROM urls"
 
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
