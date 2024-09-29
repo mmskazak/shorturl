@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+// CheckIPByCIDR входит ли IP в диапазон доверенной сети.
 func CheckIPByCIDR(ip, cidr string) (bool, error) {
 	ipNet, err := parseCIDR(cidr)
 	if err != nil {
