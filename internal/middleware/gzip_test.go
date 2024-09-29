@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// Простой хендлер для тестирования
+// Простой хендлер для тестирования.
 func testHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"message": "test response"}`)) //nolint:gosec,errcheck //можно пренебречь

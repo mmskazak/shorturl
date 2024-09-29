@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/storage/inmemory"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
-	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/storage/inmemory"
-	"testing"
-	"time"
 )
 
 func Test_prepareParamsForApp(t *testing.T) {
@@ -29,8 +31,8 @@ func TestRunApp(t *testing.T) {
 	ctx := context.Background()
 	ctxWt, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	baseDurationReadTimeout := 10 * time.Second  //nolint:gomnd  // 10 секунд.
-	baseDurationWriteTimeout := 10 * time.Second //nolint:gomnd  // 10 секунд.
+	baseDurationReadTimeout := 10 * time.Second
+	baseDurationWriteTimeout := 10 * time.Second
 	cfg := &config.Config{
 		Address:         ":8080",
 		BaseHost:        "http://localhost:8080",
@@ -45,6 +47,7 @@ func TestRunApp(t *testing.T) {
 
 	zapLog := zap.NewNop().Sugar()
 	storage, err := inmemory.NewInMemory(zapLog)
+	require.NoError(t, err)
 
 	shutdownDuration := 5 * time.Second
 

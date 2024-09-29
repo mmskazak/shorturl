@@ -2,16 +2,18 @@ package app
 
 import (
 	"context"
+	"net"
+	"testing"
+
+	"mmskazak/shorturl/internal/config"
+	"mmskazak/shorturl/internal/proto"
+	"mmskazak/shorturl/internal/storage/inmemory"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"mmskazak/shorturl/internal/config"
-	"mmskazak/shorturl/internal/proto"
-	"mmskazak/shorturl/internal/storage/inmemory"
-	"net"
-	"testing"
 )
 
 func TestInternalStats(t *testing.T) {
@@ -51,8 +53,8 @@ func TestInternalStats(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "0", resp.Urls)
-	assert.Equal(t, "0", resp.Users)
+	assert.Equal(t, "0", resp.GetUrls())
+	assert.Equal(t, "0", resp.GetUsers())
 
 	// Закрываем сервер
 	grpcServer.Stop()

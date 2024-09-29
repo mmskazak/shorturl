@@ -31,7 +31,6 @@ const shutdownDuration = 5 * time.Second
 func main() {
 	ctx := context.Background()
 	cfg, zapLog, storage := prepareParamsForApp(ctx)
-	shutdownDuration := 10 * time.Second // пример значения
 
 	if err := runApp(ctx, cfg, zapLog, storage, shutdownDuration); err != nil {
 		zapLog.Fatal("Ошибка приложения: %v", err)
@@ -80,7 +79,6 @@ func runApp(
 	shutdownDuration time.Duration,
 ) error {
 	defer func() {
-
 		if err := store.Close(); err != nil {
 			zapLog.Error("Error closing store\n", zap.Error(err))
 		}

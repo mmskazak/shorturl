@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestIPRangeMiddleware(t *testing.T) {
