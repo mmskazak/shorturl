@@ -58,7 +58,6 @@ func SaveShortenURLsBatch(
 			http.Error(w, "", http.StatusConflict)
 			return
 		}
-		zapLog.Errorw("error saving shorten URLs batch", "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
