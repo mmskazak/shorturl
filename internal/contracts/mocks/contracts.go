@@ -6,11 +6,10 @@ package mocks
 
 import (
 	context "context"
-	reflect "reflect"
-
 	contracts "mmskazak/shorturl/internal/contracts"
 	dtos "mmskazak/shorturl/internal/dtos"
 	models "mmskazak/shorturl/internal/models"
+	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -314,4 +313,42 @@ func (m *MockIShortURLService) GenerateShortURL(ctx context.Context, dto dtos.DT
 func (mr *MockIShortURLServiceMockRecorder) GenerateShortURL(ctx, dto, generator, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateShortURL", reflect.TypeOf((*MockIShortURLService)(nil).GenerateShortURL), ctx, dto, generator, data)
+}
+
+// MockIInternalStats is a mock of IInternalStats interface.
+type MockIInternalStats struct {
+	ctrl     *gomock.Controller
+	recorder *MockIInternalStatsMockRecorder
+}
+
+// MockIInternalStatsMockRecorder is the mock recorder for MockIInternalStats.
+type MockIInternalStatsMockRecorder struct {
+	mock *MockIInternalStats
+}
+
+// NewMockIInternalStats creates a new mock instance.
+func NewMockIInternalStats(ctrl *gomock.Controller) *MockIInternalStats {
+	mock := &MockIInternalStats{ctrl: ctrl}
+	mock.recorder = &MockIInternalStatsMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockIInternalStats) EXPECT() *MockIInternalStatsMockRecorder {
+	return m.recorder
+}
+
+// InternalStats mocks base method.
+func (m *MockIInternalStats) InternalStats(ctx context.Context) (models.Stats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InternalStats", ctx)
+	ret0, _ := ret[0].(models.Stats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InternalStats indicates an expected call of InternalStats.
+func (mr *MockIInternalStatsMockRecorder) InternalStats(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InternalStats", reflect.TypeOf((*MockIInternalStats)(nil).InternalStats), ctx)
 }
