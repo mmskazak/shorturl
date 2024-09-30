@@ -44,6 +44,14 @@ go tool cover -func profile.cov
 ##### Посмотреть покрытие в веб-браузере
 go tool cover -html=profile.cov
 
+##### Покрытие с исключением сгенерированного кода
+go tool cover -func cover.out
+cat cover.out.tmp | grep -v "pb.go" > cover.out
+cat cover.out | grep -v "pb.go" > cover.out
+go tool cover -func cover.out
+
+
+
 ## Запуск кастомного линтера
 Переходим в папку с линтером.
 ``````

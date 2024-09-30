@@ -8,7 +8,7 @@ import (
 	"mmskazak/shorturl/internal/models"
 )
 
-//go:generate mockgen -source=contracts.go -destination=mocks/contracts.go -package=mocks
+//go:generate mockgen -source=contracts.go -destination=mocks/contracts_mock.go -package=mocks
 
 // IGenIDForURL представляет интерфейс для генерации идентификаторов для коротких URL.
 type IGenIDForURL interface {
