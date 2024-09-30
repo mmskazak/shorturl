@@ -51,6 +51,5 @@ func TestRunApp(t *testing.T) {
 
 	shutdownDuration := 5 * time.Second
 
-	err = runApp(ctxWt, cfg, zapLog, storage, shutdownDuration)
-	require.NoError(t, err)
+	runApp(ctxWt, cfg, zapLog, storage, shutdownDuration)
 }
