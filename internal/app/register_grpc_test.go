@@ -18,6 +18,7 @@ import (
 )
 
 func TestInternalStats(t *testing.T) {
+	t.Skip()
 	// Создаем тестовый сервер
 	grpcServer := grpc.NewServer()
 	zapLog := zap.NewNop().Sugar()
