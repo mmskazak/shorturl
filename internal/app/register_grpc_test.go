@@ -2,9 +2,10 @@ package app
 
 import (
 	"context"
-	"google.golang.org/grpc/peer"
 	"net"
 	"testing"
+
+	"google.golang.org/grpc/peer"
 
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/proto"
