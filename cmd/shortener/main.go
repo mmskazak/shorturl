@@ -32,9 +32,7 @@ func main() {
 	ctx := context.Background()
 	cfg, zapLog, storage := prepareParamsForApp(ctx)
 
-	if err := runApp(ctx, cfg, zapLog, storage, shutdownDuration); err != nil {
-		zapLog.Fatal("Ошибка приложения: %v", err)
-	}
+	runApp(ctx, cfg, zapLog, storage, shutdownDuration)
 }
 
 func prepareParamsForApp(ctx context.Context) (*config.Config, *zap.SugaredLogger, contracts.Storage) {
@@ -77,7 +75,7 @@ func runApp(
 	zapLog *zap.SugaredLogger,
 	store contracts.Storage,
 	shutdownDuration time.Duration,
-) error {
+) {
 	defer func() {
 		if err := store.Close(); err != nil {
 			zapLog.Error("Error closing store\n", zap.Error(err))
@@ -125,5 +123,4 @@ func runApp(
 	}
 
 	zapLog.Infoln("Приложение завершило работу.")
-	return nil
 }
