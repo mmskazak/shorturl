@@ -18,17 +18,17 @@ import (
 )
 
 func TestInternalStats(t *testing.T) {
-	t.Skip()
 	// Создаем тестовый сервер
 	grpcServer := grpc.NewServer()
 	zapLog := zap.NewNop().Sugar()
 	cfg := &config.Config{
 		TrustedSubnet: "127.0.0.0/24",
 	}
+	//TODO: это задание ip адреса не работает
 	ctx := context.Background()
 	pr := peer.Peer{
 		Addr: &net.TCPAddr{
-			IP: net.ParseIP("127.0.0.1"),
+			IP: net.ParseIP("127.0.0.2"),
 		},
 	}
 
@@ -40,7 +40,7 @@ func TestInternalStats(t *testing.T) {
 	proto.RegisterShortURLServiceServer(grpcServer, NewShortURLService(cfg, store, zapLog))
 
 	// Запускаем сервер в отдельной горутине
-	listener, err := net.Listen("tcp", ":0") // Слушаем на случайном порту
+	listener, err := net.Listen("tcp", "127.0.0.1:0") // Слушаем на случайном порту
 	require.NoError(t, err)
 	go func() {
 		err := grpcServer.Serve(listener)

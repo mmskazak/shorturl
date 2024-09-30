@@ -45,9 +45,9 @@ go tool cover -func profile.cov
 go tool cover -html=profile.cov
 
 ##### Покрытие с исключением сгенерированного кода
-go tool cover -func cover.out
-cat cover.out.tmp | grep -v "pb.go" > cover.out
-cat cover.out | grep -v "pb.go" > cover.out
+go test ./... -coverprofile cover1.out.tmp
+cat cover1.out.tmp | grep -v "pb.go" > cover2.out.tmp
+cat cover2.out.tmp | grep -v "_mock.go" > cover.out
 go tool cover -func cover.out
 
 
