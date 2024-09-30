@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"google.golang.org/grpc/peer"
 	"net"
 	"testing"
 
@@ -23,6 +24,15 @@ func TestInternalStats(t *testing.T) {
 	cfg := &config.Config{
 		TrustedSubnet: "127.0.0.0/24",
 	}
+	ctx := context.Background()
+	pr := peer.Peer{
+		Addr: &net.TCPAddr{
+			IP: net.ParseIP("127.0.0.1"),
+		},
+	}
+
+	ctxWhPr := peer.NewContext(ctx, &pr)
+
 	store, err := inmemory.NewInMemory(zapLog)
 	require.NoError(t, err)
 	// Регистрируем сервисы
@@ -47,7 +57,7 @@ func TestInternalStats(t *testing.T) {
 	req := &proto.InternalStatsRequest{}
 
 	// Вызов метода
-	resp, err := client.InternalStats(context.Background(), req)
+	resp, err := client.InternalStats(ctxWhPr, req)
 	require.NoError(t, err)
 
 	// Проверка результата
