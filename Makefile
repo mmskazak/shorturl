@@ -9,6 +9,15 @@ lint-clean:
 test:
 	go test ./...
 
+proto:
+	protoc --proto_path=internal/proto \
+			--go_out=internal/proto \
+			--go_opt=paths=source_relative \
+			--go-grpc_out=internal/proto \
+			--go-grpc_opt=paths=source_relative \
+			 shorturl.proto
+
+
 # Параметры контейнера и образа
 CONTAINER_NAME=my_postgres
 IMAGE=postgres:16.3
