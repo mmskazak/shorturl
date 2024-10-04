@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -17,6 +18,15 @@ type HeaderJWT struct {
 // PayloadJWT представляет полезную нагрузку JWT, которая содержит данные пользователя.
 type PayloadJWT struct {
 	UserID string `json:"user_id"` // Идентификатор пользователя
+}
+
+func (p *PayloadJWT) Valid() error {
+	// Your validation logic here...
+	// For example, you can check that UserID is not empty or null.
+	if p.UserID == "" {
+		return errors.New("user ID cannot be empty")
+	}
+	return nil
 }
 
 // JWTBuilder представляет собой конструктор для создания JWT.

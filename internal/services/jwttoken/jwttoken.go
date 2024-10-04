@@ -4,10 +4,8 @@ import (
 	"crypto/hmac"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
-
+	jwtGolang "github.com/golang-jwt/jwt"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
 )
 
@@ -34,25 +32,23 @@ func CreateNewJWTToken(userID, secretKey string) (string, error) {
 }
 
 // GetSignedPayloadJWT извлекает и проверяет подписанную полезную нагрузку JWT из cookie.
-func GetSignedPayloadJWT(jwt string, secretKey string) (string, error) {
-	parts := strings.Split(jwt, ".")
-	if len(parts) != 3 { //nolint:gomnd // 3 части JWT токена
-		return "", errors.New("invalid structure jwt")
-	}
-	headerStr, payloadStr, signatureStr := parts[0], parts[1], parts[2]
-
-	// Проверка HMAC подписи
-	if !verifyHMAC(headerStr+"."+payloadStr, signatureStr, secretKey) {
-		return "", errors.New("invalid HMAC signature verification")
-	}
-
-	// Декодирование полезной нагрузки из Base64 URL
-	decodedPayload, err := base64.RawURLEncoding.DecodeString(payloadStr)
+func GetSignedPayloadJWT(tokenString string, secretKey string) (string, error) {
+	token, err := jwtGolang.ParseWithClaims(tokenString, &jwtbuilder.PayloadJWT{}, func(token *jwtGolang.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwtGolang.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secretKey), nil
+	})
 	if err != nil {
-		return "", fmt.Errorf("error decoding payload: %w", err)
+		return "", fmt.Errorf("error GetSignedPayloadJWT: %w", err)
 	}
 
-	return string(decodedPayload), nil
+	data, err := json.Marshal(token.Claims)
+	if err != nil {
+		return "", fmt.Errorf("error marshalling token claims: %w", err)
+	}
+
+	return string(data), nil
 }
 
 // verifyHMAC проверяет, соответствует ли предоставленная подпись ожидаемому значению HMAC.

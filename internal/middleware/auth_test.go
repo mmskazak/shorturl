@@ -123,7 +123,7 @@ func TestAuthMiddleware(t *testing.T) {
 	// Проверяем, что middleware создал новый JWT и установил его в куки
 	assert.Equal(t, http.StatusOK, rr.Code)
 	var responsePayload jwtbuilder.PayloadJWT
-	err = json.NewDecoder(rr.Body).Decode(&responsePayload)
+	err = json.Unmarshal(rr.Body.Bytes(), &responsePayload)
 	require.NoError(t, err)
 	assert.NotEmpty(t, responsePayload.UserID)
 
