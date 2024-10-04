@@ -38,7 +38,7 @@ func NewShortURLService(cfg *config.Config, store contracts.Storage, zapLog *zap
 
 func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalStatsRequest,
 ) (*proto.InternalStatsResponse, error) {
-	sh.zapLog.Infoln("GRPC InternalStats called")
+	sh.zapLog.Debugln("GRPC InternalStats called")
 	var responseStats proto.InternalStatsResponse
 
 	// Извлечение информации о peer (клиенте)
@@ -48,7 +48,7 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 	}
 
 	addr := p.Addr
-	sh.zapLog.Infof("Request from IP: %v", addr)
+	sh.zapLog.Debugf("Request from IP: %v\n", addr)
 
 	// извлекаем только IP-адрес
 	tcpAddr, ok := addr.(*net.TCPAddr)
@@ -56,7 +56,7 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 		return nil, errors.New("invalid tcp address")
 	}
 	clientIP := tcpAddr.IP.String()
-	sh.zapLog.Infof("Client IP: %s", clientIP)
+	sh.zapLog.Debugln("Client IP: %s", clientIP)
 
 	ok, err := checkip.CheckIPByCIDR(clientIP, sh.cfg.TrustedSubnet)
 	if err != nil {
@@ -79,7 +79,7 @@ func (sh *ShortURLService) DeleteUserURLs(
 	ctx context.Context,
 	in *proto.DeleteUserURLsRequest,
 ) (*proto.DeleteUserURLsResponse, error) {
-	sh.zapLog.Infoln("GRPC DeleteUserURLs called")
+	sh.zapLog.Debugln("GRPC DeleteUserURLs called")
 	var response proto.DeleteUserURLsResponse
 	err := sh.store.DeleteURLs(ctx, in.GetUrls())
 	if err != nil {
@@ -95,7 +95,7 @@ func (sh *ShortURLService) FindUserURLs(
 	ctx context.Context,
 	in *proto.FindUserURLsRequest,
 ) (*proto.FindUserURLsResponse, error) {
-	sh.zapLog.Infoln("GRPC FindUserURLs called")
+	sh.zapLog.Debugln("GRPC FindUserURLs called")
 	var response proto.FindUserURLsResponse
 
 	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId(), sh.cfg.BaseHost)
@@ -119,7 +119,7 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	ctx context.Context,
 	in *proto.SaveShortenURLsBatchRequest,
 ) (*proto.SaveShortenURLsBatchResponse, error) {
-	sh.zapLog.Infoln("GRPC SaveShortenURLsBatch called")
+	sh.zapLog.Debugln("GRPC SaveShortenURLsBatch called")
 	var response proto.SaveShortenURLsBatchResponse
 	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
 	if err != nil {
@@ -172,7 +172,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	ctx context.Context,
 	in *proto.HandleCreateShortURLRequest,
 ) (*proto.HandleCreateShortURLResponse, error) {
-	sh.zapLog.Infoln("GRPC HandleCreateShortURL called")
+	sh.zapLog.Debugln("GRPC HandleCreateShortURL called")
 	var response proto.HandleCreateShortURLResponse
 
 	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
