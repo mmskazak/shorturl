@@ -2,9 +2,10 @@ package app
 
 import (
 	"context"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 	"net"
 	"testing"
+
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"google.golang.org/grpc/peer"
 
@@ -66,8 +67,8 @@ func TestInternalStats(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "0", resp.GetUrls().Urls.GetValue())
-	assert.Equal(t, "0", resp.GetUsers().Users.GetValue())
+	assert.Equal(t, "0", resp.GetUrls().GetUrls().GetValue())
+	assert.Equal(t, "0", resp.GetUsers().GetUsers().GetValue())
 
 	// Закрываем сервер
 	grpcServer.Stop()
@@ -117,7 +118,7 @@ func TestDeleteUserURLs(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "accepted", resp.GetStatus().Status.GetValue())
+	assert.Equal(t, "accepted", resp.GetStatus().GetStatus().GetValue())
 
 	// Закрываем сервер
 	grpcServer.Stop()

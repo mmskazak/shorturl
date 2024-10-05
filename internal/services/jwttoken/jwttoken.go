@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	jwtGolang "github.com/golang-jwt/jwt"
+
 	"mmskazak/shorturl/internal/services/jwtbuilder"
+
+	jwtGolang "github.com/golang-jwt/jwt"
 )
 
 // CreateNewJWTToken - создает новый JWT токен с новым id пользователя.
@@ -33,12 +35,13 @@ func CreateNewJWTToken(userID, secretKey string) (string, error) {
 
 // GetSignedPayloadJWT извлекает и проверяет подписанную полезную нагрузку JWT из cookie.
 func GetSignedPayloadJWT(tokenString string, secretKey string) (string, error) {
-	token, err := jwtGolang.ParseWithClaims(tokenString, &jwtbuilder.PayloadJWT{}, func(token *jwtGolang.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwtGolang.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secretKey), nil
-	})
+	token, err := jwtGolang.ParseWithClaims(tokenString, &jwtbuilder.PayloadJWT{},
+		func(token *jwtGolang.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwtGolang.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(secretKey), nil
+		})
 	if err != nil {
 		return "", fmt.Errorf("error GetSignedPayloadJWT: %w", err)
 	}
@@ -49,12 +52,6 @@ func GetSignedPayloadJWT(tokenString string, secretKey string) (string, error) {
 	}
 
 	return string(data), nil
-}
-
-// verifyHMAC проверяет, соответствует ли предоставленная подпись ожидаемому значению HMAC.
-func verifyHMAC(value, signature, key string) bool {
-	expectedSignature := jwtbuilder.GenerateHMAC(value, key)
-	return CompareHMAC(expectedSignature, signature)
 }
 
 // CompareHMAC сравнивает два HMAC значения, возвращая true, если они идентичны.

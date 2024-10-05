@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 	"net"
+
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/contracts"
@@ -89,7 +90,7 @@ func (sh *ShortURLService) DeleteUserURLs(
 	urlStrings := make([]string, len(urls))
 
 	for i, u := range urls {
-		urlStrings[i] = u.Urls.GetValue()
+		urlStrings[i] = u.GetUrls().GetValue()
 	}
 
 	// Передаем преобразованный слайс []string в DeleteURLs
@@ -110,14 +111,13 @@ func (sh *ShortURLService) FindUserURLs(
 	sh.zapLog.Debugln("GRPC FindUserURLs called")
 	var response proto.FindUserURLsResponse
 
-	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId().UserId.GetValue(), sh.cfg.BaseHost)
+	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId().GetUserId().GetValue(), sh.cfg.BaseHost)
 	if err != nil {
 		return nil, fmt.Errorf("error getting user urls: %w", err)
 	}
 
 	// Преобразуем результаты в слайс структур UserURLs
 	for _, url := range urls {
-
 		userURL := &proto.UserURLs{
 			ShortUrl:    &proto.ShortURL{ShortUrl: wrapperspb.String(url.ShortURL)},
 			OriginalUrl: &proto.OriginalURL{OriginalUrl: wrapperspb.String(url.OriginalURL)},
@@ -151,8 +151,8 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	for i, inc := range in.GetIncoming() {
 		incomingModels[i] = models.Incoming{
 			// Здесь копируем поля структуры
-			CorrelationID: inc.GetCorrelationId().CorrelationId.GetValue(),
-			OriginalURL:   inc.GetOriginalUrl().OriginalUrl.GetValue(),
+			CorrelationID: inc.GetCorrelationId().GetCorrelationId().GetValue(),
+			OriginalURL:   inc.GetOriginalUrl().GetOriginalUrl().GetValue(),
 		}
 	}
 	generator := genidurl.NewGenIDService()
@@ -193,7 +193,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	generator := genidurl.NewGenIDService()
 	dto := dtos.DTOShortURL{
 		UserID:      UserID,
-		OriginalURL: in.GetOriginalUrl().OriginalUrl.GetValue(),
+		OriginalURL: in.GetOriginalUrl().GetOriginalUrl().GetValue(),
 		BaseHost:    sh.cfg.BaseHost,
 		Deleted:     false,
 	}
