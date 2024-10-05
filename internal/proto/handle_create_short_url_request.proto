@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "wraps.proto";
+
+message HandleCreateShortURLRequest {
+  JWT jwt = 1;
+  OriginalURL original_url = 2;
+}

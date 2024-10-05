@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"mmskazak/shorturl/internal/services/jwttoken"
+
 	"mmskazak/shorturl/internal/config"
 	"mmskazak/shorturl/internal/ctxkeys"
 	"mmskazak/shorturl/internal/services/jwtbuilder"
@@ -71,7 +73,8 @@ func Test_compareHMAC(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, compareHMAC(tt.args.sig1, tt.args.sig2), "compareHMAC(%v, %v)", tt.args.sig1, tt.args.sig2)
+			assert.Equalf(t, tt.want, jwttoken.CompareHMAC(tt.args.sig1, tt.args.sig2),
+				"compareHMAC(%v, %v)", tt.args.sig1, tt.args.sig2)
 		})
 	}
 }
@@ -120,7 +123,7 @@ func TestAuthMiddleware(t *testing.T) {
 	// Проверяем, что middleware создал новый JWT и установил его в куки
 	assert.Equal(t, http.StatusOK, rr.Code)
 	var responsePayload jwtbuilder.PayloadJWT
-	err = json.NewDecoder(rr.Body).Decode(&responsePayload)
+	err = json.Unmarshal(rr.Body.Bytes(), &responsePayload)
 	require.NoError(t, err)
 	assert.NotEmpty(t, responsePayload.UserID)
 

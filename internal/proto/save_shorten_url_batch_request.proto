@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "wraps.proto";
+
+message SaveShortenURLsBatchRequest {
+  JWT jwt = 1;
+  repeated Incoming incoming = 2;
+}
+
+message  Incoming  {
+  CorrelationID correlation_id = 1;
+  OriginalURL original_url = 2;
+}

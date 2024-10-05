@@ -35,7 +35,6 @@ func HandleCreateShortURL(
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		zapLog.Errorf("Не удалось прочитать тело запроса %v", err)
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
@@ -68,7 +67,6 @@ func HandleCreateShortURL(
 		w.WriteHeader(http.StatusConflict)
 		_, err := w.Write([]byte(shortURL))
 		if err != nil {
-			zapLog.Errorf("Ошибка записи ответа w.Write([]byte(shortURL)) при конфликте original url %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
@@ -84,7 +82,6 @@ func HandleCreateShortURL(
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(shortURL))
 	if err != nil {
-		zapLog.Errorf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -124,7 +121,6 @@ func HandleRedirect(
 func MainPage(w http.ResponseWriter, _ *http.Request, zapLog *zap.SugaredLogger) {
 	_, err := w.Write([]byte("Сервис сокращения URL"))
 	if err != nil {
-		zapLog.Errorf("Ошибка при обращении к главной странице: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -141,7 +137,6 @@ func PingPostgreSQL(
 ) {
 	err := data.Ping(ctx)
 	if err != nil {
-		zapLog.Errorf("Ошибка пинга базы данных data.Ping(ctx): %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

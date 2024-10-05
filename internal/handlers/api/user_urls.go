@@ -59,8 +59,6 @@ func FindUserURLs(
 	// Преобразуем данные в JSON
 	response, err := json.Marshal(urls)
 	if err != nil {
-		// Обработка ошибок, связанных с сериализацией JSON
-		zapLog.Errorf("error marshalling user urls: %v", err)
 		http.Error(w, "Ошибка при формировании ответа", http.StatusInternalServerError)
 		return
 	}

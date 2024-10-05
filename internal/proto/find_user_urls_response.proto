@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "wraps.proto";
+
+message FindUserURLsResponse {
+  repeated UserURLs user_urls = 1;
+}
+
+message UserURLs {
+  ShortURL short_url = 1;
+  OriginalURL original_url = 2;
+}

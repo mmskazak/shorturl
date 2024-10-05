@@ -17,6 +17,7 @@ import (
 
 // Config содержит поля конфигурации.
 type Config struct {
+	TrustedSubnet   string        `json:"trusted_subnet" validate:"omitempty"`    // Подсеть для получения статистики
 	Address         string        `json:"address" validate:"required"`            // Адрес сервера
 	BaseHost        string        `json:"base_host" validate:"required"`          // Базовый URL
 	FileStoragePath string        `json:"file_storage_path" validate:"omitempty"` // Путь к файлу хранилища
@@ -81,9 +82,11 @@ func InitConfig() (*Config, error) {
 		FileStoragePath: "/tmp/short-url-db.json",
 		SecretKey:       "secret",
 		ConfigPath:      "",
+		TrustedSubnet:   "",
 	}
 
 	// Указываем ссылку на переменную, имя флага, значение по умолчанию и описание
+	flag.StringVar(&config.TrustedSubnet, "t", config.TrustedSubnet, "Trusted subnet")
 	flag.StringVar(&config.ConfigPath, "c", config.ConfigPath, "Path to configuration file")
 	flag.StringVar(&config.ConfigPath, "config", config.ConfigPath, "Path to configuration file")
 	flag.StringVar(&config.Address, "a", config.Address, "IP-адрес сервера")
@@ -97,6 +100,10 @@ func InitConfig() (*Config, error) {
 
 	// Разбор командной строки
 	flag.Parse()
+
+	if envTrustedSubnet, ok := os.LookupEnv("TRUSTED_SUBNET"); ok {
+		config.TrustedSubnet = envTrustedSubnet
+	}
 
 	// Переопределение значений из переменных окружения, если они заданы
 	if envConfigPath, ok := os.LookupEnv("CONFIG"); ok {
@@ -177,6 +184,12 @@ func InitConfig() (*Config, error) {
 // assignConfigDefaults - функция для переноса значений из второго конфига в основной,
 // если в основном они равны значениям по умолчанию.
 func assignConfigDefaults(config *Config, configFromFile map[string]interface{}) {
+	if config.TrustedSubnet == "" {
+		if trustedSubnet, ok := configFromFile["trusted_subnet"].(string); ok && trustedSubnet != "" {
+			config.Address = trustedSubnet
+		}
+	}
+
 	if config.Address == ":8080" {
 		if addr, ok := configFromFile["address"].(string); ok && addr != "" {
 			config.Address = addr
@@ -199,9 +212,6 @@ func assignConfigDefaults(config *Config, configFromFile map[string]interface{})
 			if duration, err := time.ParseDuration(readTimeoutStr); err == nil {
 				config.ReadTimeout = duration
 			}
-		} else if readTimeoutNum, ok := configFromFile["read_timeout"].(float64); ok {
-			// Обработка числа (в секундах)
-			config.ReadTimeout = time.Duration(readTimeoutNum) * time.Second
 		}
 	}
 	// Если значение write_timeout в конфигурации по умолчанию
@@ -211,9 +221,6 @@ func assignConfigDefaults(config *Config, configFromFile map[string]interface{})
 			if duration, err := time.ParseDuration(writeTimeoutStr); err == nil {
 				config.WriteTimeout = duration
 			}
-		} else if writeTimeoutNum, ok := configFromFile["write_timeout"].(float64); ok {
-			// Обработка, если значение write_timeout представлено как число
-			config.WriteTimeout = time.Duration(writeTimeoutNum) * time.Second
 		}
 	}
 	if config.FileStoragePath == "/tmp/short-url-db.json" {

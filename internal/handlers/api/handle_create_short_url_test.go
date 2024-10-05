@@ -218,3 +218,35 @@ func TestHandleCreateShortURL_ErrGenerateShortURL(t *testing.T) {
 	// Проверка кода ответа
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
+
+func TestHandleCreateShortURL_ErrIoReadAll(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создание контекста с PayloadJWT(тут он не нужен)
+	ctx := context.Background()
+
+	// Создание логгера
+	zapSugar := zaptest.NewLogger(t).Sugar()
+
+	// Создание HTTP-запроса и ResponseRecorder
+	w := httptest.NewRecorder()
+	// Создание HTTP-запроса с телом запроса
+	req := httptest.NewRequest(http.MethodPost, "/", http.NoBody)
+	req = req.WithContext(ctx)
+
+	// Создание мока для ISetShortURL
+	data := mocks.NewMockISetShortURL(ctrl)
+
+	// Базовый хост
+	baseHost := "http://localhost"
+
+	shortURLService := mocks.NewMockIShortURLService(ctrl)
+
+	// Вызов функции
+	HandleCreateShortURL(context.Background(), w, req, data, baseHost, zapSugar, shortURLService)
+
+	// Проверка кода ответа
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}

@@ -8,33 +8,11 @@ import (
 	"mmskazak/shorturl/internal/models"
 )
 
-//go:generate mockgen -source=contracts.go -destination=mocks/contracts.go -package=mocks
+//go:generate mockgen -source=contracts.go -destination=mocks/contracts_mock.go -package=mocks
 
 // IGenIDForURL представляет интерфейс для генерации идентификаторов для коротких URL.
 type IGenIDForURL interface {
 	Generate() (string, error) // Метод для генерации нового идентификатора.
-}
-
-// Storage представляет интерфейс для взаимодействия со хранилищем коротких URL-адресов.
-// Close - закрывает соединение с хранилищем.
-// GetShortURL - получает оригинальный URL по короткому URL.
-// SetShortURL - устанавливает связь между коротким URL и оригинальным URL.
-// SaveBatch - сохраняет пакет новых коротких URL-адресов.
-// GetUserURLs - получает все короткие URL-адреса, связанные с пользователем.
-// DeleteURLs - устанавливает флаг удаления для указанного списка URL.
-type Storage interface {
-	Close() error
-	GetShortURL(ctx context.Context, id string) (string, error)
-	SetShortURL(ctx context.Context, idShortPath string, targetURL string, userID string, deleted bool) error
-	SaveBatch(
-		ctx context.Context,
-		items []models.Incoming,
-		baseHost string,
-		userID string,
-		generator IGenIDForURL,
-	) ([]models.Output, error)
-	GetUserURLs(ctx context.Context, userID string, baseHost string) ([]models.URL, error)
-	DeleteURLs(ctx context.Context, urlIDs []string) error
 }
 
 // Pinger определяет интерфейс для проверки состояния хранилища.
@@ -82,4 +60,9 @@ type IShortURLService interface {
 		generator IGenIDForURL,
 		data ISetShortURL,
 	) (string, error)
+}
+
+// IInternalStats - внутренняя статистика по приложению.
+type IInternalStats interface {
+	InternalStats(ctx context.Context) (models.Stats, error)
 }

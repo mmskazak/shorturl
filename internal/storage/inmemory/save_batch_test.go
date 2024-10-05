@@ -2,9 +2,12 @@ package inmemory
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"mmskazak/shorturl/internal/contracts"
 	"mmskazak/shorturl/internal/contracts/mocks"
@@ -143,4 +146,40 @@ func TestInMemory_SaveBatch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInMemory_SaveBatch_ErrorInsertingData(t *testing.T) {
+	// Создание нового контроллера
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctxBg := context.Background()
+
+	mockGenID := mocks.NewMockIGenIDForURL(ctrl)
+	mockGenID.EXPECT().Generate().Return("QwErWeRt", errors.New("test error")).AnyTimes()
+
+	incoming := []models.Incoming{
+		{
+			CorrelationID: "123",
+			OriginalURL:   "https://example.com/long-url-00012",
+		},
+		{
+			CorrelationID: "456",
+			OriginalURL:   "https://example.com/long-url-00013",
+		},
+	}
+
+	baseHost := "http://127.0.0.1:8080"
+	userID := "1"
+	generator := mockGenID
+
+	m := &InMemory{
+		mu:        &sync.Mutex{},
+		data:      make(map[string]models.URLRecord),
+		userIndex: make(map[string][]string),
+		zapLog:    zap.NewNop().Sugar(),
+	}
+	got, err := m.SaveBatch(ctxBg, incoming, baseHost, userID, generator)
+	assert.EqualError(t, err, "error inserting data: generateID failed: test error")
+	assert.Equal(t, []models.Output(nil), got)
 }

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "google/protobuf/wrappers.proto";
+
+message JWT {
+  google.protobuf.StringValue jwt = 1;
+}
+
+message CorrelationID {
+  google.protobuf.StringValue correlation_id = 1;
+}
+
+message ShortURL {
+  google.protobuf.StringValue short_url = 1;
+}
+
+message OriginalURL {
+  google.protobuf.StringValue original_url = 1;
+}
