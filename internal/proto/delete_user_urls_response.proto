@@ -5,5 +5,9 @@ option go_package = "internal/proto";
 import "google/protobuf/wrappers.proto";
 
 message DeleteUserURLsResponse {
+  Status status = 1;
+}
+
+message Status {
   google.protobuf.StringValue status = 1;
 }

@@ -101,9 +101,9 @@ func TestDeleteUserURLs(t *testing.T) {
 	client := proto.NewShortURLServiceClient(conn)
 
 	// Создаем слайс для хранения указателей на StringValue
-	urls := []*wrapperspb.StringValue{
-		wrapperspb.String("http://example.com/1"),
-		wrapperspb.String("http://example.com/2"),
+	urls := []*proto.Urls{
+		{Urls: wrapperspb.String("http://example.com/1")},
+		{Urls: wrapperspb.String("http://example.com/2")},
 	}
 
 	req := &proto.DeleteUserURLsRequest{
@@ -117,7 +117,7 @@ func TestDeleteUserURLs(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "accepted", resp.GetStatus().GetValue())
+	assert.Equal(t, "accepted", resp.GetStatus().Status.GetValue())
 
 	// Закрываем сервер
 	grpcServer.Stop()
@@ -159,7 +159,7 @@ func TestFindUserURLs(t *testing.T) {
 	client := proto.NewShortURLServiceClient(conn)
 
 	req := &proto.FindUserURLsRequest{
-		UserId: wrapperspb.String("1"),
+		UserId: &proto.UserID{UserId: wrapperspb.String("1")},
 	}
 
 	// Вызов метода

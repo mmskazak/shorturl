@@ -5,5 +5,9 @@ option go_package = "internal/proto";
 import "google/protobuf/wrappers.proto";
 
 message FindUserURLsRequest {
+  UserID user_id = 1;
+}
+
+message UserID {
   google.protobuf.StringValue user_id = 1;
 }

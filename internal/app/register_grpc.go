@@ -88,17 +88,17 @@ func (sh *ShortURLService) DeleteUserURLs(
 	urlStrings := make([]string, len(urls))
 
 	for i, u := range urls {
-		urlStrings[i] = u.GetValue()
+		urlStrings[i] = u.Urls.GetValue()
 	}
 
 	// Передаем преобразованный слайс []string в DeleteURLs
 	err := sh.store.DeleteURLs(ctx, urlStrings)
 	if err != nil {
-		response.Status = wrapperspb.String("not accepted")
+		response.Status = &proto.Status{Status: wrapperspb.String("not accepted")}
 		return nil, fmt.Errorf("error deleting urls: %w", err)
 	}
 
-	response.Status = wrapperspb.String("accepted")
+	response.Status = &proto.Status{Status: wrapperspb.String("accepted")}
 	return &response, nil
 }
 
@@ -109,7 +109,7 @@ func (sh *ShortURLService) FindUserURLs(
 	sh.zapLog.Debugln("GRPC FindUserURLs called")
 	var response proto.FindUserURLsResponse
 
-	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId().GetValue(), sh.cfg.BaseHost)
+	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId().UserId.GetValue(), sh.cfg.BaseHost)
 	if err != nil {
 		return nil, fmt.Errorf("error getting user urls: %w", err)
 	}

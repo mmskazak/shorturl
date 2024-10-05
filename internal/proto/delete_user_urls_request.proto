@@ -5,5 +5,9 @@ option go_package = "internal/proto";
 import "google/protobuf/wrappers.proto";
 
 message DeleteUserURLsRequest {
-  repeated google.protobuf.StringValue urls = 1;
+  repeated Urls urls = 1;
+}
+
+message Urls {
+  google.protobuf.StringValue urls = 1;
 }
