@@ -157,14 +157,6 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 		response.Output = append(response.Output, out)
 	}
 
-	if in.Jwt == nil {
-		if response.Jwt == nil {
-			// Инициализируем указатель, если он равен nil
-			response.Jwt = new(string)
-		}
-		*response.Jwt = jwtString // Присваиваем значение
-	}
-
 	return &response, nil
 }
 
@@ -197,14 +189,6 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	shortURL, err := shortURLService.GenerateShortURL(ctx, dto, generator, sh.store)
 	if err != nil {
 		return nil, fmt.Errorf("error creating shorten url: %w", err)
-	}
-
-	if in.Jwt == nil {
-		if response.Jwt == nil {
-			// Инициализируем указатель, если он равен nil
-			response.Jwt = new(string)
-		}
-		*response.Jwt = jwtString // Присваиваем значение
 	}
 
 	response.Result = shortURL

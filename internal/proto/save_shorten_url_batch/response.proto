@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "google/protobuf/wrappers.proto";
+
+message SaveShortenURLsBatchResponse {
+  repeated Output output = 1;
+  google.protobuf.StringValue jwt = 2;
+}
+
+message Output {
+  google.protobuf.StringValue correlation_id = 1;
+  google.protobuf.StringValue short_url = 2;
+}

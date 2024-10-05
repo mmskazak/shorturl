@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "google/protobuf/wrappers.proto";
+
+message FindUserURLsResponse {
+  repeated UserURLs user_urls = 1;
+}
+
+message UserURLs {
+  google.protobuf.StringValue short_url = 1;
+  google.protobuf.StringValue original_url = 2;
+}

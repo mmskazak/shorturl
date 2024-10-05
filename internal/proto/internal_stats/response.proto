@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "google/protobuf/wrappers.proto";
+
+message InternalStatsResponse {
+  google.protobuf.StringValue urls = 1;
+  google.protobuf.StringValue users = 2;
+  google.protobuf.StringValue error = 3;
+}

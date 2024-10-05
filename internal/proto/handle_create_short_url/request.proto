@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "google/protobuf/wrappers.proto";
+
+message HandleCreateShortURLRequest {
+  google.protobuf.StringValue jwt = 1;
+  google.protobuf.StringValue original_url = 2;
+}

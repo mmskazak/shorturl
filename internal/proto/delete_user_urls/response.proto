@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option go_package = "internal/proto";
+
+import "google/protobuf/wrappers.proto";
+
+message DeleteUserURLsResponse {
+  google.protobuf.StringValue status = 1;
+}

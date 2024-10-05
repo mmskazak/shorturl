@@ -4,64 +4,16 @@ package proto;
 
 option go_package = "internal/proto";
 
-message InternalStatsRequest {
-}
-
-message InternalStatsResponse {
-  string urls = 1;
-  string users = 2;
-  string error = 3;
-}
-
-message DeleteUserURLsRequest {
-  repeated string urls = 1;
-}
-
-message DeleteUserURLsResponse {
-  string status = 1;
-}
-
-message FindUserURLsRequest {
-  string user_id = 1;
-}
-
-message UserURLs {
-  string short_url = 1;
-  string original_url = 2;
-}
-
-message FindUserURLsResponse {
-  repeated UserURLs user_urls = 1;
-}
-
-message  Incoming  {
-  string correlation_id = 1;
-  string original_url = 2;
-}
-message Output {
-  string correlation_id = 1;
-  string short_url = 2;
-}
-
-message SaveShortenURLsBatchRequest {
-  optional string jwt = 1;
-  repeated Incoming incoming = 2;
-}
-
-message SaveShortenURLsBatchResponse {
-  repeated Output output = 1;
-  optional string jwt = 2;
-}
-
-message HandleCreateShortURLRequest {
-  optional string jwt = 1;
-  string original_url = 2;
-}
-
-message HandleCreateShortURLResponse {
-  string result = 1;
-  optional string jwt = 2;
-}
+import "internal_stats/request.proto";
+import "internal_stats/response.proto";
+import "delete_user_urls/request.proto";
+import "delete_user_urls/response.proto";
+import "find_user_urls/request.proto";
+import "find_user_urls/response.proto";
+import "save_shorten_url_batch/request.proto";
+import "save_shorten_url_batch/response.proto";
+import "handle_create_short_url/request.proto";
+import "handle_create_short_url/response.proto";
 
 service ShortURLService {
   rpc InternalStats(InternalStatsRequest) returns (InternalStatsResponse);
