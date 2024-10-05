@@ -11,11 +11,21 @@ test:
 
 proto:
 	protoc --proto_path=internal/proto \
-			--go_out=internal/proto \
-			--go_opt=paths=source_relative \
-			--go-grpc_out=internal/proto \
-			--go-grpc_opt=paths=source_relative \
-			 shorturl.proto
+        --go_out=internal/proto \
+        --go_opt=paths=source_relative \
+        --go-grpc_out=internal/proto \
+        --go-grpc_opt=paths=source_relative \
+        internal/proto/delete_user_urls_request.proto \
+        internal/proto/delete_user_urls_response.proto \
+        internal/proto/find_user_urls_request.proto \
+        internal/proto/find_user_urls_response.proto \
+        internal/proto/internal_stats_request.proto \
+        internal/proto/internal_stats_response.proto \
+        internal/proto/save_shorten_url_batch_request.proto \
+        internal/proto/save_shorten_url_batch_response.proto \
+        internal/proto/handle_create_short_url_request.proto \
+        internal/proto/handle_create_short_url_response.proto \
+        internal/proto/shorturl.proto
 
 
 # Параметры контейнера и образа

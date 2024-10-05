@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	"net"
 	"testing"
 
@@ -65,8 +66,8 @@ func TestInternalStats(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "0", resp.GetUrls())
-	assert.Equal(t, "0", resp.GetUsers())
+	assert.Equal(t, "0", resp.GetUrls().GetValue())
+	assert.Equal(t, "0", resp.GetUsers().GetValue())
 
 	// Закрываем сервер
 	grpcServer.Stop()
@@ -99,8 +100,14 @@ func TestDeleteUserURLs(t *testing.T) {
 
 	client := proto.NewShortURLServiceClient(conn)
 
+	// Создаем слайс для хранения указателей на StringValue
+	urls := []*wrapperspb.StringValue{
+		wrapperspb.String("http://example.com/1"),
+		wrapperspb.String("http://example.com/2"),
+	}
+
 	req := &proto.DeleteUserURLsRequest{
-		Urls: []string{"http://example.com/1", "http://example.com/2"},
+		Urls: urls,
 	}
 
 	// Вызов метода
@@ -110,7 +117,7 @@ func TestDeleteUserURLs(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "accepted", resp.GetStatus())
+	assert.Equal(t, "accepted", resp.GetStatus().GetValue())
 
 	// Закрываем сервер
 	grpcServer.Stop()
@@ -152,7 +159,7 @@ func TestFindUserURLs(t *testing.T) {
 	client := proto.NewShortURLServiceClient(conn)
 
 	req := &proto.FindUserURLsRequest{
-		UserId: "1",
+		UserId: wrapperspb.String("1"),
 	}
 
 	// Вызов метода
@@ -196,12 +203,12 @@ func TestSaveShortenURLsBatch(t *testing.T) {
 	req := &proto.SaveShortenURLsBatchRequest{
 		Incoming: []*proto.Incoming{
 			{
-				CorrelationId: "1",
-				OriginalUrl:   "http://example.com/1",
+				CorrelationId: wrapperspb.String("1"),
+				OriginalUrl:   wrapperspb.String("http://example.com/1"),
 			},
 			{
-				CorrelationId: "2",
-				OriginalUrl:   "http://example.com/2",
+				CorrelationId: wrapperspb.String("2"),
+				OriginalUrl:   wrapperspb.String("http://example.com/2"),
 			},
 		},
 	}
@@ -245,7 +252,7 @@ func TestHandleCreateShortURL(t *testing.T) {
 
 	client := proto.NewShortURLServiceClient(conn)
 	req := &proto.HandleCreateShortURLRequest{
-		OriginalUrl: "http://example.com/1",
+		OriginalUrl: wrapperspb.String("http://example.com/1"),
 	}
 
 	// Вызов метода

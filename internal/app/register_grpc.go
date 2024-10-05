@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	"net"
 
 	"mmskazak/shorturl/internal/config"
@@ -70,8 +71,8 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 	if err != nil {
 		return nil, fmt.Errorf("error get internal stats: %w", err)
 	}
-	responseStats.Users = stats.Users
-	responseStats.Urls = stats.Urls
+	responseStats.Users = wrapperspb.String(stats.Users)
+	responseStats.Urls = wrapperspb.String(stats.Urls)
 	return &responseStats, nil
 }
 
@@ -81,13 +82,23 @@ func (sh *ShortURLService) DeleteUserURLs(
 ) (*proto.DeleteUserURLsResponse, error) {
 	sh.zapLog.Debugln("GRPC DeleteUserURLs called")
 	var response proto.DeleteUserURLsResponse
-	err := sh.store.DeleteURLs(ctx, in.GetUrls())
+
+	// Преобразование []*Urls в []string
+	urls := in.GetUrls()
+	urlStrings := make([]string, len(urls))
+
+	for i, u := range urls {
+		urlStrings[i] = u.GetValue()
+	}
+
+	// Передаем преобразованный слайс []string в DeleteURLs
+	err := sh.store.DeleteURLs(ctx, urlStrings)
 	if err != nil {
-		response.Status = "not accepted"
+		response.Status = wrapperspb.String("not accepted")
 		return nil, fmt.Errorf("error deleting urls: %w", err)
 	}
 
-	response.Status = "accepted"
+	response.Status = wrapperspb.String("accepted")
 	return &response, nil
 }
 
@@ -98,7 +109,7 @@ func (sh *ShortURLService) FindUserURLs(
 	sh.zapLog.Debugln("GRPC FindUserURLs called")
 	var response proto.FindUserURLsResponse
 
-	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId(), sh.cfg.BaseHost)
+	urls, err := sh.store.GetUserURLs(ctx, in.GetUserId().GetValue(), sh.cfg.BaseHost)
 	if err != nil {
 		return nil, fmt.Errorf("error getting user urls: %w", err)
 	}
@@ -106,8 +117,8 @@ func (sh *ShortURLService) FindUserURLs(
 	// Преобразуем результаты в слайс структур UserURLs
 	for _, url := range urls {
 		userURL := &proto.UserURLs{
-			ShortUrl:    url.ShortURL,
-			OriginalUrl: url.OriginalURL,
+			ShortUrl:    wrapperspb.String(url.ShortURL),
+			OriginalUrl: wrapperspb.String(url.OriginalURL),
 		}
 		response.UserUrls = append(response.UserUrls, userURL)
 	}
@@ -121,7 +132,7 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 ) (*proto.SaveShortenURLsBatchResponse, error) {
 	sh.zapLog.Debugln("GRPC SaveShortenURLsBatch called")
 	var response proto.SaveShortenURLsBatchResponse
-	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
+	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt().GetValue())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
 	}
@@ -138,8 +149,8 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	for i, inc := range in.GetIncoming() {
 		incomingModels[i] = models.Incoming{
 			// Здесь копируем поля структуры
-			CorrelationID: inc.GetCorrelationId(),
-			OriginalURL:   inc.GetOriginalUrl(),
+			CorrelationID: inc.GetCorrelationId().GetValue(),
+			OriginalURL:   inc.GetOriginalUrl().GetValue(),
 		}
 	}
 	generator := genidurl.NewGenIDService()
@@ -151,8 +162,8 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	// Преобразуем outputs в слайс Output для ответа
 	for _, output := range outputs {
 		out := &proto.Output{
-			CorrelationId: output.CorrelationID,
-			ShortUrl:      output.ShortURL,
+			CorrelationId: wrapperspb.String(output.CorrelationID),
+			ShortUrl:      wrapperspb.String(output.ShortURL),
 		}
 		response.Output = append(response.Output, out)
 	}
@@ -167,7 +178,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	sh.zapLog.Debugln("GRPC HandleCreateShortURL called")
 	var response proto.HandleCreateShortURLResponse
 
-	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt())
+	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt().GetValue())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
 	}
@@ -180,7 +191,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	generator := genidurl.NewGenIDService()
 	dto := dtos.DTOShortURL{
 		UserID:      UserID,
-		OriginalURL: in.GetOriginalUrl(),
+		OriginalURL: in.GetOriginalUrl().GetValue(),
 		BaseHost:    sh.cfg.BaseHost,
 		Deleted:     false,
 	}
@@ -191,7 +202,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 		return nil, fmt.Errorf("error creating shorten url: %w", err)
 	}
 
-	response.Result = shortURL
+	response.Result = wrapperspb.String(shortURL)
 	return &response, nil
 }
 

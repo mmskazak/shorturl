@@ -4,16 +4,16 @@ package proto;
 
 option go_package = "internal/proto";
 
-import "internal_stats/request.proto";
-import "internal_stats/response.proto";
-import "delete_user_urls/request.proto";
-import "delete_user_urls/response.proto";
-import "find_user_urls/request.proto";
-import "find_user_urls/response.proto";
-import "save_shorten_url_batch/request.proto";
-import "save_shorten_url_batch/response.proto";
-import "handle_create_short_url/request.proto";
-import "handle_create_short_url/response.proto";
+import "internal_stats_request.proto";
+import "internal_stats_response.proto";
+import "delete_user_urls_request.proto";
+import "delete_user_urls_response.proto";
+import "find_user_urls_request.proto";
+import "find_user_urls_response.proto";
+import "save_shorten_url_batch_request.proto";
+import "save_shorten_url_batch_response.proto";
+import "handle_create_short_url_request.proto";
+import "handle_create_short_url_response.proto";
 
 service ShortURLService {
   rpc InternalStats(InternalStatsRequest) returns (InternalStatsResponse);
