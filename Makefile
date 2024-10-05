@@ -15,6 +15,7 @@ proto:
         --go_opt=paths=source_relative \
         --go-grpc_out=internal/proto \
         --go-grpc_opt=paths=source_relative \
+        internal/proto/wraps.proto \
         internal/proto/delete_user_urls_request.proto \
         internal/proto/delete_user_urls_response.proto \
         internal/proto/find_user_urls_request.proto \

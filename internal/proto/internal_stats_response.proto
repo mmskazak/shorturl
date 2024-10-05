@@ -5,7 +5,19 @@ option go_package = "internal/proto";
 import "google/protobuf/wrappers.proto";
 
 message InternalStatsResponse {
+  URLs urls = 1;
+  Users users = 2;
+  Error error = 3;
+}
+
+message URLs {
   google.protobuf.StringValue urls = 1;
-  google.protobuf.StringValue users = 2;
-  google.protobuf.StringValue error = 3;
+}
+
+message Users {
+  google.protobuf.StringValue users = 1;
+}
+
+message Error {
+  google.protobuf.StringValue error = 1;
 }

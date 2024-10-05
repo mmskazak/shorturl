@@ -71,8 +71,9 @@ func (sh *ShortURLService) InternalStats(ctx context.Context, _ *proto.InternalS
 	if err != nil {
 		return nil, fmt.Errorf("error get internal stats: %w", err)
 	}
-	responseStats.Users = wrapperspb.String(stats.Users)
-	responseStats.Urls = wrapperspb.String(stats.Urls)
+
+	responseStats.Users = &proto.Users{Users: wrapperspb.String(stats.Users)}
+	responseStats.Urls = &proto.URLs{Urls: wrapperspb.String(stats.Urls)}
 	return &responseStats, nil
 }
 
@@ -116,9 +117,10 @@ func (sh *ShortURLService) FindUserURLs(
 
 	// Преобразуем результаты в слайс структур UserURLs
 	for _, url := range urls {
+
 		userURL := &proto.UserURLs{
-			ShortUrl:    wrapperspb.String(url.ShortURL),
-			OriginalUrl: wrapperspb.String(url.OriginalURL),
+			ShortUrl:    &proto.ShortURL{ShortUrl: wrapperspb.String(url.ShortURL)},
+			OriginalUrl: &proto.OriginalURL{OriginalUrl: wrapperspb.String(url.OriginalURL)},
 		}
 		response.UserUrls = append(response.UserUrls, userURL)
 	}
@@ -132,7 +134,7 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 ) (*proto.SaveShortenURLsBatchResponse, error) {
 	sh.zapLog.Debugln("GRPC SaveShortenURLsBatch called")
 	var response proto.SaveShortenURLsBatchResponse
-	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt().GetValue())
+	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt().GetJwt().GetValue())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
 	}
@@ -149,8 +151,8 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	for i, inc := range in.GetIncoming() {
 		incomingModels[i] = models.Incoming{
 			// Здесь копируем поля структуры
-			CorrelationID: inc.GetCorrelationId().GetValue(),
-			OriginalURL:   inc.GetOriginalUrl().GetValue(),
+			CorrelationID: inc.GetCorrelationId().CorrelationId.GetValue(),
+			OriginalURL:   inc.GetOriginalUrl().OriginalUrl.GetValue(),
 		}
 	}
 	generator := genidurl.NewGenIDService()
@@ -162,8 +164,8 @@ func (sh *ShortURLService) SaveShortenURLsBatch(
 	// Преобразуем outputs в слайс Output для ответа
 	for _, output := range outputs {
 		out := &proto.Output{
-			CorrelationId: wrapperspb.String(output.CorrelationID),
-			ShortUrl:      wrapperspb.String(output.ShortURL),
+			CorrelationId: &proto.CorrelationID{CorrelationId: wrapperspb.String(output.CorrelationID)},
+			ShortUrl:      &proto.ShortURL{ShortUrl: wrapperspb.String(output.ShortURL)},
 		}
 		response.Output = append(response.Output, out)
 	}
@@ -178,7 +180,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	sh.zapLog.Debugln("GRPC HandleCreateShortURL called")
 	var response proto.HandleCreateShortURLResponse
 
-	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt().GetValue())
+	jwtString, err := sh.getOrCreateJWTToken(in.GetJwt().GetJwt().GetValue())
 	if err != nil {
 		return nil, fmt.Errorf("error getting jwt token: %w", err)
 	}
@@ -191,7 +193,7 @@ func (sh *ShortURLService) HandleCreateShortURL(
 	generator := genidurl.NewGenIDService()
 	dto := dtos.DTOShortURL{
 		UserID:      UserID,
-		OriginalURL: in.GetOriginalUrl().GetValue(),
+		OriginalURL: in.GetOriginalUrl().OriginalUrl.GetValue(),
 		BaseHost:    sh.cfg.BaseHost,
 		Deleted:     false,
 	}
@@ -202,7 +204,9 @@ func (sh *ShortURLService) HandleCreateShortURL(
 		return nil, fmt.Errorf("error creating shorten url: %w", err)
 	}
 
-	response.Result = wrapperspb.String(shortURL)
+	response.Result = &proto.Result{
+		Result: wrapperspb.String(shortURL),
+	}
 	return &response, nil
 }
 

@@ -66,8 +66,8 @@ func TestInternalStats(t *testing.T) {
 	// Проверка результата
 	assert.NoError(t, err)
 	assert.NotNil(t, resp) // Проверка, что ответ не nil
-	assert.Equal(t, "0", resp.GetUrls().GetValue())
-	assert.Equal(t, "0", resp.GetUsers().GetValue())
+	assert.Equal(t, "0", resp.GetUrls().Urls.GetValue())
+	assert.Equal(t, "0", resp.GetUsers().Users.GetValue())
 
 	// Закрываем сервер
 	grpcServer.Stop()
@@ -201,14 +201,15 @@ func TestSaveShortenURLsBatch(t *testing.T) {
 
 	client := proto.NewShortURLServiceClient(conn)
 	req := &proto.SaveShortenURLsBatchRequest{
+
 		Incoming: []*proto.Incoming{
 			{
-				CorrelationId: wrapperspb.String("1"),
-				OriginalUrl:   wrapperspb.String("http://example.com/1"),
+				CorrelationId: &proto.CorrelationID{CorrelationId: wrapperspb.String("1")},
+				OriginalUrl:   &proto.OriginalURL{OriginalUrl: wrapperspb.String("http://example.com/1")},
 			},
 			{
-				CorrelationId: wrapperspb.String("2"),
-				OriginalUrl:   wrapperspb.String("http://example.com/2"),
+				CorrelationId: &proto.CorrelationID{CorrelationId: wrapperspb.String("2")},
+				OriginalUrl:   &proto.OriginalURL{OriginalUrl: wrapperspb.String("http://example.com/2")},
 			},
 		},
 	}
@@ -251,8 +252,9 @@ func TestHandleCreateShortURL(t *testing.T) {
 	defer conn.Close() //nolint:errcheck //пренебрежем этим в тесте
 
 	client := proto.NewShortURLServiceClient(conn)
+
 	req := &proto.HandleCreateShortURLRequest{
-		OriginalUrl: wrapperspb.String("http://example.com/1"),
+		OriginalUrl: &proto.OriginalURL{OriginalUrl: wrapperspb.String("http://example.com/1")},
 	}
 
 	// Вызов метода

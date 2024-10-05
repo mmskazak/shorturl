@@ -2,14 +2,14 @@ syntax = "proto3";
 
 option go_package = "internal/proto";
 
-import "google/protobuf/wrappers.proto";
+import "wraps.proto";
 
 message SaveShortenURLsBatchRequest {
-  google.protobuf.StringValue jwt = 1;
+  JWT jwt = 1;
   repeated Incoming incoming = 2;
 }
 
 message  Incoming  {
-  google.protobuf.StringValue correlation_id = 1;
-  google.protobuf.StringValue original_url = 2;
+  CorrelationID correlation_id = 1;
+  OriginalURL original_url = 2;
 }

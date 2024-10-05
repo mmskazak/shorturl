@@ -26,9 +26,9 @@ type InternalStatsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Urls  *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=urls,proto3" json:"urls,omitempty"`
-	Users *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=users,proto3" json:"users,omitempty"`
-	Error *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	Urls  *URLs  `protobuf:"bytes,1,opt,name=urls,proto3" json:"urls,omitempty"`
+	Users *Users `protobuf:"bytes,2,opt,name=users,proto3" json:"users,omitempty"`
+	Error *Error `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (x *InternalStatsResponse) Reset() {
@@ -63,21 +63,162 @@ func (*InternalStatsResponse) Descriptor() ([]byte, []int) {
 	return file_internal_stats_response_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *InternalStatsResponse) GetUrls() *wrapperspb.StringValue {
+func (x *InternalStatsResponse) GetUrls() *URLs {
 	if x != nil {
 		return x.Urls
 	}
 	return nil
 }
 
-func (x *InternalStatsResponse) GetUsers() *wrapperspb.StringValue {
+func (x *InternalStatsResponse) GetUsers() *Users {
 	if x != nil {
 		return x.Users
 	}
 	return nil
 }
 
-func (x *InternalStatsResponse) GetError() *wrapperspb.StringValue {
+func (x *InternalStatsResponse) GetError() *Error {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type URLs struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Urls *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=urls,proto3" json:"urls,omitempty"`
+}
+
+func (x *URLs) Reset() {
+	*x = URLs{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_stats_response_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *URLs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*URLs) ProtoMessage() {}
+
+func (x *URLs) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_stats_response_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use URLs.ProtoReflect.Descriptor instead.
+func (*URLs) Descriptor() ([]byte, []int) {
+	return file_internal_stats_response_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *URLs) GetUrls() *wrapperspb.StringValue {
+	if x != nil {
+		return x.Urls
+	}
+	return nil
+}
+
+type Users struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Users *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=users,proto3" json:"users,omitempty"`
+}
+
+func (x *Users) Reset() {
+	*x = Users{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_stats_response_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Users) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Users) ProtoMessage() {}
+
+func (x *Users) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_stats_response_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Users.ProtoReflect.Descriptor instead.
+func (*Users) Descriptor() ([]byte, []int) {
+	return file_internal_stats_response_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Users) GetUsers() *wrapperspb.StringValue {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+type Error struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *Error) Reset() {
+	*x = Error{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_stats_response_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Error) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Error) ProtoMessage() {}
+
+func (x *Error) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_stats_response_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Error.ProtoReflect.Descriptor instead.
+func (*Error) Descriptor() ([]byte, []int) {
+	return file_internal_stats_response_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Error) GetError() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Error
 	}
@@ -91,15 +232,22 @@ var file_internal_stats_response_proto_rawDesc = []byte{
 	0x5f, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2f, 0x77, 0x72, 0x61, 0x70, 0x70, 0x65, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
-	0xb1, 0x01, 0x0a, 0x15, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74,
-	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x30, 0x0a, 0x04, 0x75, 0x72, 0x6c,
-	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x04, 0x75, 0x72, 0x6c, 0x73, 0x12, 0x32, 0x0a, 0x05, 0x75,
-	0x73, 0x65, 0x72, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f,
-	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72,
-	0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x12,
-	0x32, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c,
+	0x6e, 0x0a, 0x15, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x04, 0x75, 0x72, 0x6c, 0x73,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x05, 0x2e, 0x55, 0x52, 0x4c, 0x73, 0x52, 0x04, 0x75,
+	0x72, 0x6c, 0x73, 0x12, 0x1c, 0x0a, 0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x06, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x73, 0x52, 0x05, 0x75, 0x73, 0x65, 0x72,
+	0x73, 0x12, 0x1c, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x06, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22,
+	0x38, 0x0a, 0x04, 0x55, 0x52, 0x4c, 0x73, 0x12, 0x30, 0x0a, 0x04, 0x75, 0x72, 0x6c, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61,
+	0x6c, 0x75, 0x65, 0x52, 0x04, 0x75, 0x72, 0x6c, 0x73, 0x22, 0x3b, 0x0a, 0x05, 0x55, 0x73, 0x65,
+	0x72, 0x73, 0x12, 0x32, 0x0a, 0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52,
+	0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x22, 0x3b, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12,
+	0x32, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c,
 	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x05, 0x65, 0x72,
 	0x72, 0x6f, 0x72, 0x42, 0x10, 0x5a, 0x0e, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f,
@@ -118,20 +266,26 @@ func file_internal_stats_response_proto_rawDescGZIP() []byte {
 	return file_internal_stats_response_proto_rawDescData
 }
 
-var file_internal_stats_response_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_internal_stats_response_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_internal_stats_response_proto_goTypes = []any{
 	(*InternalStatsResponse)(nil),  // 0: InternalStatsResponse
-	(*wrapperspb.StringValue)(nil), // 1: google.protobuf.StringValue
+	(*URLs)(nil),                   // 1: URLs
+	(*Users)(nil),                  // 2: Users
+	(*Error)(nil),                  // 3: Error
+	(*wrapperspb.StringValue)(nil), // 4: google.protobuf.StringValue
 }
 var file_internal_stats_response_proto_depIdxs = []int32{
-	1, // 0: InternalStatsResponse.urls:type_name -> google.protobuf.StringValue
-	1, // 1: InternalStatsResponse.users:type_name -> google.protobuf.StringValue
-	1, // 2: InternalStatsResponse.error:type_name -> google.protobuf.StringValue
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // 0: InternalStatsResponse.urls:type_name -> URLs
+	2, // 1: InternalStatsResponse.users:type_name -> Users
+	3, // 2: InternalStatsResponse.error:type_name -> Error
+	4, // 3: URLs.urls:type_name -> google.protobuf.StringValue
+	4, // 4: Users.users:type_name -> google.protobuf.StringValue
+	4, // 5: Error.error:type_name -> google.protobuf.StringValue
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_internal_stats_response_proto_init() }
@@ -152,6 +306,42 @@ func file_internal_stats_response_proto_init() {
 				return nil
 			}
 		}
+		file_internal_stats_response_proto_msgTypes[1].Exporter = func(v any, i int) any {
+			switch v := v.(*URLs); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_stats_response_proto_msgTypes[2].Exporter = func(v any, i int) any {
+			switch v := v.(*Users); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_stats_response_proto_msgTypes[3].Exporter = func(v any, i int) any {
+			switch v := v.(*Error); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -159,7 +349,7 @@ func file_internal_stats_response_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_internal_stats_response_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
