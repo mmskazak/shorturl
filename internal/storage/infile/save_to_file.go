@@ -19,12 +19,13 @@ import (
 // - Данные сохраняются в файл асинхронно для улучшения производительности и предотвращения блокировки основной работы.
 // - Ошибки при создании файла или записи данных логируются, но не останавливают выполнение.
 // - Файл закрывается после завершения записи, и возможные ошибки при закрытии также логируются.
-func (m *InFile) saveToFile() {
+func (f *InFile) saveToFile() {
+	f.zapLog.Infoln("Save urls to file")
 	go func() {
-		m.zapLog.Info("Starting to save storage data to file")
+		f.zapLog.Info("Starting to save storage data to file")
 
 		// Получение копии данных из памяти
-		data := m.InMe.GetCopyData()
+		data := f.InMe.GetCopyData()
 
 		// Формирование списка записей для сериализации
 		records := make([]shortURLStruct, 0, len(data))
@@ -41,15 +42,15 @@ func (m *InFile) saveToFile() {
 		}
 
 		// Открываем файл для перезаписи
-		file, err := os.Create(m.filePath)
+		file, err := os.Create(f.filePath)
 		if err != nil {
-			m.zapLog.Errorf("error creating file: %v", err)
+			f.zapLog.Errorf("error creating file: %v", err)
 			return
 		}
 		defer func(file *os.File) {
 			err := file.Close()
 			if err != nil {
-				m.zapLog.Warnf("error closing file storage: %v", err)
+				f.zapLog.Warnf("error closing file storage: %v", err)
 			}
 		}(file)
 
@@ -58,11 +59,11 @@ func (m *InFile) saveToFile() {
 		for _, record := range records {
 			err := encoder.Encode(record)
 			if err != nil {
-				m.zapLog.Errorf("error encoding data: %v", err)
+				f.zapLog.Errorf("error encoding data: %v", err)
 				return
 			}
 		}
 
-		m.zapLog.Info("Successfully saved storage data to file")
+		f.zapLog.Info("Successfully saved storage data to file")
 	}()
 }

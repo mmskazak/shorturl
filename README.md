@@ -44,6 +44,14 @@ go tool cover -func profile.cov
 ##### Посмотреть покрытие в веб-браузере
 go tool cover -html=profile.cov
 
+##### Покрытие с исключением сгенерированного кода
+go test ./... -coverprofile cover1.out.tmp
+cat cover1.out.tmp | grep -v "pb.go" > cover2.out.tmp
+cat cover2.out.tmp | grep -v "_mock.go" > cover.out
+go tool cover -func cover.out
+
+
+
 ## Запуск кастомного линтера
 Переходим в папку с линтером.
 ``````
@@ -60,3 +68,12 @@ go build -o mylint.exe
 .\mylint.exe -config staticlint.json .\...
 ``````
 Файл с конфигурацией есть в папку с линтером, а так же его копия в корне проекта.
+
+## Генерация protoc
+``````
+ protoc --proto_path=internal/proto --go_out=internal/proto --go_opt=paths=source_relative --go-grpc_out=internal/proto --go-grpc_opt=paths=source_relative shorturl.proto
+``````
+``````
+ protoc --proto_path internal/proto --go_out internal/proto --go_opt paths=source_relative --go-grpc_out internal/proto --go-grpc_opt paths=source_relative shorturl.proto
+``````
+

@@ -23,17 +23,18 @@ import (
 // Примечание:
 // Функция передает сохранение данных в хранилище в памяти (InMemory), затем сохраняет обновленные данные в файл.
 // Если при сохранении данных в памяти возникает ошибка, она возвращается без оборачивания.
-func (m *InFile) SaveBatch(
+func (f *InFile) SaveBatch(
 	ctx context.Context,
 	items []models.Incoming,
 	baseHost string,
 	userID string,
 	generator contracts.IGenIDForURL,
 ) ([]models.Output, error) {
-	outputs, err := m.InMe.SaveBatch(ctx, items, baseHost, userID, generator)
+	f.zapLog.Infof("Adding %d items", len(items))
+	outputs, err := f.InMe.SaveBatch(ctx, items, baseHost, userID, generator)
 	if err != nil {
 		return nil, err //nolint:wrapcheck // прокидываем оригинальную ошибку
 	}
-	m.saveToFile()
+	f.saveToFile()
 	return outputs, nil
 }

@@ -21,18 +21,19 @@ import (
 // Примечания:
 // - Ошибки обрабатываются и пробрасываются дальше без обёртывания, чтобы сохранять оригинальное сообщение об ошибке.
 // - После успешного сохранения вызывается функция `saveToFile` для записи данных в файл асинхронно.
-func (m *InFile) SetShortURL(
+func (f *InFile) SetShortURL(
 	ctx context.Context,
 	idShortPath string,
 	originalURL string,
 	userID string,
 	deleted bool,
 ) error {
-	err := m.InMe.SetShortURL(ctx, idShortPath, originalURL, userID, deleted)
+	f.zapLog.Infof("Setting short url for user %s to %s", userID, originalURL)
+	err := f.InMe.SetShortURL(ctx, idShortPath, originalURL, userID, deleted)
 	if err != nil {
 		return err //nolint:wrapcheck // пробрасываем дальше оригинальную ошибку
 	}
-	m.saveToFile()
-	m.zapLog.Infof("Added short link id: %s, URL: %s, for UserID %s", idShortPath, originalURL, userID)
+	f.saveToFile()
+	f.zapLog.Infof("Added short link id: %s, URL: %s, for UserID %s", idShortPath, originalURL, userID)
 	return nil
 }

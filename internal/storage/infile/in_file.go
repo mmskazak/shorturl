@@ -42,7 +42,7 @@ type shortURLStruct struct {
 //   - error: Ошибка, если она произошла при создании объекта InFile.
 //
 // Примечание:
-// Функция сначала создает хранилище в памяти с помощью inmemory.NewInMemory, а затем читает данные из файла,
+// Функция сначала создает хранилище в памяти с помощью inmemory. NewInMemory, а затем читает данные из файла,
 // если он существует.
 func NewInFile(ctx context.Context, cfg *config.Config, zapLog *zap.SugaredLogger) (*InFile, error) {
 	inm, err := inmemory.NewInMemory(zapLog)
@@ -94,16 +94,16 @@ func parseShortURLStruct(line string) (shortURLStruct, error) {
 // Примечание:
 // Функция открывает файл, считывает данные построчно,
 // парсит их и добавляет в хранилище в памяти. Если файл не существует, он создается.
-func (m *InFile) readFileStorage(ctx context.Context) error {
+func (f *InFile) readFileStorage(ctx context.Context) error {
 	// Открываем файл с флагами для создания, если он не существует
-	file, err := os.OpenFile(m.filePath, os.O_RDONLY|os.O_CREATE, filePermissions)
+	file, err := os.OpenFile(f.filePath, os.O_RDONLY|os.O_CREATE, filePermissions)
 	if err != nil {
 		return fmt.Errorf("error opening or creating file: %w", err)
 	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			m.zapLog.Warnf("error closing file: %w", err)
+			f.zapLog.Warnf("error closing file: %w", err)
 		}
 	}(file)
 
@@ -119,7 +119,7 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 		}
 
 		// Добавляем запись в InMemoryStorage
-		if err := m.InMe.SetShortURL(
+		if err := f.InMe.SetShortURL(
 			ctx,
 			record.ShortURL,
 			record.OriginalURL,
@@ -143,7 +143,7 @@ func (m *InFile) readFileStorage(ctx context.Context) error {
 //
 // Возвращает:
 //   - error: Ошибка, если она произошла при попытке завершить работу хранилища.
-func (m *InFile) Close() error {
-	m.zapLog.Debugln("InFile storage closed (nothing to close currently)")
+func (f *InFile) Close() error {
+	f.zapLog.Debugln("InFile storage closed (nothing to close currently)")
 	return nil
 }

@@ -43,7 +43,6 @@ func HandleCreateShortURL(
 	// Чтение оригинального URL из тела запроса.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		zapLog.Errorf("Не удалось прочитать тело запроса %v", err)
 		http.Error(w, "Что-то пошло не так!", http.StatusBadRequest)
 		return
 	}
@@ -56,6 +55,7 @@ func HandleCreateShortURL(
 	// Получаем userID из контекста
 	payload, ok := r.Context().Value(ctxkeys.PayLoad).(jwtbuilder.PayloadJWT)
 	userID := payload.UserID
+	zapLog.Infof("User ID: %d", userID)
 	if !ok {
 		// Если userID не найден или неверного типа, возвращаем ошибку
 		http.Error(w, "", http.StatusUnauthorized)
@@ -82,7 +82,6 @@ func HandleCreateShortURL(
 	if errors.Is(err, shorturlservice.ErrConflict) {
 		shortURLAsJSON, err := buildJSONResponse(shortURL)
 		if err != nil {
-			zapLog.Errorf("Ошибка buildJSONResponse: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
@@ -90,12 +89,12 @@ func HandleCreateShortURL(
 		w.WriteHeader(http.StatusConflict)
 		_, err = w.Write([]byte(shortURLAsJSON))
 		if err != nil {
-			zapLog.Errorf("Ошибка write, err := w.Write([]byte(shortURLAsJson)): %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 		return
 	}
+	zapLog.Infoln("Short URL: ", shortURL)
 
 	if err != nil {
 		zapLog.Errorf("Ошибка saveUniqueShortURL: %v", err)
@@ -107,15 +106,14 @@ func HandleCreateShortURL(
 	}
 	shortURLAsJSON, err := json.Marshal(jsonResp)
 	if err != nil {
-		zapLog.Errorf("Ошибка json.Marshal: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
+	zapLog.Infoln("Short URL JSON: ", string(shortURLAsJSON))
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(shortURLAsJSON)
 	if err != nil {
-		zapLog.Errorf("Ошибка ResponseWriter: %v", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

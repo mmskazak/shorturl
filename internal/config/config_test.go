@@ -164,3 +164,39 @@ func verifyConfig(t *testing.T, config *Config) {
 		t.Errorf("Expected SecretKey 'envsecret', got '%s'", config.SecretKey)
 	}
 }
+
+func Test_assignConfigDefaults(t *testing.T) {
+	// Инициализируем конфигурацию.
+	baseDurationReadTimeout := 10 * time.Second
+	baseDurationWriteTimeout := 10 * time.Second
+
+	config := &Config{
+		Address:         ":8080",
+		BaseHost:        "http://localhost:8080",
+		LogLevel:        "info",
+		ReadTimeout:     baseDurationReadTimeout,
+		WriteTimeout:    baseDurationWriteTimeout,
+		FileStoragePath: "/tmp/short-url-db.json",
+		SecretKey:       "secret",
+		ConfigPath:      "",
+	}
+
+	configFromFile := make(map[string]interface{}, 9)
+	configFromFile["address"] = "address"
+	configFromFile["base_host"] = "base_host"
+	configFromFile["file_storage_path"] = "file_storage_path"
+	configFromFile["database_dsn"] = "database_dsn"
+	configFromFile["secret_key"] = "secret_key"
+	configFromFile["secret_key"] = "secret_key"
+	configFromFile["config_path"] = "config_path"
+	configFromFile["log_level"] = "log_level"
+	configFromFile["read_timeout"] = "5s"
+	configFromFile["write_timeout"] = "5s"
+
+	assignConfigDefaults(config, configFromFile)
+
+	assert.Equal(t, "address", config.Address)
+	assert.Equal(t, "base_host", config.BaseHost)
+	assert.Equal(t, 5*time.Second, config.ReadTimeout)
+	assert.Equal(t, 5*time.Second, config.WriteTimeout)
+}

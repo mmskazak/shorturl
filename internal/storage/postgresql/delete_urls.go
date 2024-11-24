@@ -39,7 +39,7 @@ func (s *PostgreSQL) DeleteURLs(ctx context.Context, urlIDs []string) error {
 	batch := &pgx.Batch{}
 
 	batchSize := 5000
-	batchSizeCounter := 0
+	batchSizeCounter := 1
 	// Добавляем команды в batch
 	for _, shortURL := range urlIDs {
 		// Если используется поле `id` в тестах, измените запрос на "WHERE id = $1"

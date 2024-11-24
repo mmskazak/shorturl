@@ -20,7 +20,6 @@ func Init(level zapcore.Level) (*zap.SugaredLogger, error) {
 	// Построение логгера на основе конфигурации.
 	logger, err := cfg.Build()
 	if err != nil {
-		// Если произошла ошибка при создании логгера, возвращаем её.
 		return nil, fmt.Errorf("ошибка в инициализации логгера %w", err)
 	}
 

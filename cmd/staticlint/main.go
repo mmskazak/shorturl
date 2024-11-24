@@ -34,6 +34,39 @@ import (
 const countLinesNakedFunc = 25
 
 func main() {
+	analyzers := getAnalyzers()
+	// Выполним проверку целевой директории
+	multichecker.Main(analyzers...)
+}
+
+// Config список проверок по honnef.co/go/tools.
+type Config struct {
+	Checks map[string]bool `json:"checks"`
+}
+
+// Считываем конфигурацию из файла.
+func loadConfig(path string) (map[string]bool, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("не удалось открыть файл конфигурации: %w", err)
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("Error close config file: %v", err)
+		}
+	}(file)
+
+	var config Config
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
+		return nil, fmt.Errorf("не удалось декодировать файл конфигурации: %w", err)
+	}
+
+	return config.Checks, nil
+}
+
+func getAnalyzers() []*analysis.Analyzer {
 	// Определяем флаги командной строки
 	configPath := flag.String("config", "staticlint.json", "Путь к файлу конфигурации")
 	flag.Parse()
@@ -41,8 +74,7 @@ func main() {
 	// Загружаем конфигурацию
 	checks, err := loadConfig(*configPath)
 	if err != nil {
-		fmt.Println("Ошибка загрузки конфигурации:", err)
-		return
+		log.Fatalf("Ошибка загрузки конфигурации: %v", err)
 	}
 
 	// Соберем все стандартные анализаторы
@@ -98,33 +130,5 @@ func main() {
 		noosexit.Analyzer,
 	)
 
-	// Выполним проверку целевой директории
-	multichecker.Main(analyzers...)
-}
-
-// Config список проверок по honnef.co/go/tools.
-type Config struct {
-	Checks map[string]bool `json:"checks"`
-}
-
-// Считываем конфигурацию из файла.
-func loadConfig(path string) (map[string]bool, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("не удалось открыть файл конфигурации: %w", err)
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Printf("Error close config file: %v", err)
-		}
-	}(file)
-
-	var config Config
-	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&config); err != nil {
-		return nil, fmt.Errorf("не удалось декодировать файл конфигурации: %w", err)
-	}
-
-	return config.Checks, nil
+	return analyzers
 }
